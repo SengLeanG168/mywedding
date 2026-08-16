@@ -1,0 +1,136 @@
+"use client"
+
+import { useState, useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
+import { Button } from '@/components/ui/button';
+import { ChevronDown } from 'lucide-react';
+
+interface InvitationVideoIntroProps {
+  type: string;
+  url: string;
+  poster?: string | null;
+  onContinue: () => void;
+}
+
+export default function InvitationVideoIntro({ type, url, poster, onContinue }: InvitationVideoIntroProps) {
+  const t = useTranslations('Event');
+  const [error, setError] = useState(false);
+  const [showContinue, setShowContinue] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  
+  const handleContinue = () => {
+    onContinue();
+  };
+
+  useEffect(() => {
+    if (error) {
+      setShowContinue(true);
+      return;
+    }
+    
+    // For YouTube or cases where we can't accurately track playback time,
+    // we use a simple timeout as a fallback. For MP4, onTimeUpdate handles it.
+    let timeout: NodeJS.Timeout;
+    if (type === 'youtube') {
+      timeout = setTimeout(() => {
+        setShowContinue(true);
+      }, 20000);
+    }
+    
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [type, error]);
+
+  const handleTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const video = e.currentTarget;
+    if (video.currentTime >= 10) {
+      setShowContinue(true);
+    }
+  };
+
+  const handleEnded = () => {
+    setShowContinue(true);
+  };
+
+  if (!url || type === 'none') {
+    return null;
+  }
+
+  const getYouTubeId = (url: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  return (
+    <div className="relative w-full min-h-[100vh] overflow-hidden bg-black flex flex-col items-center justify-center">
+      {type === 'youtube' ? (
+        <>
+          {error ? (
+            <div className="text-white/50 text-sm z-10">{t('videoUnavailable')}</div>
+          ) : (
+            <>
+              {!isLoaded && <div className="absolute inset-0 flex items-center justify-center text-white/50 text-sm z-0">{t('preparingVideo')}</div>}
+              <iframe
+                className={`absolute top-0 left-0 w-full h-full object-cover pointer-events-auto transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+                src={getYouTubeId(url) ? `https://www.youtube.com/embed/${getYouTubeId(url)}?autoplay=1&mute=1&playsinline=1&controls=1&rel=0` : url}
+                title="Hero Video"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                onLoad={() => setIsLoaded(true)}
+                onError={() => setError(true)}
+              />
+            </>
+          )}
+        </>
+      ) : (
+        <>
+          {error ? (
+            <div className="text-white/50 text-sm z-10">{t('videoUnavailable')}</div>
+          ) : (
+            <>
+              {!isLoaded && <div className="absolute inset-0 flex items-center justify-center text-white/50 text-sm z-0">{t('preparingVideo')}</div>}
+              <video
+                ref={videoRef}
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+                src={url}
+                poster={poster || undefined}
+                autoPlay
+                muted
+                playsInline
+                controls
+                onCanPlay={() => setIsLoaded(true)}
+                onTimeUpdate={handleTimeUpdate}
+                onEnded={handleEnded}
+                onError={() => setError(true)}
+              />
+            </>
+          )}
+        </>
+      )}
+
+      {/* Dark overlay at bottom for the button readability */}
+      <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
+
+      {/* Continue Button */}
+      <div 
+        className={`absolute bottom-12 z-20 transition-all duration-1000 ${
+          showContinue ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8 pointer-events-none'
+        }`}
+      >
+        <Button 
+          onClick={handleContinue}
+          className="bg-white/10 hover:bg-white/20 text-white border border-white/30 backdrop-blur-md rounded-full px-8 py-6 flex items-center gap-2 group shadow-xl"
+        >
+          <span className="text-base font-medium font-serif tracking-wide">
+            {t('continueToInvitation')}
+          </span>
+          <ChevronDown className="w-5 h-5 group-hover:translate-y-1 transition-transform" />
+        </Button>
+      </div>
+    </div>
+  );
+}

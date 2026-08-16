@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Event {
+  id                  String   @id @default(cuid())
+  slug                String   @unique
+  brideNameKm         String
+  brideNameEn         String
+  groomNameKm         String
+  groomNameEn         String
+  eventDate           DateTime
+  eventTime           String
+  locationNameKm      String
+  locationNameEn      String
+  locationAddressKm   String
+  locationAddressEn   String
+  googleMapUrl        String?
+  coverImage          String?
+  invitationMessageKm String   @db.Text
+  invitationMessageEn String   @db.Text
+  theme               String   @default("Classic Khmer Wedding")
+  musicUrl            String?
+  musicTitle          String?
+  heroVideoUrl        String?
+  heroVideoType       String?
+  heroVideoPosterUrl  String?
+  showHeroVideo       Boolean  @default(false)
+  openingImageUrl     String?
+  openingTitleKm      String?
+  openingTitleEn      String?
+  openingMessageKm    String?
+  openingMessageEn    String?
+  showOpeningScreen   Boolean  @default(true)
+  showCurtainIntro         Boolean  @default(true)
+  curtainIntroType         String   @default("css")
+  curtainIntroVideoUrl     String?
+  allowSkipCurtainIntro    Boolean  @default(true)
+  galleryImages            Json?
+  
+  blessingTitleKm                 String?
+  blessingTitleEn                 String?
+  groomFatherNameKm               String?
+  groomFatherNameEn               String?
+  groomMotherNameKm               String?
+  groomMotherNameEn               String?
+  brideFatherNameKm               String?
+  brideFatherNameEn               String?
+  brideMotherNameKm               String?
+  brideMotherNameEn               String?
+  formalInvitationTextKm          String?  @db.Text
+  formalInvitationTextEn          String?  @db.Text
+  couplePhotoUrl                  String?
+  showTraditionalInvitationSection Boolean @default(true)
+  
+  showMapQrCode       Boolean  @default(true)
+  showGiftQrCode      Boolean  @default(false)
+  giftQrImageUrl      String?
+  giftQrKhImageUrl    String?
+  giftQrUsdImageUrl   String?
+  giftQrTitleKm       String?
+  giftQrTitleEn       String?
+  giftQrNoteKm        String?
+  giftQrNoteEn        String?
+  giftBankName        String?
+  giftAccountName     String?
+  giftAccountNumber   String?
+  giftKhBankName      String?
+  giftKhAccountName   String?
+  giftKhAccountNumber String?
+  giftUsdBankName     String?
+  giftUsdAccountName  String?
+  giftUsdAccountNumber String?
+
+  guests              Guest[]
+  rsvps               RSVP[]
+  programDays         ProgramDay[]
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model Guest {
+  id             String   @id @default(cuid())
+  eventId        String
+  event          Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name           String
+  phone          String?
+  email          String?
+  invitedCount   Int      @default(1)
+  notes          String?  @db.Text
+  customSlug     String?
+  
+  rsvps          RSVP[]
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model RSVP {
+  id             String   @id @default(cuid())
+  eventId        String
+  event          Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guestId        String?
+  guest          Guest?   @relation(fields: [guestId], references: [id], onDelete: SetNull)
+  guestName      String
+  phone          String
+  status         String
+  attendingCount Int      @default(1)
+  message        String?  @db.Text
+  
+  createdAt      DateTime @default(now())
+}
+
+model ProgramDay {
+  id        String        @id @default(cuid())
+  eventId   String
+  event     Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  titleKm   String
+  titleEn   String
+  date      DateTime
+  order     Int           @default(0)
+  items     ProgramItem[]
+  
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model ProgramItem {
+  id            String     @id @default(cuid())
+  programDayId  String
+  programDay    ProgramDay @relation(fields: [programDayId], references: [id], onDelete: Cascade)
+  time          String
+  titleKm       String
+  titleEn       String
+  descriptionKm String?    @db.Text
+  descriptionEn String?    @db.Text
+  order         Int        @default(0)
+  
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}

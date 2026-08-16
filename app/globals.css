@@ -1,26 +1,159 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@plugin "tailwindcss-animate";
 
-@theme inline {
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-sans: "Times New Roman", Times, serif;
+  --font-serif: "Times New Roman", Times, serif;
+  --font-khmer-sans: "Khmer OS Siemreap", sans-serif;
+  --font-khmer-serif: "Khmer OS Muol Light", serif;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  :root {
+    --background: #fdfbf7;
+    --foreground: #1c1917;
+    --card: #ffffff;
+    --card-foreground: #1c1917;
+    --popover: #ffffff;
+    --popover-foreground: #1c1917;
+    --primary: #c29b62; /* Gold accent */
+    --primary-foreground: #ffffff;
+    --secondary: #f3f4f6;
+    --secondary-foreground: #1f2937;
+    --muted: #f4f4f5;
+    --muted-foreground: #71717a;
+    --accent: #f4f4f5;
+    --accent-foreground: #18181b;
+    --destructive: #ef4444;
+    --destructive-foreground: #fafafa;
+    --border: #e5e7eb;
+    --input: #e5e7eb;
+    --ring: #c29b62;
+    --radius: 0.5rem;
+  }
+  .dark {
+    --background: #18181b; /* Deep charcoal */
+    --foreground: #fafafa;
+    --card: #27272a;
+    --card-foreground: #fafafa;
+    --popover: #27272a;
+    --popover-foreground: #fafafa;
+    --primary: #d4af37; /* Gold accent */
+    --primary-foreground: #18181b;
+    --secondary: #3f3f46;
+    --secondary-foreground: #fafafa;
+    --muted: #27272a;
+    --muted-foreground: #a1a1aa;
+    --accent: #27272a;
+    --accent-foreground: #fafafa;
+    --destructive: #7f1d1d;
+    --destructive-foreground: #fafafa;
+    --border: #3f3f46;
+    --input: #3f3f46;
+    --ring: #d4af37;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/*
+ * FONT SYSTEM
+ * ----------
+ * Khmer locale font switching strategy:
+ *
+ * Tailwind v4 resolves font-sans / font-serif at BUILD time from @theme,
+ * so runtime [lang] overrides of --font-sans have no effect on those utilities.
+ *
+ * Solution: override the Tailwind font utilities themselves in @layer utilities
+ * so that under html[lang="km"] they use the Khmer local fonts.
+ * The !important ensures we win over Tailwind's generated specificity.
+ */
+@layer base {
+  /* Default (English): Times New Roman */
+  html,
+  html body {
+    font-family: "Times New Roman", Times, serif;
+  }
+
+  /* Khmer locale: body text uses Siemreap (readable sans) */
+  html[lang="km"],
+  html[lang="km"] body {
+    font-family: var(--font-khmer-siemreap), "Khmer OS Siemreap", "Khmer", sans-serif;
+  }
+}
+
+@layer utilities {
+  /* Override font-sans utility for Khmer locale */
+  html[lang="km"] .font-sans {
+    font-family: var(--font-khmer-siemreap), "Khmer OS Siemreap", "Khmer", sans-serif !important;
+  }
+
+  /* Override font-serif utility for Khmer locale (Moul for decorative headings) */
+  html[lang="km"] .font-serif {
+    font-family: var(--font-khmer-muol-light), "Khmer OS Muol Light", "Khmer", serif !important;
+  }
+
+  /* Khmer headings always use the Moul display font */
+  html[lang="km"] h1,
+  html[lang="km"] h2,
+  html[lang="km"] h3 {
+    font-family: var(--font-khmer-muol-light), "Khmer OS Muol Light", "Khmer", serif !important;
+  }
 }
