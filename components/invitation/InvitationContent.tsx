@@ -101,26 +101,26 @@ export default function InvitationContent({ event, locale, guest, programDays }:
             <ThemeToggle />
           </div>
 
-          <main className="max-w-2xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-24 relative z-10 w-full">
+          <main className="w-full mx-auto px-4 sm:px-6 py-12 sm:py-16 relative z-10">
             
             {/* Traditional Invitation Section */}
-            <div className="-mx-4 md:-mx-12">
+            <div className="-mx-4">
               <TraditionalInvitationSection event={event} locale={locale} />
             </div>
 
             {/* Header section */}
-            <section className="text-center space-y-6 sm:space-y-8 mb-12 sm:mb-16 overflow-hidden">
-              <p className="uppercase tracking-[0.2em] sm:tracking-[0.3em] text-xs sm:text-sm text-primary font-bold px-2">
+            <section className="text-center space-y-4 sm:space-y-6 mb-12 sm:mb-16 overflow-hidden">
+              <p className="uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] sm:text-xs text-primary font-bold px-2">
                 {isKm ? "សូមគោរពអញ្ជើញចូលរួមពិធីមង្គលការរបស់" : "You are invited to the wedding of"}
               </p>
               
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-serif text-primary break-words px-2">
+              <h1 className="text-[clamp(1.625rem,6vw,2rem)] font-serif text-primary font-bold break-words px-2">
                 {brideName}
-                <span className="block text-2xl sm:text-3xl md:text-4xl my-3 sm:my-4 text-foreground/50 italic font-light">&</span>
+                <span className="block text-xl sm:text-2xl my-2 text-foreground/50 italic font-light">&</span>
                 {groomName}
               </h1>
               
-              <p className="text-base sm:text-lg md:text-xl text-muted-foreground whitespace-pre-wrap max-w-lg mx-auto px-4">
+              <p className="text-sm sm:text-base text-muted-foreground whitespace-pre-wrap w-full mx-auto px-4 mt-2">
                 {invitationMessage}
               </p>
             </section>
@@ -138,33 +138,33 @@ export default function InvitationContent({ event, locale, guest, programDays }:
               <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
               
               <div className="space-y-6 sm:space-y-8 relative z-10 w-full">
-                <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-center md:text-left">
-                  <Calendar className="h-10 w-10 text-primary" />
+                <div className="flex flex-col items-center justify-center gap-3 text-center">
+                  <Calendar className="h-8 w-8 text-primary" />
                   <div>
-                    <div className="text-xl font-serif">{format(eventDateTime, 'EEEE, MMMM do, yyyy')}</div>
-                    <div className="text-muted-foreground">{isKm ? "សូមកត់ចំណាំថ្ងៃចូលរួម" : "Please save the date"}</div>
+                    <div className="text-base sm:text-lg font-serif font-bold">{format(eventDateTime, 'EEEE, MMMM do, yyyy')}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground mt-1">{isKm ? "សូមកត់ចំណាំថ្ងៃចូលរួម" : "Please save the date"}</div>
                   </div>
                 </div>
                 
                 <div className="h-px w-full bg-border" />
                 
-                <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-center md:text-left">
-                  <Clock className="h-10 w-10 text-primary" />
+                <div className="flex flex-col items-center justify-center gap-3 text-center">
+                  <Clock className="h-8 w-8 text-primary" />
                   <div>
-                    <div className="text-xl font-serif">{event.eventTime}</div>
-                    <div className="text-muted-foreground">{isKm ? "កម្មវិធីចាប់ផ្តើម" : "Reception begins"}</div>
+                    <div className="text-base sm:text-lg font-serif font-bold">{event.eventTime}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground mt-1">{isKm ? "កម្មវិធីចាប់ផ្តើម" : "Reception begins"}</div>
                   </div>
                 </div>
                 
                 <div className="h-px w-full bg-border" />
                 
-                <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-center md:text-left">
-                  <MapPin className="h-10 w-10 text-primary shrink-0" />
+                <div className="flex flex-col items-center justify-center gap-3 text-center">
+                  <MapPin className="h-8 w-8 text-primary shrink-0" />
                   <div>
-                    <div className="text-xl font-serif">{locationName}</div>
-                    <div className="text-muted-foreground mt-1">{locationAddress}</div>
+                    <div className="text-base sm:text-lg font-serif font-bold">{locationName}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground mt-1">{locationAddress}</div>
                     {event.googleMapUrl && (
-                      <a href={event.googleMapUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 mt-3 text-primary hover:underline font-medium">
+                      <a href={event.googleMapUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 mt-3 text-sm text-primary hover:underline font-medium">
                         <Map className="h-4 w-4" /> {isKm ? "បើកមើលផែនទី" : "Open in Google Maps"}
                       </a>
                     )}
@@ -197,7 +197,7 @@ export default function InvitationContent({ event, locale, guest, programDays }:
               return (
                 <section className="mt-12 sm:mt-16">
                   <div className="text-center mb-6 sm:mb-8">
-                    <h2 className="text-3xl sm:text-4xl font-serif text-primary">{isKm ? "រូបថតអនុស្សាវរីយ៍" : "Gallery"}</h2>
+                    <h2 className="text-[clamp(1.25rem,4vw,1.5rem)] font-serif font-bold text-primary">{isKm ? "រូបថតអនុស្សាវរីយ៍" : "Gallery"}</h2>
                     <span className="inline-block w-8 h-[1px] bg-primary mt-2" />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 px-2 sm:px-0">
@@ -217,8 +217,8 @@ export default function InvitationContent({ event, locale, guest, programDays }:
             {/* RSVP Form */}
             <section className="mt-12 sm:mt-16 w-full" id="rsvp">
               <div className="text-center mb-6 sm:mb-8">
-                <h2 className="text-3xl sm:text-4xl font-serif text-primary">RSVP</h2>
-                <p className="text-sm sm:text-base text-muted-foreground mt-2 px-4">{isKm ? "សូមបញ្ជាក់ពីការចូលរួមរបស់អ្នក" : "Please let us know if you can make it"}</p>
+                <h2 className="text-[clamp(1.25rem,4vw,1.5rem)] font-serif font-bold text-primary">RSVP</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-2 px-4">{isKm ? "សូមបញ្ជាក់ពីការចូលរួមរបស់អ្នក" : "Please let us know if you can make it"}</p>
               </div>
               <RSVPForm eventId={event.id} guest={guest} />
             </section>

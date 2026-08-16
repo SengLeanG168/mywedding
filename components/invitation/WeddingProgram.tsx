@@ -44,7 +44,7 @@ export default function WeddingProgram({ programDays, locale }: WeddingProgramPr
   return (
     <section className="mt-16 relative">
       <div className="text-center mb-12">
-        <h2 className="text-4xl font-serif text-primary">{t('weddingProgram')}</h2>
+        <h2 className="text-[clamp(1.25rem,4vw,1.5rem)] font-serif font-bold text-primary">{t('weddingProgram')}</h2>
         <span className="inline-block w-8 h-[1px] bg-primary mt-4" />
         <div className="flex justify-center mt-4 opacity-50">
           <svg width="40" height="20" viewBox="0 0 40 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-primary fill-current">
@@ -60,10 +60,10 @@ export default function WeddingProgram({ programDays, locale }: WeddingProgramPr
             <div className="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-transparent via-primary/20 to-transparent rounded-t-2xl sm:rounded-t-3xl" />
             
             <div className="text-center mb-6 sm:mb-8">
-              <h3 className="text-xl sm:text-2xl font-bold text-primary font-serif px-2 break-words">
+              <h3 className="text-[clamp(1.1rem,4vw,1.3rem)] font-bold text-primary font-serif px-2 break-words">
                 {locale === 'km' ? day.titleKm : day.titleEn}
               </h3>
-              <p className="text-sm sm:text-base text-muted-foreground mt-1 px-2">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1 px-2">
                 {new Date(day.date).toLocaleDateString(locale === 'km' ? 'km-KH' : 'en-US', {
                   weekday: 'long',
                   year: 'numeric',
@@ -75,24 +75,21 @@ export default function WeddingProgram({ programDays, locale }: WeddingProgramPr
 
             <div className="relative max-w-lg mx-auto">
               {/* Timeline line */}
-              <div className="absolute left-4 sm:left-6 md:left-[50%] top-2 bottom-2 w-px bg-primary/30" />
+              <div className="absolute left-4 sm:left-6 top-2 bottom-2 w-px bg-primary/30" />
 
               <div className="space-y-6 sm:space-y-8">
-                {day.items?.map((item: any, index: number) => {
-                  const isLeft = index % 2 === 0;
+                {day.items?.map((item: any) => {
                   return (
-                    <div key={item.id} className="relative flex items-center md:justify-between w-full">
-                      {/* Mobile dot */}
-                      <div className="absolute left-[14px] sm:left-[22px] w-2 h-2 rounded-full bg-primary md:hidden ring-4 ring-card" />
-                      {/* Desktop dot */}
-                      <div className="absolute left-[50%] -translate-x-1/2 w-3 h-3 rounded-full bg-primary hidden md:block shadow-[0_0_0_4px_hsl(var(--background))]" />
+                    <div key={item.id} className="relative flex items-center w-full">
+                      {/* Timeline dot */}
+                      <div className="absolute left-[14px] sm:left-[22px] w-2 h-2 rounded-full bg-primary ring-4 ring-card" />
 
                       {/* Content Wrapper */}
-                      <div className={`w-full pl-10 sm:pl-12 md:pl-0 flex flex-col md:w-[calc(50%-24px)] ${isLeft ? 'md:items-end md:text-right' : 'md:ml-auto md:items-start md:text-left'}`}>
-                        <div className="text-xs sm:text-sm font-bold text-primary bg-primary/10 px-2 sm:px-3 py-1 rounded-full inline-block mb-2 shadow-sm border border-primary/20 self-start md:self-auto">
+                      <div className="w-full pl-10 sm:pl-12 flex flex-col">
+                        <div className="text-xs sm:text-sm font-bold text-primary bg-primary/10 px-2 sm:px-3 py-1 rounded-full inline-block mb-2 shadow-sm border border-primary/20 self-start">
                           {formatTime(item.time, locale)}
                         </div>
-                        <h4 className="text-base sm:text-lg font-bold font-serif mb-1 break-words">
+                        <h4 className="text-sm sm:text-base font-bold font-serif mb-1 break-words">
                           {locale === 'km' ? item.titleKm : item.titleEn}
                         </h4>
                         {(item.descriptionKm || item.descriptionEn) && (

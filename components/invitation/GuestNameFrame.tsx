@@ -45,7 +45,7 @@ export default function GuestNameFrame({ guestName }: GuestNameFrameProps) {
 
         {/* Guest name */}
         <h3
-          className="text-xl sm:text-2xl font-serif font-medium pt-3 pb-1 leading-tight line-clamp-2 text-white"
+          className="text-[clamp(1.125rem,4vw,1.375rem)] font-serif font-medium pt-3 pb-1 leading-tight line-clamp-2 text-white"
           style={{ textShadow: '0 1px 8px rgba(0,0,0,0.8)' }}
         >
           {guestName}

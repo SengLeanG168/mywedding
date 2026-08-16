@@ -16,7 +16,7 @@ export default function LanguageSwitcher() {
   };
 
   return (
-    <Button variant="outline" size="sm" onClick={toggleLocale} className="flex gap-2">
+    <Button variant="outline" size="sm" onClick={toggleLocale} className="flex gap-2 text-xs sm:text-sm h-9 px-3">
       <Globe className="h-4 w-4" />
       <span>{locale === 'en' ? 'Khmer' : 'English'}</span>
     </Button>

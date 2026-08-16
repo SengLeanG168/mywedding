@@ -20,21 +20,21 @@ export default function GiftQrSection({ event, locale }: GiftQrSectionProps) {
   return (
     <section className="mt-16 text-center">
       <div className="mb-8">
-        <h2 className="text-4xl font-serif text-primary flex items-center justify-center gap-3">
-          <Gift className="w-8 h-8" />
+        <h2 className="text-[clamp(1.25rem,4vw,1.5rem)] font-serif font-bold text-primary flex items-center justify-center gap-3">
+          <Gift className="w-6 h-6 sm:w-8 sm:h-8" />
           {title || (isKm ? "ចងដៃតាម QR Code" : "Wedding Gift QR Code")}
         </h2>
         <span className="inline-block w-8 h-[1px] bg-primary mt-2" />
       </div>
 
-      <div className="flex flex-col md:flex-row justify-center gap-6 max-w-4xl mx-auto px-4">
+      <div className="flex flex-col justify-center gap-6 max-w-4xl mx-auto px-4">
         
         {/* KHR Card */}
         {khrImage && (
           <div className="bg-card/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-xl border border-primary/20 flex-1 relative overflow-hidden flex flex-col items-center">
             <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
             <div className="relative z-10 w-full flex flex-col items-center">
-              <h3 className="text-xl font-bold text-primary mb-6 uppercase tracking-wider">
+              <h3 className="text-base font-bold text-primary mb-4 sm:mb-6 uppercase tracking-wider">
                 {isKm ? "លុយខ្មែរ" : "KHR"}
               </h3>
               <div className="bg-white p-3 rounded-2xl shadow-sm mb-6 inline-block">
@@ -46,17 +46,17 @@ export default function GiftQrSection({ event, locale }: GiftQrSectionProps) {
               </div>
               <div className="space-y-2 text-center w-full">
                 {(event.giftKhBankName || event.giftBankName) && (
-                  <p className="text-base sm:text-lg font-semibold text-foreground break-words">
+                  <p className="text-sm sm:text-base font-semibold text-foreground break-words">
                     {event.giftKhBankName || event.giftBankName}
                   </p>
                 )}
                 {(event.giftKhAccountName || event.giftAccountName) && (
-                  <p className="text-sm sm:text-base text-muted-foreground uppercase tracking-wide break-words">
+                  <p className="text-xs sm:text-sm text-muted-foreground uppercase tracking-wide break-words">
                     {event.giftKhAccountName || event.giftAccountName}
                   </p>
                 )}
                 {(event.giftKhAccountNumber || event.giftAccountNumber) && (
-                  <p className="text-base sm:text-lg font-mono text-primary font-medium tracking-wider bg-primary/5 py-1 px-3 rounded-lg inline-block mt-1 break-words">
+                  <p className="text-sm sm:text-base font-mono text-primary font-medium tracking-wider bg-primary/5 py-1 px-3 rounded-lg inline-block mt-1 break-words">
                     {event.giftKhAccountNumber || event.giftAccountNumber}
                   </p>
                 )}
@@ -70,7 +70,7 @@ export default function GiftQrSection({ event, locale }: GiftQrSectionProps) {
           <div className="bg-card/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-xl border border-primary/20 flex-1 relative overflow-hidden flex flex-col items-center">
             <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
             <div className="relative z-10 w-full flex flex-col items-center">
-              <h3 className="text-xl font-bold text-primary mb-6 uppercase tracking-wider">
+              <h3 className="text-base font-bold text-primary mb-4 sm:mb-6 uppercase tracking-wider">
                 {isKm ? "លុយដុល្លារ" : "USD"}
               </h3>
               <div className="bg-white p-3 rounded-2xl shadow-sm mb-6 inline-block">
@@ -82,17 +82,17 @@ export default function GiftQrSection({ event, locale }: GiftQrSectionProps) {
               </div>
               <div className="space-y-2 text-center w-full">
                 {event.giftUsdBankName && (
-                  <p className="text-base sm:text-lg font-semibold text-foreground break-words">
+                  <p className="text-sm sm:text-base font-semibold text-foreground break-words">
                     {event.giftUsdBankName}
                   </p>
                 )}
                 {event.giftUsdAccountName && (
-                  <p className="text-sm sm:text-base text-muted-foreground uppercase tracking-wide break-words">
+                  <p className="text-xs sm:text-sm text-muted-foreground uppercase tracking-wide break-words">
                     {event.giftUsdAccountName}
                   </p>
                 )}
                 {event.giftUsdAccountNumber && (
-                  <p className="text-base sm:text-lg font-mono text-primary font-medium tracking-wider bg-primary/5 py-1 px-3 rounded-lg inline-block mt-1 break-words">
+                  <p className="text-sm sm:text-base font-mono text-primary font-medium tracking-wider bg-primary/5 py-1 px-3 rounded-lg inline-block mt-1 break-words">
                     {event.giftUsdAccountNumber}
                   </p>
                 )}

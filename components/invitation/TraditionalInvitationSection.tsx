@@ -44,14 +44,14 @@ export default function TraditionalInvitationSection({ event, locale }: Traditio
   return (
     <section className="w-full relative py-12 sm:py-16 px-4 mb-12 sm:mb-16 overflow-hidden flex flex-col items-center text-center">
       {/* Decorative Background */}
-      <div className="absolute inset-0 bg-card rounded-2xl sm:rounded-3xl shadow-2xl border border-primary/20 max-w-4xl mx-auto -z-10" />
-      <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none rounded-2xl sm:rounded-3xl max-w-4xl mx-auto -z-10" />
+      <div className="absolute inset-0 bg-card rounded-2xl sm:rounded-3xl shadow-2xl border border-primary/20 w-full mx-auto -z-10" />
+      <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none rounded-2xl sm:rounded-3xl w-full mx-auto -z-10" />
       
       {/* Container */}
-      <div className="max-w-3xl mx-auto relative z-10 w-full pt-6 sm:pt-8 pb-10 sm:pb-12 px-2 sm:px-8 flex flex-col items-center">
+      <div className="w-full relative z-10 pt-6 sm:pt-8 pb-10 sm:pb-12 px-2 sm:px-8 flex flex-col items-center">
         
         {/* Blessing Title */}
-        <h2 className="text-2xl sm:text-3xl md:text-5xl font-serif text-primary mb-6 sm:mb-8 font-bold leading-tight px-2">
+        <h2 className="text-[clamp(1.25rem,4vw,1.5rem)] font-serif text-primary mb-6 sm:mb-8 font-bold leading-tight px-2">
           {blessingTitle}
         </h2>
 
@@ -63,24 +63,34 @@ export default function TraditionalInvitationSection({ event, locale }: Traditio
         </div>
 
         {/* Parents Section */}
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 mb-10 sm:mb-12">
+        <div className="w-full grid grid-cols-2 gap-2 sm:gap-4 mb-10 sm:mb-12 relative">
+          {/* Center Divider */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center h-full">
+            <div className="w-px h-full bg-primary/20 absolute" />
+            <div className="bg-card p-1 rounded-full z-10 border border-primary/20 shadow-sm">
+              <svg className="w-2.5 h-2.5 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
+            </div>
+          </div>
+
           {/* Groom Parents */}
-          <div className="flex flex-col items-center">
-            <h3 className="text-base sm:text-lg font-bold text-muted-foreground uppercase tracking-widest mb-3 sm:mb-4">
+          <div className="flex flex-col items-center text-center px-1">
+            <h3 className="text-xs sm:text-sm font-bold text-muted-foreground uppercase tracking-widest mb-3 sm:mb-4">
               {isKm ? 'ខាងកូនប្រុស' : "Groom's Family"}
             </h3>
-            <div className="space-y-1 sm:space-y-2 font-serif text-lg sm:text-xl px-2">
+            <div className="space-y-1 sm:space-y-2 font-serif text-sm sm:text-base font-semibold">
               {groomFather && <div>{groomFather}</div>}
               {groomMother && <div>{groomMother}</div>}
             </div>
           </div>
           
           {/* Bride Parents */}
-          <div className="flex flex-col items-center">
-            <h3 className="text-base sm:text-lg font-bold text-muted-foreground uppercase tracking-widest mb-3 sm:mb-4">
+          <div className="flex flex-col items-center text-center px-1">
+            <h3 className="text-xs sm:text-sm font-bold text-muted-foreground uppercase tracking-widest mb-3 sm:mb-4">
               {isKm ? 'ខាងកូនស្រី' : "Bride's Family"}
             </h3>
-            <div className="space-y-1 sm:space-y-2 font-serif text-lg sm:text-xl px-2">
+            <div className="space-y-1 sm:space-y-2 font-serif text-sm sm:text-base font-semibold">
               {brideFather && <div>{brideFather}</div>}
               {brideMother && <div>{brideMother}</div>}
             </div>
@@ -88,8 +98,8 @@ export default function TraditionalInvitationSection({ event, locale }: Traditio
         </div>
 
         {/* Formal Invitation Text */}
-        <div className="max-w-2xl mx-auto mb-10 sm:mb-12 px-4">
-          <p className="text-base sm:text-lg md:text-xl text-foreground/80 leading-relaxed font-serif">
+        <div className="w-full mb-10 sm:mb-12 px-4">
+          <p className="text-sm sm:text-base text-foreground/80 leading-relaxed font-serif">
             {formalInvitationText}
           </p>
         </div>
@@ -100,23 +110,37 @@ export default function TraditionalInvitationSection({ event, locale }: Traditio
         )}
 
         {/* Groom and Bride Name Sentence */}
-        <div className="space-y-6 w-full text-center mt-2">
-          <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
-            <div className="text-xl sm:text-2xl md:text-3xl font-serif text-primary">
-              <span className="text-xs sm:text-sm md:text-base text-muted-foreground block mb-1 tracking-widest uppercase">
-                {isKm ? 'កូនប្រុសនាម' : 'Son:'}
+        <div className="w-full mt-2 relative">
+          <div className="grid grid-cols-2 gap-2 sm:gap-4 items-center">
+            
+            {/* Center Divider */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center h-full">
+              <div className="w-px h-full bg-primary/20 absolute" />
+              <div className="bg-card p-1 rounded-full z-10 border border-primary/20 shadow-sm">
+                <svg className="w-2.5 h-2.5 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Groom Name */}
+            <div className="flex flex-col items-center justify-center text-center px-1">
+              <span className="text-[10px] sm:text-xs text-muted-foreground block mb-1 tracking-widest uppercase">
+                {isKm ? 'កូនប្រុសនាម' : 'Son'}
               </span>
-              <span className="font-bold">{groomName}</span>
+              <div className="text-[clamp(1.1rem,4.5vw,1.5rem)] font-serif text-primary font-bold leading-tight break-words">
+                {groomName}
+              </div>
             </div>
             
-            <div className="hidden md:block w-px h-16 bg-primary/30" />
-            <div className="block md:hidden h-px w-16 bg-primary/30" />
-            
-            <div className="text-xl sm:text-2xl md:text-3xl font-serif text-primary mt-2 md:mt-0">
-              <span className="text-xs sm:text-sm md:text-base text-muted-foreground block mb-1 tracking-widest uppercase">
-                {isKm ? 'កូនស្រីនាម' : 'Daughter:'}
+            {/* Bride Name */}
+            <div className="flex flex-col items-center justify-center text-center px-1">
+              <span className="text-[10px] sm:text-xs text-muted-foreground block mb-1 tracking-widest uppercase">
+                {isKm ? 'កូនស្រីនាម' : 'Daughter'}
               </span>
-              <span className="font-bold">{brideName}</span>
+              <div className="text-[clamp(1.1rem,4.5vw,1.5rem)] font-serif text-primary font-bold leading-tight break-words">
+                {brideName}
+              </div>
             </div>
           </div>
         </div>

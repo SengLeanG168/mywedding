@@ -102,26 +102,26 @@ export default function OpeningScreen({
 
         {/* 1. TOP — Arch + Wedding Title + Heart */}
         <div className="flex flex-col items-center w-full mt-2">
-          <KhmerArch className="w-full max-w-[220px] h-10 text-primary opacity-90 mb-4 drop-shadow-lg" />
+          <KhmerArch className="w-full max-w-[180px] h-8 text-primary opacity-90 mb-4 drop-shadow-lg" />
           <h1
-            className="text-3xl sm:text-4xl md:text-5xl text-primary font-serif font-bold text-center leading-tight"
+            className="text-[clamp(1.625rem,6vw,2rem)] text-primary font-serif font-bold text-center leading-tight px-2"
             style={{ textShadow: '0 2px 12px rgba(0,0,0,0.7)' }}
           >
             {t('weddingCeremony')}
           </h1>
-          <KhmerHeart className="w-6 h-6 text-primary mt-3 opacity-90 animate-pulse drop-shadow-lg" />
+          <KhmerHeart className="w-5 h-5 text-primary mt-3 opacity-90 animate-pulse drop-shadow-lg" />
         </div>
 
         {/* 2. MIDDLE — Couple Names */}
         <div className="flex flex-col items-center w-full my-auto space-y-4">
           {/* Groom */}
           <div className="flex flex-col items-center text-center">
-            <span className="text-xs sm:text-sm text-primary/90 uppercase tracking-widest font-medium mb-1"
+            <span className="text-xs text-primary/90 uppercase tracking-widest font-medium mb-1"
                   style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>
               {t('groom')}
             </span>
             <h2
-              className="text-3xl sm:text-4xl md:text-5xl font-serif font-semibold text-white"
+              className="text-[clamp(1.375rem,5vw,1.75rem)] font-serif font-semibold text-white px-2"
               style={{ textShadow: '0 2px 16px rgba(0,0,0,0.8)' }}
             >
               {groomName}
@@ -129,18 +129,18 @@ export default function OpeningScreen({
           </div>
 
           {/* Gold divider */}
-          <div className="w-full max-w-[120px] py-1 opacity-80">
+          <div className="w-full max-w-[100px] py-1 opacity-80">
             <DividerMotif className="w-full text-primary" />
           </div>
 
           {/* Bride */}
           <div className="flex flex-col items-center text-center">
-            <span className="text-xs sm:text-sm text-primary/90 uppercase tracking-widest font-medium mb-1"
+            <span className="text-xs text-primary/90 uppercase tracking-widest font-medium mb-1"
                   style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>
               {t('bride')}
             </span>
             <h2
-              className="text-3xl sm:text-4xl md:text-5xl font-serif font-semibold text-white"
+              className="text-[clamp(1.375rem,5vw,1.75rem)] font-serif font-semibold text-white px-2"
               style={{ textShadow: '0 2px 16px rgba(0,0,0,0.8)' }}
             >
               {brideName}
@@ -151,7 +151,7 @@ export default function OpeningScreen({
         {/* 3. BOTTOM — Invitation text + Guest Frame + Play Button */}
         <div className="flex flex-col items-center w-full space-y-1">
           <p
-            className="text-base sm:text-lg text-primary font-serif italic text-center px-4 font-medium"
+            className="text-sm sm:text-base text-primary font-serif italic text-center px-4 font-medium"
             style={{ textShadow: '0 1px 8px rgba(0,0,0,0.7)' }}
           >
             {t('youAreWarmlyInvited')}
