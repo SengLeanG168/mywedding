@@ -104,44 +104,39 @@ export default function TraditionalInvitationSection({ event, locale }: Traditio
           </p>
         </div>
 
-        {/* Couple Photo */}
-        {photoUrl && (
-          <HeartPhotoFrame src={photoUrl} />
-        )}
-
-        {/* Groom and Bride Name Sentence */}
-        <div className="w-full mt-2 relative">
-          <div className="grid grid-cols-2 gap-2 sm:gap-4 items-center">
+        {/* Groom, Couple Photo, and Bride Name */}
+        <div className="w-full mt-4 relative z-10">
+          <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-center justify-items-center w-full">
             
-            {/* Center Divider */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center h-full">
-              <div className="w-px h-full bg-primary/20 absolute" />
-              <div className="bg-card p-1 rounded-full z-10 border border-primary/20 shadow-sm">
-                <svg className="w-2.5 h-2.5 text-primary" viewBox="0 0 24 24" fill="currentColor">
-                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                </svg>
-              </div>
-            </div>
-
-            {/* Groom Name */}
-            <div className="flex flex-col items-center justify-center text-center px-1">
-              <span className="text-[10px] sm:text-xs text-muted-foreground block mb-1 tracking-widest uppercase">
-                {isKm ? 'កូនប្រុសនាម' : 'Son'}
+            {/* Groom Section */}
+            <div className="flex flex-col items-center justify-center text-center px-1 space-y-2">
+              <span className="text-[10px] sm:text-xs text-muted-foreground tracking-widest uppercase whitespace-nowrap">
+                {isKm ? 'កូនប្រុស' : 'Son'}
               </span>
-              <div className="text-[clamp(1.1rem,4.5vw,1.5rem)] font-serif text-primary font-bold leading-tight break-words">
+              <div className="text-[clamp(0.9rem,3.5vw,1.25rem)] font-serif text-primary font-bold leading-tight whitespace-nowrap">
                 {groomName}
               </div>
             </div>
+
+            {/* Centered Heart Photo */}
+            <div className="flex items-center justify-center px-1 sm:px-2">
+              {photoUrl ? (
+                <HeartPhotoFrame src={photoUrl} className="w-24 h-24 sm:w-32 sm:h-32 mb-0" />
+              ) : (
+                <div className="w-8" /> /* Spacer if no photo */
+              )}
+            </div>
             
-            {/* Bride Name */}
-            <div className="flex flex-col items-center justify-center text-center px-1">
-              <span className="text-[10px] sm:text-xs text-muted-foreground block mb-1 tracking-widest uppercase">
-                {isKm ? 'កូនស្រីនាម' : 'Daughter'}
+            {/* Bride Section */}
+            <div className="flex flex-col items-center justify-center text-center px-1 space-y-2">
+              <span className="text-[10px] sm:text-xs text-muted-foreground tracking-widest uppercase whitespace-nowrap">
+                {isKm ? 'កូនស្រី' : 'Daughter'}
               </span>
-              <div className="text-[clamp(1.1rem,4.5vw,1.5rem)] font-serif text-primary font-bold leading-tight break-words">
+              <div className="text-[clamp(0.9rem,3.5vw,1.25rem)] font-serif text-primary font-bold leading-tight whitespace-nowrap">
                 {brideName}
               </div>
             </div>
+            
           </div>
         </div>
         

@@ -15,6 +15,7 @@ import GiftQrSection from '@/components/invitation/GiftQrSection';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { MapPin, Calendar, Clock, Map } from 'lucide-react';
 import { format } from 'date-fns';
+import MediaLightbox, { MediaItem } from '@/components/invitation/MediaLightbox';
 
 interface InvitationContentProps {
   event: any;
@@ -28,6 +29,11 @@ export default function InvitationContent({ event, locale, guest, programDays }:
   const shouldShowCurtain = event.showCurtainIntro !== false;
   const [curtainDone, setCurtainDone] = useState(!shouldShowCurtain);
   const [isOpened, setIsOpened] = useState(!event.showOpeningScreen);
+
+  // Lightbox State
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [lightboxItems, setLightboxItems] = useState<MediaItem[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   const isKm = locale === 'km';
   const brideName = isKm ? event.brideNameKm : event.brideNameEn;
@@ -172,7 +178,8 @@ export default function InvitationContent({ event, locale, guest, programDays }:
                       <MapQrCode 
                         url={event.googleMapUrl} 
                         buttonLabel={isKm ? "ស្កេនមើលទីតាំង" : "Scan for Location"}
-                        qrLabel={isKm ? "ស្កេន QR Code ដើម្បីមើលទីតាំង" : "Scan QR Code to view location"} 
+                        qrLabel={isKm ? "ស្កេន QR Code ដើម្បីមើលទីតាំង" : "Scan QR Code to view location"}
+                        locale={locale}
                       />
                     )}
                   </div>
@@ -194,15 +201,24 @@ export default function InvitationContent({ event, locale, guest, programDays }:
                     ? JSON.parse(event.galleryImages)
                     : []);
               if (galleryUrls.length === 0) return null;
+              
               return (
                 <section className="mt-12 sm:mt-16">
                   <div className="text-center mb-6 sm:mb-8">
                     <h2 className="text-[clamp(1.25rem,4vw,1.5rem)] font-serif font-bold text-primary">{isKm ? "រូបថតអនុស្សាវរីយ៍" : "Gallery"}</h2>
                     <span className="inline-block w-8 h-[1px] bg-primary mt-2" />
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 px-2 sm:px-0">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-4 px-2 sm:px-0">
                     {galleryUrls.map((url: string, index: number) => (
-                      <div key={url + index} className="relative aspect-[4/5] rounded-2xl sm:rounded-3xl overflow-hidden border border-primary/20 shadow-lg bg-card">
+                      <div 
+                        key={url + index} 
+                        className="relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden border border-primary/20 shadow-sm bg-card cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => {
+                          setLightboxItems(galleryUrls.map((src: string) => ({ src, type: 'image' })));
+                          setLightboxIndex(index);
+                          setIsLightboxOpen(true);
+                        }}
+                      >
                         <img src={url} alt={`Gallery ${index}`} className="w-full h-full object-cover" />
                       </div>
                     ))}
@@ -228,6 +244,15 @@ export default function InvitationContent({ event, locale, guest, programDays }:
           </div>
         </div>
       )}
+
+      {/* Global Lightbox */}
+      <MediaLightbox 
+        isOpen={isLightboxOpen} 
+        onClose={() => setIsLightboxOpen(false)} 
+        items={lightboxItems} 
+        initialIndex={lightboxIndex}
+        locale={locale}
+      />
     </>
   );
 }

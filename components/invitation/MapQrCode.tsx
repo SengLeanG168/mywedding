@@ -8,6 +8,7 @@ interface MapQrCodeProps {
   url: string;
   buttonLabel: string;
   qrLabel: string;
+  locale?: string;
 }
 
 export default function MapQrCode({ url, buttonLabel, qrLabel }: MapQrCodeProps) {

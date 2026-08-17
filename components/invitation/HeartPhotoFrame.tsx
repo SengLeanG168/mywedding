@@ -2,11 +2,12 @@ import React from 'react';
 
 interface HeartPhotoFrameProps {
   src: string;
+  className?: string;
 }
 
-export default function HeartPhotoFrame({ src }: HeartPhotoFrameProps) {
+export default function HeartPhotoFrame({ src, className = "w-48 h-48 sm:w-64 sm:h-64 mb-12" }: HeartPhotoFrameProps) {
   return (
-    <div className="relative w-48 h-48 md:w-64 md:h-64 mx-auto mb-12 flex items-center justify-center">
+    <div className={`relative mx-auto flex items-center justify-center ${className}`}>
       {/* Outer Romantic Glow */}
       <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full scale-90 -z-10" />
 
