@@ -7,6 +7,7 @@ const guestSchema = z.object({
   name: z.string().min(1, "Name is required"),
   phone: z.string().optional().nullable(),
   email: z.string().optional().nullable(),
+  side: z.string().default("groom"),
   invitedCount: z.number().min(1).default(1),
   notes: z.string().optional().nullable(),
 });
@@ -55,6 +56,7 @@ export async function POST(
         name: data.name,
         phone: data.phone,
         email: data.email,
+        side: data.side || 'groom',
         invitedCount: data.invitedCount,
         notes: data.notes,
       }

@@ -9,8 +9,11 @@ datasource db {
 
 model User {
   id        String   @id @default(cuid())
+  name      String?  @default("Admin")
   email     String   @unique
   password  String
+  avatarUrl String?
+  role      String   @default("ADMIN")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -67,6 +70,7 @@ model Event {
   showTraditionalInvitationSection Boolean @default(true)
   
   showMapQrCode       Boolean  @default(true)
+  showGuestNameInSharePreview Boolean @default(true)
   showGiftQrCode      Boolean  @default(false)
   giftQrImageUrl      String?
   giftQrKhImageUrl    String?
@@ -113,6 +117,7 @@ model Guest {
   name           String
   phone          String?
   email          String?
+  side           String   @default("groom")
   invitedCount   Int      @default(1)
   notes          String?  @db.Text
   customSlug     String?

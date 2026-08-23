@@ -68,6 +68,7 @@ export default function EventForm({ initialData }: { initialData?: any }) {
     
     // QR Code & Gift Settings
     showMapQrCode: initialData?.showMapQrCode !== undefined ? initialData.showMapQrCode : true,
+    showGuestNameInSharePreview: initialData?.showGuestNameInSharePreview !== undefined ? initialData.showGuestNameInSharePreview : true,
     showGiftQrCode: initialData?.showGiftQrCode !== undefined ? initialData.showGiftQrCode : false,
     giftQrImageUrl: initialData?.giftQrImageUrl || '',
     giftQrKhImageUrl: initialData?.giftQrKhImageUrl || '',
@@ -447,6 +448,19 @@ export default function EventForm({ initialData }: { initialData?: any }) {
             />
             <label htmlFor="showMapQrCode" className="text-sm font-medium">
               {t('showMapQrCode')}
+            </label>
+          </div>
+          <div className="space-y-2 md:col-span-2 flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="showGuestNameInSharePreview"
+              name="showGuestNameInSharePreview"
+              checked={formData.showGuestNameInSharePreview}
+              onChange={handleChange}
+              className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <label htmlFor="showGuestNameInSharePreview" className="text-sm font-medium">
+              {t('showGuestNameInSharePreview')}
             </label>
           </div>
         </CardContent>

@@ -53,20 +53,6 @@ export default function EditEventPage({ params }: { params: Promise<{ eventId: s
             <a href={inviteUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline text-sm truncate max-w-[200px]">
               {inviteUrl}
             </a>
-            <div className="flex gap-2 mt-2">
-              <Link 
-                href={`/dashboard/${eventId}/guests`}
-                className="flex-1 text-center text-sm font-medium bg-primary text-primary-foreground py-2 rounded-md hover:bg-primary/90 transition-colors"
-              >
-                Manage Guests
-              </Link>
-              <Link 
-                href={`/dashboard/${eventId}/program`}
-                className="flex-1 text-center text-sm font-medium bg-secondary text-secondary-foreground py-2 rounded-md hover:bg-secondary/90 transition-colors"
-              >
-                Manage Program
-              </Link>
-            </div>
           </div>
           <div className="bg-white p-2 rounded-md shrink-0">
              <QRCodeSVG value={inviteUrl} size={80} />

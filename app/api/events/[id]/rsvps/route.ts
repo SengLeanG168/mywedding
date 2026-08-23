@@ -10,6 +10,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const { id } = await params;
     const rsvps = await prisma.rSVP.findMany({
       where: { eventId: id },
+      include: { guest: true },
       orderBy: { createdAt: 'desc' }
     });
     

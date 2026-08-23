@@ -7,7 +7,9 @@ const guestSchema = z.object({
   name: z.string().min(1, "Name is required"),
   phone: z.string().optional().nullable(),
   email: z.string().optional().nullable(),
+  side: z.string().optional().nullable(),
   invitedCount: z.number().min(1).default(1),
+  notes: z.string().optional().nullable(),
 });
 
 export async function PUT(
@@ -28,7 +30,9 @@ export async function PUT(
         name: data.name,
         phone: data.phone,
         email: data.email,
+        side: data.side || 'groom',
         invitedCount: data.invitedCount,
+        notes: data.notes,
       }
     });
 
@@ -51,12 +55,19 @@ export async function DELETE(
 
     const { id } = await params;
     
+    // Disconnect RSVPs first for relation safety
+    await prisma.rSVP.updateMany({
+      where: { guestId: id },
+      data: { guestId: null }
+    });
+
     await prisma.guest.delete({
       where: { id }
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error('Delete guest error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

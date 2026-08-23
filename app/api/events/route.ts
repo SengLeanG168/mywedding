@@ -11,7 +11,22 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
       include: {
         _count: {
-          select: { rsvps: true }
+          select: { rsvps: true, guests: true, programDays: true }
+        },
+        rsvps: {
+          select: {
+            id: true,
+            status: true,
+            attendingCount: true,
+          }
+        },
+        programDays: {
+          select: {
+            id: true,
+            _count: {
+              select: { items: true }
+            }
+          }
         }
       }
     });

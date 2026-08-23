@@ -1,41 +1,28 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { cookies } from 'next/headers';
-import * as jose from 'jose';
-
-async function verifyAuth() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('auth_token')?.value;
-  if (!token) return false;
-  try {
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret');
-    await jose.jwtVerify(token, secret);
-    return true;
-  } catch {
-    return false;
-  }
-}
+import { getSession } from '@/lib/auth';
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string, guestId: string }> }
+  { params }: { params: Promise<{ id: string; guestId: string }> }
 ) {
-  if (!await verifyAuth()) {
+  const session = await getSession();
+  if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { id, guestId } = await params;
+  const { id: eventId, guestId } = await params;
   try {
-    const guest = await prisma.guest.findUnique({
-      where: { id: guestId, eventId: id },
+    const guest = await prisma.guest.findFirst({
+      where: { id: guestId, eventId },
       include: {
         rsvps: {
           orderBy: { createdAt: 'desc' },
-          take: 1
-        }
-      }
+          take: 1,
+        },
+      },
     });
-    
+
     if (!guest) {
       return NextResponse.json({ error: 'Guest not found' }, { status: 404 });
     }
@@ -48,30 +35,40 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ id: string, guestId: string }> }
+  { params }: { params: Promise<{ id: string; guestId: string }> }
 ) {
-  if (!await verifyAuth()) {
+  const session = await getSession();
+  if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { id, guestId } = await params;
-  
+  const { id: eventId, guestId } = await params;
+
   try {
     const body = await request.json();
-    const { name, phone, invitedCount, notes } = body;
-    
+    const { name, phone, side, invitedCount, notes } = body;
+
     if (!name) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
+    // Verify guest exists for this event
+    const existing = await prisma.guest.findFirst({
+      where: { id: guestId, eventId },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: 'Guest not found' }, { status: 404 });
+    }
+
     const guest = await prisma.guest.update({
-      where: { id: guestId, eventId: id },
+      where: { id: guestId },
       data: {
         name,
         phone,
+        side: side || 'groom',
         invitedCount: Number(invitedCount) || 1,
-        notes
-      }
+        notes,
+      },
     });
 
     return NextResponse.json(guest);
@@ -83,21 +80,39 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string, guestId: string }> }
+  { params }: { params: Promise<{ id: string; guestId: string }> }
 ) {
-  if (!await verifyAuth()) {
+  const session = await getSession();
+  if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { id, guestId } = await params;
-  
+  const { id: eventId, guestId } = await params;
+
   try {
-    await prisma.guest.delete({
-      where: { id: guestId, eventId: id }
+    // Verify guest exists for this event
+    const guest = await prisma.guest.findFirst({
+      where: { id: guestId, eventId },
     });
 
-    return NextResponse.json({ success: true });
+    if (!guest) {
+      return NextResponse.json({ error: 'Guest not found' }, { status: 404 });
+    }
+
+    // Relation safety: Unlink RSVPs first so foreign key constraints do not crash delete
+    await prisma.rSVP.updateMany({
+      where: { guestId },
+      data: { guestId: null },
+    });
+
+    // Delete guest using primary key id
+    await prisma.guest.delete({
+      where: { id: guestId },
+    });
+
+    return NextResponse.json({ success: true, message: 'Guest deleted successfully' });
   } catch (error) {
+    console.error('Delete guest error:', error);
     return NextResponse.json({ error: 'Failed to delete guest' }, { status: 500 });
   }
 }

@@ -7,6 +7,7 @@ export interface UploadConfig {
   allowedExtensions: string[];
   allowedMimeTypes: string[];
   uploadDir: string;
+  prefix?: string;
 }
 
 export const IMAGE_CONFIG: UploadConfig = {
@@ -14,6 +15,14 @@ export const IMAGE_CONFIG: UploadConfig = {
   allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp'],
   allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
   uploadDir: path.join(process.cwd(), 'public', 'uploads', 'images'),
+};
+
+export const AVATAR_CONFIG: UploadConfig = {
+  maxSize: 5 * 1024 * 1024, // 5MB
+  allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp'],
+  allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+  uploadDir: path.join(process.cwd(), 'public', 'uploads', 'images'),
+  prefix: 'admin-avatar',
 };
 
 export const AUDIO_CONFIG: UploadConfig = {
@@ -66,7 +75,8 @@ export async function saveFile(
       .replace(/[^a-zA-Z0-9.]/g, '_')
       .replace(/_{2,}/g, '_');
     const nameWithoutExt = path.parse(sanitizedOriginalName).name;
-    const finalFilename = `${nameWithoutExt}_${uniqueId}${ext}`;
+    const filePrefix = config.prefix || nameWithoutExt;
+    const finalFilename = `${filePrefix}-${uniqueId}${ext}`;
     const destinationPath = path.join(config.uploadDir, finalFilename);
 
     // Write file
