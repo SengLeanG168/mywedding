@@ -51,24 +51,33 @@ export default function RSVPForm({ eventId, guest }: { eventId: string, guest?: 
 
   if (success) {
     return (
-      <div className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 p-6 rounded-xl text-center shadow">
-        <h3 className="text-xl font-bold mb-2">🎉 {t('success')}</h3>
+      <div className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 p-6 rounded-2xl text-center shadow border border-green-200 dark:border-green-800 space-y-2">
+        <h3 className="text-xl font-bold font-serif">🎉 {t('success')}</h3>
+        <p className="text-xs sm:text-sm text-green-600 dark:text-green-300">
+          {t('thankYouForResponse')}
+        </p>
       </div>
     );
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 bg-card/80 p-4 sm:p-6 rounded-2xl sm:rounded-xl shadow-lg border border-primary/20 backdrop-blur-sm w-full max-w-md mx-auto">
-      {error && <div className="text-destructive font-medium text-center">{error}</div>}
-      <div className="space-y-2">
-        <Input required placeholder="Your Name" className="text-base" value={formData.guestName} onChange={(e) => setFormData({...formData, guestName: e.target.value})} />
+      {error && <div className="text-destructive font-medium text-center text-sm">{error}</div>}
+      
+      <div className="space-y-1">
+        <label className="text-xs font-semibold text-muted-foreground">{t('guestName')}</label>
+        <Input required placeholder={t('guestName')} className="text-base sm:text-sm" value={formData.guestName} onChange={(e) => setFormData({...formData, guestName: e.target.value})} />
       </div>
-      <div className="space-y-2">
-        <Input required placeholder="Phone Number" className="text-base" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
+
+      <div className="space-y-1">
+        <label className="text-xs font-semibold text-muted-foreground">{t('phone')}</label>
+        <Input required placeholder={t('phone')} className="text-base sm:text-sm" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
       </div>
-      <div className="space-y-2">
+
+      <div className="space-y-1">
+        <label className="text-xs font-semibold text-muted-foreground">{t('attendanceStatus')}</label>
         <select 
-          className="flex h-12 sm:h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base sm:text-sm ring-offset-background"
+          className="flex h-12 sm:h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base sm:text-sm ring-offset-background font-serif"
           value={formData.status} 
           onChange={(e) => setFormData({...formData, status: e.target.value})}
         >
@@ -77,20 +86,25 @@ export default function RSVPForm({ eventId, guest }: { eventId: string, guest?: 
           <option value="UNSURE">{t('unsure')}</option>
         </select>
       </div>
+
       {formData.status === 'ATTENDING' && (
-        <div className="space-y-2">
-          <Input type="number" min="1" max="10" required placeholder="Number of Guests" className="text-base" value={formData.attendingCount} onChange={(e) => setFormData({...formData, attendingCount: Number(e.target.value)})} />
+        <div className="space-y-1">
+          <label className="text-xs font-semibold text-muted-foreground">{t('attendingCount')}</label>
+          <Input type="number" min="1" max="10" required placeholder={t('attendingCount')} className="text-base sm:text-sm" value={formData.attendingCount} onChange={(e) => setFormData({...formData, attendingCount: Number(e.target.value)})} />
         </div>
       )}
-      <div className="space-y-2">
+
+      <div className="space-y-1">
+        <label className="text-xs font-semibold text-muted-foreground">{t('blessingMessage')}</label>
         <textarea 
-          placeholder="Message / Blessings (Optional)" 
+          placeholder={t('blessingMessage')} 
           className="flex min-h-[100px] sm:min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base sm:text-sm ring-offset-background"
           value={formData.message} 
           onChange={(e) => setFormData({...formData, message: e.target.value})}
         />
       </div>
-      <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold" disabled={loading}>
+
+      <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 text-base sm:text-sm font-serif cursor-pointer" disabled={loading}>
         {loading ? '...' : t('submit')}
       </Button>
     </form>

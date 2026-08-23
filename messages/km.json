@@ -3,14 +3,31 @@
     "title": "សូមស្វាគមន៍មកកាន់ E-Invitation"
   },
   "RSVP": {
+    "title": "បញ្ជាក់ការចូលរួម",
+    "guestName": "ឈ្មោះរបស់អ្នក",
+    "phone": "លេខទូរស័ព្ទ",
+    "attendanceStatus": "ស្ថានភាពចូលរួម",
     "attending": "ចូលរួម",
     "notAttending": "មិនចូលរួម",
     "unsure": "មិនទាន់ច្បាស់",
-    "submit": "ផ្ញើ RSVP",
-    "success": "RSVP ត្រូវបានផ្ញើដោយជោគជ័យ!",
-    "error": "មានបញ្ហាក្នុងការផ្ញើ RSVP ។"
+    "attendingCount": "ចំនួនអ្នកចូលរួម",
+    "blessingMessage": "សារជូនពរ (អាចរំលងបាន)",
+    "submit": "ផ្ញើការបញ្ជាក់",
+    "success": "បានផ្ញើការបញ្ជាក់ដោយជោគជ័យ",
+    "error": "មានបញ្ហាក្នុងការផ្ញើការបញ្ជាក់",
+    "pleaseEnterName": "សូមបញ្ចូលឈ្មោះរបស់អ្នក",
+    "pleaseEnterPhone": "សូមបញ្ចូលលេខទូរស័ព្ទឱ្យបានត្រឹមត្រូវ",
+    "pleaseSelectStatus": "សូមជ្រើសរើសស្ថានភាពចូលរួម",
+    "thankYouForResponse": "សូមអរគុណចំពោះការឆ្លើយតបរបស់អ្នក"
   },
   "Event": {
+    "saveDate": "សូមកត់ចំណាំថ្ងៃចូលរួម",
+    "addToCalendar": "បន្ថែមទៅប្រតិទិន",
+    "googleCalendar": "Google Calendar",
+    "appleCalendar": "ប្រតិទិន iPhone / Apple",
+    "outlookCalendar": "Outlook / ប្រតិទិនផ្សេងៗ",
+    "downloadCalendarFile": "ទាញយកឯកសារ Calendar",
+    "eventReminder": "ការរំលឹកមុនកម្មវិធី",
     "openMap": "បើក Google Maps",
     "copyLink": "ចម្លងតំណអញ្ជើញ",
     "downloadQR": "ទាញយក QR Code",
@@ -113,7 +130,14 @@
     "removeKhrQrCode": "លុប QR Code លុយខ្មែរ",
     "removeUsdQrCode": "លុប QR Code លុយដុល្លារ",
     "khrAccount": "គណនីលុយខ្មែរ",
-    "usdAccount": "គណនីលុយដុល្លារ"
+    "usdAccount": "គណនីលុយដុល្លារ",
+    "thankYouLetter": "លិខិតថ្លែងអំណរគុណ",
+    "apologyLetter": "លិខិតសូមអភ័យទោស",
+    "showThankYouLetter": "បង្ហាញលិខិតថ្លែងអំណរគុណ",
+    "showApologyLetter": "បង្ហាញលិខិតសូមអភ័យទោស",
+    "letterTitle": "ចំណងជើងលិខិត",
+    "letterText": "អត្ថបទលិខិត",
+    "thankYouAndApologyLetters": "លិខិតថ្លែងអំណរគុណ និងសូមអភ័យទោស"
   },
   "Dashboard": {
     "createEvent": "បង្កើតកម្មវិធី",

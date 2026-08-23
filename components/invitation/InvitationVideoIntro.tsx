@@ -9,10 +9,11 @@ interface InvitationVideoIntroProps {
   type: string;
   url: string;
   poster?: string | null;
+  locale?: string;
   onContinue: () => void;
 }
 
-export default function InvitationVideoIntro({ type, url, poster, onContinue }: InvitationVideoIntroProps) {
+export default function InvitationVideoIntro({ type, url, poster, locale, onContinue }: InvitationVideoIntroProps) {
   const t = useTranslations('Event');
   const [error, setError] = useState(false);
   const [showContinue, setShowContinue] = useState(false);
@@ -29,23 +30,19 @@ export default function InvitationVideoIntro({ type, url, poster, onContinue }: 
       return;
     }
     
-    // For YouTube or cases where we can't accurately track playback time,
-    // we use a simple timeout as a fallback. For MP4, onTimeUpdate handles it.
-    let timeout: NodeJS.Timeout;
-    if (type === 'youtube') {
-      timeout = setTimeout(() => {
-        setShowContinue(true);
-      }, 20000);
-    }
-    
+    // Timer fallback: after 20 seconds of video intro, show continue button
+    const timeout = setTimeout(() => {
+      setShowContinue(true);
+    }, 20000);
+
     return () => {
-      if (timeout) clearTimeout(timeout);
+      clearTimeout(timeout);
     };
-  }, [type, error]);
+  }, [error]);
 
   const handleTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     const video = e.currentTarget;
-    if (video.currentTime >= 10) {
+    if (video.currentTime >= 20) {
       setShowContinue(true);
     }
   };
@@ -58,14 +55,18 @@ export default function InvitationVideoIntro({ type, url, poster, onContinue }: 
     return null;
   }
 
-  const getYouTubeId = (url: string) => {
+  const getYouTubeId = (urlStr: string) => {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
+    const match = urlStr.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
   };
 
+  const continueText = locale === 'km' 
+    ? 'ចុចមើលធៀបបន្ទាប់' 
+    : (locale ? 'Continue to Invitation' : t('continueToInvitation'));
+
   return (
-    <div className="relative w-full min-h-[100vh] overflow-hidden bg-black flex flex-col items-center justify-center">
+    <div className="fixed inset-0 z-50 w-full h-full min-h-[100vh] overflow-hidden bg-black flex flex-col items-center justify-center">
       {type === 'youtube' ? (
         <>
           {error ? (
@@ -112,8 +113,8 @@ export default function InvitationVideoIntro({ type, url, poster, onContinue }: 
         </>
       )}
 
-      {/* Dark overlay at bottom for the button readability */}
-      <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
+      {/* Dark gradient overlay at bottom for button readability */}
+      <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/80 to-transparent pointer-events-none z-10" />
 
       {/* Continue Button */}
       <div 
@@ -123,10 +124,10 @@ export default function InvitationVideoIntro({ type, url, poster, onContinue }: 
       >
         <Button 
           onClick={handleContinue}
-          className="bg-white/10 hover:bg-white/20 text-white border border-white/30 backdrop-blur-md rounded-full px-8 py-6 flex items-center gap-2 group shadow-xl"
+          className="bg-white/10 hover:bg-white/20 text-white border border-white/30 backdrop-blur-md rounded-full px-8 py-6 flex items-center gap-2 group shadow-xl cursor-pointer"
         >
           <span className="text-base font-medium font-serif tracking-wide">
-            {t('continueToInvitation')}
+            {continueText}
           </span>
           <ChevronDown className="w-5 h-5 group-hover:translate-y-1 transition-transform" />
         </Button>
@@ -134,3 +135,4 @@ export default function InvitationVideoIntro({ type, url, poster, onContinue }: 
     </div>
   );
 }
+

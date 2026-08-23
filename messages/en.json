@@ -3,14 +3,31 @@
     "title": "Welcome to E-Invitation"
   },
   "RSVP": {
+    "title": "RSVP",
+    "guestName": "Your Name",
+    "phone": "Phone Number",
+    "attendanceStatus": "Attendance Status",
     "attending": "Attending",
     "notAttending": "Not Attending",
     "unsure": "Unsure",
+    "attendingCount": "Number of Guests",
+    "blessingMessage": "Blessing Message (Optional)",
     "submit": "Submit RSVP",
-    "success": "RSVP submitted successfully!",
-    "error": "Failed to submit RSVP."
+    "success": "RSVP submitted successfully",
+    "error": "Failed to submit RSVP",
+    "pleaseEnterName": "Please enter your name",
+    "pleaseEnterPhone": "Please enter a valid phone number",
+    "pleaseSelectStatus": "Please select attendance status",
+    "thankYouForResponse": "Thank you for your response"
   },
   "Event": {
+    "saveDate": "Please save the date",
+    "addToCalendar": "Add to Calendar",
+    "googleCalendar": "Google Calendar",
+    "appleCalendar": "iPhone / Apple Calendar",
+    "outlookCalendar": "Outlook / Other Calendar",
+    "downloadCalendarFile": "Download Calendar File",
+    "eventReminder": "Event Reminder",
     "openMap": "Open Google Maps",
     "copyLink": "Copy Invitation Link",
     "downloadQR": "Download QR Code",
@@ -41,7 +58,6 @@
     "showCurtainIntro": "Show Curtain Intro",
     "curtainIntro": "Curtain Intro",
     "openingCurtain": "Opening curtain...",
-    "openingImage": "Opening Cover Image (Optional)",
     "openingTitle": "Opening Title",
     "openingMessage": "Opening Message",
     "uploadImage": "Upload Image",
@@ -112,7 +128,14 @@
     "removeKhrQrCode": "Remove KHR QR Code",
     "removeUsdQrCode": "Remove USD QR Code",
     "khrAccount": "KHR Account",
-    "usdAccount": "USD Account"
+    "usdAccount": "USD Account",
+    "thankYouLetter": "Thank You Letter",
+    "apologyLetter": "Apology Letter",
+    "showThankYouLetter": "Show Thank You Letter",
+    "showApologyLetter": "Show Apology Letter",
+    "letterTitle": "Letter Title",
+    "letterText": "Letter Text",
+    "thankYouAndApologyLetters": "Thank You and Apology Letters"
   },
   "Dashboard": {
     "createEvent": "Create Event",

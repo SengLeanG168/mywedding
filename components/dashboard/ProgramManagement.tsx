@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Edit2, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Edit2, Trash2, ArrowUp, ArrowDown, X, Save } from 'lucide-react';
 
 export default function ProgramManagement({ eventId, locale }: { eventId: string, locale: string }) {
   const t = useTranslations('Program');
@@ -22,15 +22,30 @@ export default function ProgramManagement({ eventId, locale }: { eventId: string
   const [dayForm, setDayForm] = useState({ titleKm: '', titleEn: '', date: '', order: 0 });
   const [itemForm, setItemForm] = useState({ time: '', titleKm: '', titleEn: '', descriptionKm: '', descriptionEn: '', order: 0 });
 
+  const itemFormRef = useRef<HTMLDivElement>(null);
+  const dayFormRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     fetchProgram();
   }, []);
+
+  useEffect(() => {
+    if (isItemFormOpen && itemFormRef.current) {
+      itemFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [isItemFormOpen, selectedDayId, editingItem]);
+
+  useEffect(() => {
+    if (isDayFormOpen && dayFormRef.current) {
+      dayFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [isDayFormOpen, editingDay]);
 
   const fetchProgram = async () => {
     try {
       const res = await fetch(`/api/events/${eventId}/program`);
       const data = await res.json();
-      setDays(data);
+      setDays(Array.isArray(data) ? data : []);
     } catch (e) {
       alert('Failed to load program');
     } finally {
@@ -67,6 +82,10 @@ export default function ProgramManagement({ eventId, locale }: { eventId: string
     try {
       const res = await fetch(`/api/events/${eventId}/program/days/${id}`, { method: 'DELETE' });
       if (res.ok) {
+        if (selectedDayId === id) {
+          setIsItemFormOpen(false);
+          setSelectedDayId(null);
+        }
         fetchProgram();
       }
     } catch (e) {
@@ -166,62 +185,26 @@ export default function ProgramManagement({ eventId, locale }: { eventId: string
       </div>
 
       {isDayFormOpen && (
-        <Card className="border-primary">
+        <Card ref={dayFormRef} className="border-primary shadow-md">
           <CardHeader><CardTitle>{editingDay ? t('editProgramDay') : t('addProgramDay')}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label>{t('dayTitleKm')}</label>
+                <label className="text-sm font-medium">{t('dayTitleKm')}</label>
                 <Input value={dayForm.titleKm} onChange={e => setDayForm({...dayForm, titleKm: e.target.value})} />
               </div>
               <div className="space-y-2">
-                <label>{t('dayTitleEn')}</label>
+                <label className="text-sm font-medium">{t('dayTitleEn')}</label>
                 <Input value={dayForm.titleEn} onChange={e => setDayForm({...dayForm, titleEn: e.target.value})} />
               </div>
               <div className="space-y-2">
-                <label>{t('date')}</label>
+                <label className="text-sm font-medium">{t('date')}</label>
                 <Input type="date" value={dayForm.date} onChange={e => setDayForm({...dayForm, date: e.target.value})} />
               </div>
             </div>
             <div className="flex gap-2">
               <Button onClick={saveDay}>{t('save')}</Button>
               <Button variant="outline" onClick={() => setIsDayFormOpen(false)}>{t('cancel')}</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {isItemFormOpen && (
-        <Card className="border-secondary">
-          <CardHeader><CardTitle>{editingItem ? t('editProgramItem') : t('addProgramItem')}</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label>{t('time')}</label>
-                <Input type="time" value={itemForm.time} onChange={e => setItemForm({...itemForm, time: e.target.value})} />
-              </div>
-              <div className="col-span-2 grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label>{t('itemTitleKm')}</label>
-                  <Input value={itemForm.titleKm} onChange={e => setItemForm({...itemForm, titleKm: e.target.value})} />
-                </div>
-                <div className="space-y-2">
-                  <label>{t('itemTitleEn')}</label>
-                  <Input value={itemForm.titleEn} onChange={e => setItemForm({...itemForm, titleEn: e.target.value})} />
-                </div>
-                <div className="space-y-2">
-                  <label>{t('itemDescKm')} (Optional)</label>
-                  <Input value={itemForm.descriptionKm} onChange={e => setItemForm({...itemForm, descriptionKm: e.target.value})} />
-                </div>
-                <div className="space-y-2">
-                  <label>{t('itemDescEn')} (Optional)</label>
-                  <Input value={itemForm.descriptionEn} onChange={e => setItemForm({...itemForm, descriptionEn: e.target.value})} />
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={saveItem}>{t('save')}</Button>
-              <Button variant="outline" onClick={() => setIsItemFormOpen(false)}>{t('cancel')}</Button>
             </div>
           </CardContent>
         </Card>
@@ -234,10 +217,15 @@ export default function ProgramManagement({ eventId, locale }: { eventId: string
       ) : (
         <div className="space-y-6">
           {days.map((day, dIndex) => (
-            <Card key={day.id} className="overflow-hidden">
+            <Card key={day.id} className="overflow-hidden border shadow-sm">
               <div className="bg-muted p-4 flex justify-between items-center">
                 <div>
-                  <h3 className="font-bold text-lg">{locale === 'km' ? day.titleKm : day.titleEn}</h3>
+                  <h3 className="font-bold text-lg">
+                    {locale === 'km' ? day.titleKm : day.titleEn}
+                    <span className="text-xs ml-2 font-normal text-muted-foreground">
+                      ({day.items?.length || 0} {locale === 'km' ? 'កម្មវិធី' : 'items'})
+                    </span>
+                  </h3>
                   <p className="text-sm text-muted-foreground">{new Date(day.date).toLocaleDateString()}</p>
                 </div>
                 <div className="flex gap-2">
@@ -252,23 +240,25 @@ export default function ProgramManagement({ eventId, locale }: { eventId: string
                     });
                     setIsDayFormOpen(true);
                   }}><Edit2 className="w-4 h-4" /></Button>
-                  <Button variant="ghost" size="icon" className="text-red-500" onClick={() => deleteDay(day.id)}><Trash2 className="w-4 h-4" /></Button>
+                  <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700" onClick={() => deleteDay(day.id)}><Trash2 className="w-4 h-4" /></Button>
                 </div>
               </div>
               <CardContent className="p-0">
                 <div className="divide-y">
                   {day.items?.map((item: any, iIndex: number) => (
-                    <div key={item.id} className="p-4 flex justify-between items-center hover:bg-muted/50">
-                      <div>
-                        <span className="font-medium text-primary mr-4">{item.time}</span>
-                        <span className="font-medium">{locale === 'km' ? item.titleKm : item.titleEn}</span>
+                    <div key={item.id} className="p-4 flex justify-between items-center hover:bg-muted/50 transition-colors">
+                      <div className="flex-1 mr-4">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-primary px-2 py-0.5 bg-primary/10 rounded text-sm shrink-0">{item.time}</span>
+                          <span className="font-medium">{locale === 'km' ? item.titleKm : item.titleEn}</span>
+                        </div>
                         {(item.descriptionKm || item.descriptionEn) && (
-                          <p className="text-sm text-muted-foreground ml-16">
+                          <p className="text-sm text-muted-foreground mt-1">
                             {locale === 'km' ? item.descriptionKm : item.descriptionEn}
                           </p>
                         )}
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-1 shrink-0">
                         <Button variant="ghost" size="icon" onClick={() => moveItem(dIndex, iIndex, 'up')} disabled={iIndex === 0}><ArrowUp className="w-4 h-4" /></Button>
                         <Button variant="ghost" size="icon" onClick={() => moveItem(dIndex, iIndex, 'down')} disabled={iIndex === day.items.length - 1}><ArrowDown className="w-4 h-4" /></Button>
                         <Button variant="ghost" size="icon" onClick={() => {
@@ -280,11 +270,55 @@ export default function ProgramManagement({ eventId, locale }: { eventId: string
                           });
                           setIsItemFormOpen(true);
                         }}><Edit2 className="w-4 h-4" /></Button>
-                        <Button variant="ghost" size="icon" className="text-red-500" onClick={() => deleteItem(day.id, item.id)}><Trash2 className="w-4 h-4" /></Button>
+                        <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700" onClick={() => deleteItem(day.id, item.id)}><Trash2 className="w-4 h-4" /></Button>
                       </div>
                     </div>
                   ))}
                 </div>
+
+                {/* Inline Item Form per Day Card */}
+                {isItemFormOpen && selectedDayId === day.id && (
+                  <div ref={itemFormRef} className="p-4 bg-muted/40 border-t border-b border-primary/30 space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h4 className="font-bold text-sm text-primary">
+                        {editingItem ? t('editProgramItem') : t('addProgramItem')}
+                      </h4>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsItemFormOpen(false)}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1 md:col-span-2">
+                        <label className="text-xs font-semibold">{t('time')}</label>
+                        <Input type="time" value={itemForm.time} onChange={e => setItemForm({...itemForm, time: e.target.value})} />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold">{t('itemTitleKm')}</label>
+                        <Input value={itemForm.titleKm} onChange={e => setItemForm({...itemForm, titleKm: e.target.value})} placeholder="ឧ. ពិធីសិរីសួស្តី" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold">{t('itemTitleEn')}</label>
+                        <Input value={itemForm.titleEn} onChange={e => setItemForm({...itemForm, titleEn: e.target.value})} placeholder="e.g. Blessing Ceremony" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold">{t('itemDescKm')} (Optional)</label>
+                        <Input value={itemForm.descriptionKm} onChange={e => setItemForm({...itemForm, descriptionKm: e.target.value})} />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold">{t('itemDescEn')} (Optional)</label>
+                        <Input value={itemForm.descriptionEn} onChange={e => setItemForm({...itemForm, descriptionEn: e.target.value})} />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 justify-end pt-2">
+                      <Button variant="outline" size="sm" onClick={() => setIsItemFormOpen(false)}>{t('cancel')}</Button>
+                      <Button size="sm" onClick={saveItem}>
+                        <Save className="w-4 h-4 mr-1" />
+                        {t('save')}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="p-4 bg-muted/20 border-t flex justify-center">
                   <Button variant="outline" size="sm" onClick={() => {
                     setSelectedDayId(day.id);
@@ -304,3 +338,4 @@ export default function ProgramManagement({ eventId, locale }: { eventId: string
     </div>
   );
 }
+

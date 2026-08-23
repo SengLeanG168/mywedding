@@ -85,6 +85,19 @@ export default function EventForm({ initialData }: { initialData?: any }) {
     giftUsdBankName: initialData?.giftUsdBankName || '',
     giftUsdAccountName: initialData?.giftUsdAccountName || '',
     giftUsdAccountNumber: initialData?.giftUsdAccountNumber || '',
+
+    // Thank You & Apology Letters
+    showThankYouLetter: initialData?.showThankYouLetter !== undefined ? initialData.showThankYouLetter : true,
+    thankYouTitleKm: initialData?.thankYouTitleKm || '',
+    thankYouTitleEn: initialData?.thankYouTitleEn || '',
+    thankYouTextKm: initialData?.thankYouTextKm || '',
+    thankYouTextEn: initialData?.thankYouTextEn || '',
+
+    showApologyLetter: initialData?.showApologyLetter !== undefined ? initialData.showApologyLetter : true,
+    apologyTitleKm: initialData?.apologyTitleKm || '',
+    apologyTitleEn: initialData?.apologyTitleEn || '',
+    apologyTextKm: initialData?.apologyTextKm || '',
+    apologyTextEn: initialData?.apologyTextEn || '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -293,6 +306,113 @@ export default function EventForm({ initialData }: { initialData?: any }) {
         </CardContent>
       </Card>
 
+      {/* Thank You and Apology Letters Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">{t('thankYouAndApologyLetters')}</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0 space-y-6">
+          {/* Thank You Letter */}
+          <div className="space-y-4 p-4 border rounded-xl bg-card">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="showThankYouLetter"
+                name="showThankYouLetter"
+                checked={formData.showThankYouLetter}
+                onChange={handleChange}
+                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <label htmlFor="showThankYouLetter" className="text-sm font-bold">
+                {t('showThankYouLetter')}
+              </label>
+            </div>
+
+            {formData.showThankYouLetter && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('letterTitle')} (Khmer)</label>
+                  <Input name="thankYouTitleKm" value={formData.thankYouTitleKm} onChange={handleChange} placeholder="លិខិតថ្លែងអំណរគុណ" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('letterTitle')} (English)</label>
+                  <Input name="thankYouTitleEn" value={formData.thankYouTitleEn} onChange={handleChange} placeholder="Thank You Letter" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('letterText')} (Khmer)</label>
+                  <textarea
+                    name="thankYouTextKm"
+                    value={formData.thankYouTextKm}
+                    onChange={handleChange}
+                    placeholder="យើងខ្ញុំសូមថ្លែងអំណរគុណយ៉ាងជ្រាលជ្រៅ..."
+                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('letterText')} (English)</label>
+                  <textarea
+                    name="thankYouTextEn"
+                    value={formData.thankYouTextEn}
+                    onChange={handleChange}
+                    placeholder="We sincerely thank all honored guests..."
+                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Apology Letter */}
+          <div className="space-y-4 p-4 border rounded-xl bg-card">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="showApologyLetter"
+                name="showApologyLetter"
+                checked={formData.showApologyLetter}
+                onChange={handleChange}
+                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <label htmlFor="showApologyLetter" className="text-sm font-bold">
+                {t('showApologyLetter')}
+              </label>
+            </div>
+
+            {formData.showApologyLetter && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('letterTitle')} (Khmer)</label>
+                  <Input name="apologyTitleKm" value={formData.apologyTitleKm} onChange={handleChange} placeholder="លិខិតសូមអភ័យទោស" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('letterTitle')} (English)</label>
+                  <Input name="apologyTitleEn" value={formData.apologyTitleEn} onChange={handleChange} placeholder="Apology Letter" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('letterText')} (Khmer)</label>
+                  <textarea
+                    name="apologyTextKm"
+                    value={formData.apologyTextKm}
+                    onChange={handleChange}
+                    placeholder="ក្នុងឱកាសពិធីមង្គលអាពាហ៍ពិពាហ៍នេះ..."
+                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('letterText')} (English)</label>
+                  <textarea
+                    name="apologyTextEn"
+                    value={formData.apologyTextEn}
+                    onChange={handleChange}
+                    placeholder="If there are any shortcomings..."
+                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
