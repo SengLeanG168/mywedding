@@ -135,7 +135,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             <div className="h-4 w-px bg-border hidden sm:block" />
 
-            <LanguageSwitcher />
             <ThemeToggle />
 
             <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout" className="text-muted-foreground hover:text-destructive">

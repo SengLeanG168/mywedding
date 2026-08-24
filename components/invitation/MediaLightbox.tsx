@@ -27,7 +27,6 @@ export default function MediaLightbox({ items, initialIndex, isOpen, onClose, lo
   const tClose = isKm ? "បិទ" : "Close";
   const tPrev = isKm ? "រូបមុន" : "Previous";
   const tNext = isKm ? "រូបបន្ទាប់" : "Next";
-  const tSwipe = isKm ? "អូសឆ្វេងស្ដាំដើម្បីមើលបន្ត" : "Swipe left or right to view more";
 
   useEffect(() => {
     if (isOpen) {
@@ -78,39 +77,57 @@ export default function MediaLightbox({ items, initialIndex, isOpen, onClose, lo
   const currentItem = items[currentIndex];
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in"
-         onTouchStart={handleTouchStart}
-         onTouchEnd={handleTouchEnd}
+    <div 
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in select-none"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Header */}
-      <div className="absolute top-0 w-full flex items-center justify-between p-4 z-10">
+      <div className="absolute top-0 w-full flex items-center justify-between p-4 z-30">
         <div className="text-white/80 text-sm font-medium">
           {items.length > 1 && `${currentIndex + 1} / ${items.length}`}
         </div>
         <button 
           onClick={onClose}
-          className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+          className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors cursor-pointer"
           aria-label={tClose}
         >
           <X className="w-6 h-6" />
         </button>
       </div>
 
-      {/* Main Content */}
+      {/* Main Content Area */}
       <div className="relative w-full flex-1 flex items-center justify-center p-4">
+        {/* Invisible 50% Tap Zones for Previous (Left) and Next (Right) */}
+        {items.length > 1 && (
+          <>
+            <div 
+              onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+              className="absolute top-0 left-0 w-1/2 h-full z-10 cursor-pointer"
+              aria-label={tPrev}
+            />
+            <div 
+              onClick={(e) => { e.stopPropagation(); handleNext(); }}
+              className="absolute top-0 right-0 w-1/2 h-full z-10 cursor-pointer"
+              aria-label={tNext}
+            />
+          </>
+        )}
+
+        {/* Desktop Visible Nav Arrows */}
         {items.length > 1 && (
           <button 
             onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-            className="absolute left-2 sm:left-4 p-2 sm:p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors z-10 hidden sm:flex"
+            className="absolute left-2 sm:left-4 p-2 sm:p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors z-20 hidden sm:flex pointer-events-auto"
             aria-label={tPrev}
           >
             <ChevronLeft className="w-6 h-6 sm:w-8 sm:h-8" />
           </button>
         )}
 
-        <div className="w-full h-full max-h-[85vh] flex flex-col items-center justify-center">
+        <div className="w-full h-full max-h-[85vh] flex flex-col items-center justify-center relative z-0 pointer-events-none">
           {currentItem.type === 'map-qr' ? (
-            <div className="bg-white p-6 rounded-3xl shadow-2xl flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-white p-6 rounded-3xl shadow-2xl flex items-center justify-center pointer-events-auto" onClick={(e) => e.stopPropagation()}>
               <QRCodeSVG 
                 value={currentItem.src} 
                 size={280}
@@ -124,7 +141,6 @@ export default function MediaLightbox({ items, initialIndex, isOpen, onClose, lo
               src={currentItem.src} 
               alt={currentItem.alt || "Preview"} 
               className="w-full h-full object-contain drop-shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
             />
           )}
           {currentItem.title && (
@@ -137,20 +153,13 @@ export default function MediaLightbox({ items, initialIndex, isOpen, onClose, lo
         {items.length > 1 && (
           <button 
             onClick={(e) => { e.stopPropagation(); handleNext(); }}
-            className="absolute right-2 sm:right-4 p-2 sm:p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors z-10 hidden sm:flex"
+            className="absolute right-2 sm:right-4 p-2 sm:p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors z-20 hidden sm:flex pointer-events-auto"
             aria-label={tNext}
           >
             <ChevronRight className="w-6 h-6 sm:w-8 sm:h-8" />
           </button>
         )}
       </div>
-
-      {/* Footer Instructions (Mobile) */}
-      {items.length > 1 && (
-        <div className="absolute bottom-6 w-full text-center text-white/50 text-xs sm:hidden pointer-events-none">
-          {tSwipe}
-        </div>
-      )}
     </div>
   );
 }

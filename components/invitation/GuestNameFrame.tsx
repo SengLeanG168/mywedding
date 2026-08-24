@@ -1,7 +1,6 @@
 "use client";
 
 import { useTranslations } from 'next-intl';
-import { KhmerHeart } from './KhmerOrnament';
 
 interface GuestNameFrameProps {
   guestName: string;
@@ -29,18 +28,16 @@ export default function GuestNameFrame({ guestName }: GuestNameFrameProps) {
       >
         {/* Guest label pill */}
         <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-3 flex items-center gap-2 border border-primary/40 rounded-full"
+          className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-3.5 py-0.5 flex items-center justify-center border border-primary/40 rounded-full"
           style={{
             background: 'rgba(0,0,0,0.5)',
             backdropFilter: 'blur(8px)',
             WebkitBackdropFilter: 'blur(8px)',
           }}
         >
-          <KhmerHeart className="w-3 h-3 text-primary" />
           <span className="text-[10px] sm:text-xs text-primary font-medium tracking-widest uppercase whitespace-nowrap">
             {t('guestName')}
           </span>
-          <KhmerHeart className="w-3 h-3 text-primary" />
         </div>
 
         {/* Guest name */}

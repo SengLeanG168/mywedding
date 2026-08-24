@@ -41,6 +41,10 @@ export default function OpeningScreen({
     event?.openingImageUrl || event?.coverImage || null;
 
   const handleOpen = () => {
+    // Synchronously trigger audio playback during direct user gesture on Android
+    if (typeof window !== 'undefined' && window.__playWeddingMusic) {
+      window.__playWeddingMusic();
+    }
     setIsExiting(true);
     setTimeout(onOpen, 1000);
   };
@@ -93,9 +97,6 @@ export default function OpeningScreen({
         {/* Scattered petals near bottom */}
         <PetalScatters className="bottom-20 left-1/2 -translate-x-1/2" />
       </div>
-
-      {/* ── UTILITY BUTTONS (music / video toggles) ─────────────── */}
-      <CardUtilityButtons hasMusic={hasMusic} hasVideo={hasVideo} />
 
       {/* ── MAIN CONTENT (directly on image) ────────────────────── */}
       <div className="relative z-10 w-full h-full flex flex-col items-center justify-between py-8 sm:py-12 px-4 sm:px-6 overflow-y-auto hide-scrollbar">

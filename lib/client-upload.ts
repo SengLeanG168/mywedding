@@ -8,7 +8,6 @@ export async function optimizeSocialPreviewImage(
   targetWidth = 1200,
   targetHeight = 630
 ): Promise<File> {
-  // If not an image, return original
   if (!file.type.startsWith('image/')) {
     return file;
   }
@@ -39,24 +38,20 @@ export async function optimizeSocialPreviewImage(
       let cropY = 0;
 
       if (sourceRatio > targetRatio) {
-        // Image is wider than 1.91:1 -> crop sides
         cropWidth = img.height * targetRatio;
         cropHeight = img.height;
         cropX = (img.width - cropWidth) / 2;
         cropY = 0;
       } else {
-        // Image is taller than 1.91:1 -> crop top/bottom
         cropWidth = img.width;
         cropHeight = img.width / targetRatio;
         cropX = 0;
         cropY = (img.height - cropHeight) / 2;
       }
 
-      // High-quality image smoothing
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
 
-      // Draw cropped and scaled image onto 1200x630 canvas
       ctx.drawImage(
         img,
         cropX,
@@ -96,6 +91,114 @@ export async function optimizeSocialPreviewImage(
   });
 }
 
+/**
+ * Optimizes heavy audio files (>3.5MB) to a lightweight 128kbps web stream (~1.5MB) for instant loading
+ */
+export async function optimizeAudioFile(file: File): Promise<File> {
+  if (!file.type.startsWith('audio/') && !file.name.match(/\.(mp3|wav|m4a|aac|ogg|flac)$/i)) {
+    return file;
+  }
+
+  // If already lightweight (under 3.5MB), use original file as is
+  if (file.size <= 3.5 * 1024 * 1024) {
+    return file;
+  }
+
+  return new Promise((resolve) => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) {
+        resolve(file);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const buffer = e.target?.result as ArrayBuffer;
+          if (!buffer) {
+            resolve(file);
+            return;
+          }
+
+          const ctx = new AudioCtx();
+          const audioBuffer = await ctx.decodeAudioData(buffer);
+
+          const maxDuration = 120; // 2 minutes max loop for web streaming
+          const duration = Math.min(audioBuffer.duration, maxDuration);
+          const sampleRate = 44100;
+          const numberOfChannels = 2;
+          const length = Math.floor(duration * sampleRate);
+
+          const offlineCtx = new OfflineAudioContext(numberOfChannels, length, sampleRate);
+          const source = offlineCtx.createBufferSource();
+          source.buffer = audioBuffer;
+          source.connect(offlineCtx.destination);
+          source.start(0);
+
+          const renderedBuffer = await offlineCtx.startRendering();
+
+          const streamDestination = ctx.createMediaStreamDestination();
+          const source2 = ctx.createBufferSource();
+          source2.buffer = renderedBuffer;
+          source2.connect(streamDestination);
+
+          const mimeType = MediaRecorder.isTypeSupported('audio/webm')
+            ? 'audio/webm'
+            : (MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '');
+
+          if (!mimeType) {
+            ctx.close();
+            resolve(file);
+            return;
+          }
+
+          const mediaRecorder = new MediaRecorder(streamDestination.stream, {
+            mimeType,
+            audioBitsPerSecond: 128000, // 128 kbps
+          });
+
+          const chunks: Blob[] = [];
+          mediaRecorder.ondataavailable = (ev) => {
+            if (ev.data.size > 0) chunks.push(ev.data);
+          };
+
+          mediaRecorder.onstop = () => {
+            ctx.close();
+            const blob = new Blob(chunks, { type: mimeType });
+            const ext = mimeType.includes('webm') ? '.webm' : '.m4a';
+            const optFileName = file.name.replace(/\.[^/.]+$/, '') + '-optimized' + ext;
+            const optFile = new File([blob], optFileName, {
+              type: mimeType,
+              lastModified: Date.now(),
+            });
+            resolve(optFile);
+          };
+
+          mediaRecorder.start();
+          source2.start(0);
+
+          setTimeout(() => {
+            try {
+              mediaRecorder.stop();
+              source2.stop();
+            } catch (e) {}
+          }, Math.ceil(duration * 1000) + 100);
+
+        } catch (err) {
+          console.warn('Audio optimization failed, using original file:', err);
+          resolve(file);
+        }
+      };
+
+      reader.onerror = () => resolve(file);
+      reader.readAsArrayBuffer(file);
+    } catch (err) {
+      resolve(file);
+    }
+  });
+}
+
 export async function uploadClientFile(
   file: File,
   type: 'image' | 'video' | 'audio',
@@ -108,6 +211,14 @@ export async function uploadClientFile(
       fileToUpload = await optimizeSocialPreviewImage(file, 1200, 630);
     } catch (err) {
       console.warn('Social preview optimization warning, using original file:', err);
+    }
+  }
+
+  if (type === 'audio') {
+    try {
+      fileToUpload = await optimizeAudioFile(file);
+    } catch (err) {
+      console.warn('Audio optimization warning, using original file:', err);
     }
   }
 

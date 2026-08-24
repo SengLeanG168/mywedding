@@ -47,19 +47,13 @@ export async function generateMetadata({
 
   if (!event) return {};
 
-  const isKm = locale !== 'en';
-  const brideName = (isKm ? event.brideNameKm : event.brideNameEn) || event.brideNameKm || event.brideNameEn || '';
-  const groomName = (isKm ? event.groomNameKm : event.groomNameEn) || event.groomNameKm || event.groomNameEn || '';
+  const brideName = event.brideNameKm || event.brideNameEn || '';
+  const groomName = event.groomNameKm || event.groomNameEn || '';
 
-  const title = isKm
-    ? `សិរីមង្គលអាពាហ៍ពិពាហ៍ ${groomName} និង ${brideName}`
-    : `Wedding Invitation of ${groomName} and ${brideName}`;
+  const title = `សិរីមង្គលអាពាហ៍ពិពាហ៍ ${groomName} និង ${brideName}`;
+  const description = 'សូមគោរពអញ្ជើញចូលរួមពិធីមង្គលអាពាហ៍ពិពាហ៍';
 
-  const description = isKm
-    ? 'សូមគោរពអញ្ជើញចូលរួមពិធីមង្គលអាពាហ៍ពិពាហ៍'
-    : 'You are warmly invited to our wedding ceremony';
-
-  const pageUrl = `${baseUrl}/${locale === 'en' ? 'en/' : ''}invite/${slug}`;
+  const pageUrl = `${baseUrl}/invite/${slug}`;
   
   // Image priority: 1. socialPreviewImageUrl, 2. openingImageUrl, 3. coverImage, 4. couplePhotoUrl, 5. default
   const rawImagePath =
@@ -79,7 +73,7 @@ export async function generateMetadata({
       description,
       url: pageUrl,
       siteName: `${groomName} & ${brideName} Wedding`,
-      locale: isKm ? 'km_KH' : 'en_US',
+      locale: 'km_KH',
       type: 'website',
       images: [
         {

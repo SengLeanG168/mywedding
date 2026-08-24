@@ -8,6 +8,36 @@ interface TraditionalInvitationSectionProps {
   locale: string;
 }
 
+function renderParentName(fullName?: string | null) {
+  if (!fullName) return null;
+  const trimmed = fullName.trim();
+
+  // Match Khmer & English honorific titles: "លោកស្រី", "លោកឧកញ៉ា", "លោកជំទាវ", "អ្នកស្រី", "អ្នកនាង", "លោក", "Mr.", "Mrs.", "Ms.", "Dr."
+  const prefixRegex = /^(លោកស្រី|លោកឧកញ៉ា|លោកជំទាវ|អ្នកស្រី|អ្នកនាង|លោក|Mr\.|Mrs\.|Ms\.|Dr\.)\s*/i;
+  const match = trimmed.match(prefixRegex);
+
+  if (match) {
+    const title = match[1];
+    const nameOnly = trimmed.substring(match[0].length);
+    return (
+      <div className="flex items-center justify-center gap-1.5 flex-wrap">
+        <span className="font-sans font-normal text-muted-foreground text-sm sm:text-base">
+          {title}
+        </span>
+        <span className="font-serif font-bold text-primary text-sm sm:text-base">
+          {nameOnly}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="font-serif font-bold text-primary text-sm sm:text-base">
+      {trimmed}
+    </div>
+  );
+}
+
 export default function TraditionalInvitationSection({ event, locale }: TraditionalInvitationSectionProps) {
   const t = useTranslations('Event');
   const isKm = locale === 'km';
@@ -75,25 +105,15 @@ export default function TraditionalInvitationSection({ event, locale }: Traditio
           </div>
 
           {/* Groom Parents */}
-          <div className="flex flex-col items-center text-center px-1">
-            <h3 className="text-xs sm:text-sm font-bold text-muted-foreground uppercase tracking-widest mb-3 sm:mb-4">
-              {isKm ? 'ខាងកូនប្រុស' : "Groom's Family"}
-            </h3>
-            <div className="space-y-1 sm:space-y-2 font-serif text-sm sm:text-base font-semibold">
-              {groomFather && <div>{groomFather}</div>}
-              {groomMother && <div>{groomMother}</div>}
-            </div>
+          <div className="flex flex-col items-center justify-center text-center px-1 space-y-2 sm:space-y-3">
+            {renderParentName(groomFather)}
+            {renderParentName(groomMother)}
           </div>
           
           {/* Bride Parents */}
-          <div className="flex flex-col items-center text-center px-1">
-            <h3 className="text-xs sm:text-sm font-bold text-muted-foreground uppercase tracking-widest mb-3 sm:mb-4">
-              {isKm ? 'ខាងកូនស្រី' : "Bride's Family"}
-            </h3>
-            <div className="space-y-1 sm:space-y-2 font-serif text-sm sm:text-base font-semibold">
-              {brideFather && <div>{brideFather}</div>}
-              {brideMother && <div>{brideMother}</div>}
-            </div>
+          <div className="flex flex-col items-center justify-center text-center px-1 space-y-2 sm:space-y-3">
+            {renderParentName(brideFather)}
+            {renderParentName(brideMother)}
           </div>
         </div>
 

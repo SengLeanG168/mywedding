@@ -47,9 +47,8 @@ export async function generateMetadata({
 
   if (!event) return {};
 
-  const isKm = locale !== 'en';
-  const brideName = (isKm ? event.brideNameKm : event.brideNameEn) || event.brideNameKm || event.brideNameEn || '';
-  const groomName = (isKm ? event.groomNameKm : event.groomNameEn) || event.groomNameKm || event.groomNameEn || '';
+  const brideName = event.brideNameKm || event.brideNameEn || '';
+  const groomName = event.groomNameKm || event.groomNameEn || '';
 
   let guestData = null;
   if (guestId) {
@@ -59,25 +58,17 @@ export async function generateMetadata({
   }
 
   const showGuestName = event.showGuestNameInSharePreview !== false;
-  const effectiveGuestName = guestData?.name || (isKm ? 'ភ្ញៀវកិត្តិយស' : 'Honored Guest');
+  const effectiveGuestName = guestData?.name || 'ភ្ញៀវកិត្តិយស';
 
   const title = showGuestName
-    ? isKm
-      ? `សូមគោរពអញ្ជើញ ${effectiveGuestName}`
-      : `Invitation for ${effectiveGuestName}`
-    : isKm
-    ? `សិរីមង្គលអាពាហ៍ពិពាហ៍ ${groomName} និង ${brideName}`
-    : `Wedding Invitation of ${groomName} and ${brideName}`;
+    ? `សូមគោរពអញ្ជើញ ${effectiveGuestName}`
+    : `សិរីមង្គលអាពាហ៍ពិពាហ៍ ${groomName} និង ${brideName}`;
 
   const description = showGuestName
-    ? isKm
-      ? `សូមអញ្ជើញចូលរួមពិធីមង្គលអាពាហ៍ពិពាហ៍របស់ ${groomName} និង ${brideName}`
-      : `You are invited to the wedding ceremony of ${groomName} and ${brideName}`
-    : isKm
-    ? 'សូមគោរពអញ្ជើញចូលរួមពិធីមង្គលអាពាហ៍ពិពាហ៍'
-    : 'You are warmly invited to our wedding ceremony';
+    ? `សូមអញ្ជើញចូលរួមពិធីមង្គលអាពាហ៍ពិពាហ៍របស់ ${groomName} និង ${brideName}`
+    : 'សូមគោរពអញ្ជើញចូលរួមពិធីមង្គលអាពាហ៍ពិពាហ៍';
 
-  const pageUrl = `${baseUrl}/${locale === 'en' ? 'en/' : ''}invite/${slug}/guest/${guestId}`;
+  const pageUrl = `${baseUrl}/invite/${slug}/guest/${guestId}`;
   
   // Image priority: 1. socialPreviewImageUrl, 2. openingImageUrl, 3. coverImage, 4. couplePhotoUrl, 5. default
   const rawImagePath =
@@ -97,7 +88,7 @@ export async function generateMetadata({
       description,
       url: pageUrl,
       siteName: `${groomName} & ${brideName} Wedding`,
-      locale: isKm ? 'km_KH' : 'en_US',
+      locale: 'km_KH',
       type: 'website',
       images: [
         {

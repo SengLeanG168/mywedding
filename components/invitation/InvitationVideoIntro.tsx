@@ -75,12 +75,11 @@ export default function InvitationVideoIntro({ type, url, poster, locale, onCont
             <>
               {!isLoaded && <div className="absolute inset-0 flex items-center justify-center text-white/50 text-sm z-0">{t('preparingVideo')}</div>}
               <iframe
-                className={`absolute top-0 left-0 w-full h-full object-cover pointer-events-auto transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
-                src={getYouTubeId(url) ? `https://www.youtube.com/embed/${getYouTubeId(url)}?autoplay=1&mute=1&playsinline=1&controls=1&rel=0` : url}
+                className={`absolute top-0 left-0 w-full h-full object-cover pointer-events-none transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+                src={getYouTubeId(url) ? `https://www.youtube.com/embed/${getYouTubeId(url)}?autoplay=1&mute=1&playsinline=1&controls=0&rel=0&disablekb=1&modestbranding=1` : url}
                 title="Hero Video"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
                 onLoad={() => setIsLoaded(true)}
                 onError={() => setError(true)}
               />
@@ -96,13 +95,16 @@ export default function InvitationVideoIntro({ type, url, poster, locale, onCont
               {!isLoaded && <div className="absolute inset-0 flex items-center justify-center text-white/50 text-sm z-0">{t('preparingVideo')}</div>}
               <video
                 ref={videoRef}
-                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+                className={`absolute inset-0 w-full h-full object-cover pointer-events-none transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
                 src={url}
                 poster={poster || undefined}
                 autoPlay
                 muted
                 playsInline
-                controls
+                controls={false}
+                preload="auto"
+                disablePictureInPicture
+                controlsList="nodownload nofullscreen noremoteplayback"
                 onCanPlay={() => setIsLoaded(true)}
                 onTimeUpdate={handleTimeUpdate}
                 onEnded={handleEnded}
@@ -119,7 +121,7 @@ export default function InvitationVideoIntro({ type, url, poster, locale, onCont
       {/* Continue Button */}
       <div 
         className={`absolute bottom-12 z-20 transition-all duration-1000 ${
-          showContinue ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8 pointer-events-none'
+          showContinue ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-8 pointer-events-none'
         }`}
       >
         <Button 
@@ -135,4 +137,3 @@ export default function InvitationVideoIntro({ type, url, poster, locale, onCont
     </div>
   );
 }
-

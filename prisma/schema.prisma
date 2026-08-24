@@ -37,6 +37,7 @@ model Event {
   invitationMessageEn String   @db.Text
   theme               String   @default("Classic Khmer Wedding")
   musicUrl            String?
+  optimizedMusicUrl   String?
   musicTitle          String?
   heroVideoUrl        String?
   heroVideoType       String?

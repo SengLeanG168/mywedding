@@ -39,6 +39,9 @@ export default function CurtainIntro({
 
   // ─── SKIP HANDLER ────────────────────────────────────────────────
   const handleSkip = () => {
+    if (typeof window !== "undefined" && (window as any).__playWeddingMusic) {
+      (window as any).__playWeddingMusic();
+    }
     if (useVideo) {
       setVideoVisible(false);
       setTimeout(onComplete, 300); // brief fade-out delay
