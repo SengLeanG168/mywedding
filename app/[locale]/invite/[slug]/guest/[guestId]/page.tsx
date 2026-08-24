@@ -21,17 +21,13 @@ async function getBaseUrl(): Promise<string> {
   return 'https://leangna.online';
 }
 
-function getAbsoluteImageUrl(imagePath?: string | null, baseUrl?: string): string {
+function getAbsoluteImageUrl(imagePath?: string | null, baseUrl?: string): string | null {
+  if (!imagePath || !imagePath.trim()) return null;
   const defaultAppUrl = baseUrl || (process.env.NEXT_PUBLIC_APP_URL ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '') : 'https://leangna.online');
-  if (!imagePath || !imagePath.trim()) {
-    return `${defaultAppUrl}/api/og/invite`;
-  }
-
   const trimmed = imagePath.trim();
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
     return trimmed;
   }
-
   return `${defaultAppUrl}${trimmed.startsWith('/') ? trimmed : `/${trimmed}`}`;
 }
 
@@ -88,23 +84,16 @@ export async function generateMetadata({
     : 'You are warmly invited to our wedding ceremony';
 
   const pageUrl = `${baseUrl}/${locale === 'en' ? 'en/' : ''}invite/${slug}/guest/${guestId}`;
-  const dynamicOgUrl = `${baseUrl}/api/og/invite/${slug}?locale=${isKm ? 'km' : 'en'}&guestId=${guestId}`;
+  
+  // Dedicated optimized 1200x630 dynamic OG card route for guest
+  const dynamicOgUrl = `${baseUrl}/api/og/invite/${slug}/guest/${guestId}?locale=${isKm ? 'km' : 'en'}`;
 
-  // Image Priority:
-  // 1. openingImageUrl (Blob or relative)
-  // 2. coverImage
-  // 3. couplePhotoUrl
-  // 4. Default fallback image
-  const rawImagePath =
-    event.openingImageUrl ||
-    event.coverImage ||
-    event.couplePhotoUrl;
+  // Fallback raw uploaded photo if available
+  const rawImagePath = event.openingImageUrl || event.coverImage || event.couplePhotoUrl;
+  const primaryRawImageUrl = getAbsoluteImageUrl(rawImagePath, baseUrl);
 
-  const primaryImageUrl = getAbsoluteImageUrl(rawImagePath, baseUrl);
-  const mimeType = getMimeType(primaryImageUrl);
-
-  // Debug log to confirm final previewImageUrl used
-  console.log(`[OG Preview Metadata] Slug: ${slug}, GuestId: ${guestId}, Primary Image URL: ${primaryImageUrl}`);
+  // Debug log for OG image URL
+  console.log(`[OG Metadata Guest] Slug: ${slug}, GuestId: ${guestId}, OG Image URL: ${dynamicOgUrl}`);
 
   const images: Array<{
     url: string;
@@ -115,23 +104,23 @@ export async function generateMetadata({
     type?: string;
   }> = [
     {
-      url: primaryImageUrl,
-      secureUrl: primaryImageUrl,
-      width: 1200,
-      height: 630,
-      alt: title,
-      type: mimeType,
-    },
-  ];
-
-  if (primaryImageUrl !== dynamicOgUrl) {
-    images.push({
       url: dynamicOgUrl,
       secureUrl: dynamicOgUrl,
       width: 1200,
       height: 630,
       alt: title,
       type: 'image/png',
+    },
+  ];
+
+  if (primaryRawImageUrl) {
+    images.push({
+      url: primaryRawImageUrl,
+      secureUrl: primaryRawImageUrl,
+      width: 1200,
+      height: 630,
+      alt: title,
+      type: getMimeType(primaryRawImageUrl),
     });
   }
 
@@ -152,7 +141,7 @@ export async function generateMetadata({
       card: 'summary_large_image',
       title,
       description,
-      images: [primaryImageUrl, ...(primaryImageUrl !== dynamicOgUrl ? [dynamicOgUrl] : [])],
+      images: [dynamicOgUrl],
     },
   };
 }
