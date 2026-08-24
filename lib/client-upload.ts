@@ -206,11 +206,28 @@ export async function uploadClientFile(
 ): Promise<string> {
   let fileToUpload = file;
 
-  if (type === 'image' && options?.autoOptimizeSocialPreview) {
-    try {
-      fileToUpload = await optimizeSocialPreviewImage(file, 1200, 630);
-    } catch (err) {
-      console.warn('Social preview optimization warning, using original file:', err);
+  if (type === 'image') {
+    if (options?.autoOptimizeSocialPreview) {
+      try {
+        fileToUpload = await optimizeSocialPreviewImage(file, 1200, 630);
+      } catch (err) {
+        console.warn('Social preview optimization warning, using original file:', err);
+      }
+    } else if (file.size > 3 * 1024 * 1024) {
+      try {
+        const imageCompression = (await import('browser-image-compression')).default;
+        const compressedBlob = await imageCompression(file, {
+          maxSizeMB: 3,
+          maxWidthOrHeight: 2560,
+          useWebWorker: true,
+        });
+        fileToUpload = new File([compressedBlob], file.name, {
+          type: compressedBlob.type || file.type,
+          lastModified: Date.now(),
+        });
+      } catch (compressErr) {
+        console.warn('Client-side image compression warning:', compressErr);
+      }
     }
   }
 
@@ -250,5 +267,10 @@ export async function uploadClientFile(
     return data.url || data.path;
   }
 
-  throw new Error(data.error || 'File upload failed');
+  let errorMessage = data.error || 'File upload failed';
+  if (data.error === 'File is too large') {
+    errorMessage = 'ទំហំឯកសារធំពេក! សូមជ្រើសរើសរូបភាព/វីដេអូដែលមានទំហំតូចជាង (File is too large)';
+  }
+
+  throw new Error(errorMessage);
 }

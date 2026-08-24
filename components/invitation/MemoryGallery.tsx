@@ -29,7 +29,7 @@ export default function MemoryGallery({ images, isKm, onImageClick }: MemoryGall
   if (!images || images.length === 0) return null;
 
   return (
-    <section className="mt-12 sm:mt-16">
+    <section className="mt-12 sm:mt-16" id="gallery-section">
       <div className="text-center mb-6 sm:mb-8">
         <h2 className="text-[clamp(1.25rem,4vw,1.5rem)] font-serif font-bold text-primary">
           {isKm ? 'រូបថតអនុស្សាវរីយ៍' : 'Gallery'}

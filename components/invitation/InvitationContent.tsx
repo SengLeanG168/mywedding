@@ -22,6 +22,7 @@ import MediaLightbox, { MediaItem } from '@/components/invitation/MediaLightbox'
 import { formatLocalizedDate } from '@/lib/date';
 import ScrollReveal from '@/components/invitation/ScrollReveal';
 import MemoryGallery from '@/components/invitation/MemoryGallery';
+import FloatingBottomNav from '@/components/invitation/FloatingBottomNav';
 
 interface InvitationContentProps {
   event: any;
@@ -70,7 +71,7 @@ export default function InvitationContent({ event, locale, guest, programDays }:
   // Create a full date time string for the countdown
   const eventDateTime = new Date(event.eventDate);
   const [hours, minutes] = (event.eventTime || '00:00').split(':');
-  eventDateTime.setHours(Number(hours) || 0, Number(minutes) || 0);
+  const mainContentVisible = curtainDone && isOpened && videoIntroDone && !showContinueAnimation;
 
   return (
     <>
@@ -141,7 +142,7 @@ export default function InvitationContent({ event, locale, guest, programDays }:
               <ThemeToggle />
             </div>
 
-            <main className="w-full mx-auto px-4 sm:px-6 py-12 sm:py-16 relative z-10 space-y-12 sm:space-y-16">
+            <main className="w-full mx-auto px-4 sm:px-6 py-12 sm:py-16 pb-28 relative z-10 space-y-12 sm:space-y-16">
               
               {/* 1. Traditional Invitation Section */}
               <ScrollReveal direction="up" delay={50}>
@@ -212,7 +213,7 @@ export default function InvitationContent({ event, locale, guest, programDays }:
 
               {/* 6. Location & Details section */}
               <ScrollReveal direction="up">
-                <section className="bg-card/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-xl border border-primary/20 relative overflow-hidden">
+                <section className="bg-card/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-xl border border-primary/20 relative overflow-hidden" id="location-section">
                   {/* subtle pattern inside card */}
                   <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
                   
@@ -260,9 +261,11 @@ export default function InvitationContent({ event, locale, guest, programDays }:
                 </section>
               </ScrollReveal>
 
-              {/* Countdown */}
+              {/* Countdown & Calendar Section */}
               <ScrollReveal direction="zoom">
-                <Countdown date={eventDateTime.toISOString()} />
+                <div id="calendar-section">
+                  <Countdown date={eventDateTime.toISOString()} />
+                </div>
               </ScrollReveal>
 
               {/* Add to Calendar Button */}
@@ -277,7 +280,7 @@ export default function InvitationContent({ event, locale, guest, programDays }:
 
               {/* 8. RSVP Form */}
               <ScrollReveal direction="up">
-                <section className="w-full" id="rsvp">
+                <section className="w-full" id="rsvp-section">
                   <div className="text-center mb-6 sm:mb-8">
                     <h2 className="text-[clamp(1.25rem,4vw,1.5rem)] font-serif font-bold text-primary">RSVP</h2>
                     <p className="text-xs sm:text-sm text-muted-foreground mt-2 px-4">{isKm ? "សូមបញ្ជាក់ពីការចូលរួមរបស់អ្នក" : "Please let us know if you can make it"}</p>
@@ -291,6 +294,9 @@ export default function InvitationContent({ event, locale, guest, programDays }:
           </div>
         </div>
       )}
+
+      {/* Floating Bottom Shortcut Navigation Bar */}
+      <FloatingBottomNav visible={mainContentVisible} />
 
       {/* Global Lightbox */}
       <MediaLightbox 

@@ -33,7 +33,7 @@ export default function InvitationVideoIntro({ type, url, poster, locale, onCont
     // Timer fallback: after 20 seconds of video intro, show continue button
     const timeout = setTimeout(() => {
       setShowContinue(true);
-    }, 20000);
+    }, 10000);
 
     return () => {
       clearTimeout(timeout);

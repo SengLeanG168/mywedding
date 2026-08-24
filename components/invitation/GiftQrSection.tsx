@@ -50,7 +50,7 @@ export default function GiftQrSection({ event, locale }: GiftQrSectionProps) {
   };
 
   return (
-    <section className="mt-16 text-center">
+    <section className="mt-16 text-center" id="gift-qr-section">
       <div className="mb-8">
         <h2 className="text-[clamp(1.25rem,4vw,1.5rem)] font-serif font-bold text-primary flex items-center justify-center gap-3">
           <Gift className="w-6 h-6 sm:w-8 sm:h-8" />

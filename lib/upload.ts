@@ -12,14 +12,14 @@ export interface UploadConfig {
 }
 
 export const IMAGE_CONFIG: UploadConfig = {
-  maxSize: 20 * 1024 * 1024, // 20MB
+  maxSize: 50 * 1024 * 1024, // 50MB
   allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp'],
   allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
   uploadDir: path.join(process.cwd(), 'public', 'uploads', 'images'),
 };
 
 export const AVATAR_CONFIG: UploadConfig = {
-  maxSize: 5 * 1024 * 1024, // 5MB
+  maxSize: 20 * 1024 * 1024, // 20MB
   allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp'],
   allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
   uploadDir: path.join(process.cwd(), 'public', 'uploads', 'images'),
@@ -27,16 +27,16 @@ export const AVATAR_CONFIG: UploadConfig = {
 };
 
 export const AUDIO_CONFIG: UploadConfig = {
-  maxSize: 15 * 1024 * 1024, // 15MB
-  allowedExtensions: ['.mp3', '.wav', '.m4a', '.ogg'],
-  allowedMimeTypes: ['audio/mpeg', 'audio/wav', 'audio/x-wav', 'audio/mp4', 'audio/x-m4a', 'audio/ogg'],
+  maxSize: 50 * 1024 * 1024, // 50MB
+  allowedExtensions: ['.mp3', '.wav', '.m4a', '.ogg', '.aac', '.flac', '.webm'],
+  allowedMimeTypes: ['audio/mpeg', 'audio/wav', 'audio/x-wav', 'audio/mp4', 'audio/x-m4a', 'audio/ogg', 'audio/aac', 'audio/flac', 'audio/webm'],
   uploadDir: path.join(process.cwd(), 'public', 'uploads', 'audio'),
 };
 
 export const VIDEO_CONFIG: UploadConfig = {
-  maxSize: 100 * 1024 * 1024, // 100MB
-  allowedExtensions: ['.mp4', '.webm'],
-  allowedMimeTypes: ['video/mp4', 'video/webm'],
+  maxSize: 250 * 1024 * 1024, // 250MB
+  allowedExtensions: ['.mp4', '.webm', '.mov'],
+  allowedMimeTypes: ['video/mp4', 'video/webm', 'video/quicktime'],
   uploadDir: path.join(process.cwd(), 'public', 'uploads', 'videos'),
 };
 
