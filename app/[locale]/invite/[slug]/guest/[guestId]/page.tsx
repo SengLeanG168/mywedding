@@ -69,27 +69,26 @@ export async function generateMetadata({
   }
 
   const showGuestName = event.showGuestNameInSharePreview !== false;
-  const guestName = guestData?.name;
+  const effectiveGuestName = guestData?.name || (isKm ? 'ភ្ញៀវកិត្តិយស' : 'Honored Guest');
 
-  const title =
-    showGuestName && guestName
-      ? isKm
-        ? `សូមគោរពអញ្ជើញ ${guestName}`
-        : `Invitation for ${guestName}`
-      : isKm
-      ? `សិរីមង្គលអាពាហ៍ពិពាហ៍ ${groomName} និង ${brideName}`
-      : `Wedding Invitation of ${groomName} and ${brideName}`;
+  const title = showGuestName
+    ? isKm
+      ? `សូមគោរពអញ្ជើញ ${effectiveGuestName}`
+      : `Invitation for ${effectiveGuestName}`
+    : isKm
+    ? `សិរីមង្គលអាពាហ៍ពិពាហ៍ ${groomName} និង ${brideName}`
+    : `Wedding Invitation of ${groomName} and ${brideName}`;
 
-  const description =
-    showGuestName && guestName
-      ? isKm
-        ? `សូមអញ្ជើញចូលរួមពិធីមង្គលអាពាហ៍ពិពាហ៍របស់ ${groomName} និង ${brideName}`
-        : `You are invited to the wedding ceremony of ${groomName} and ${brideName}`
-      : isKm
-      ? 'សូមគោរពអញ្ជើញចូលរួមពិធីមង្គលអាពាហ៍ពិពាហ៍'
-      : 'You are warmly invited to our wedding ceremony';
+  const description = showGuestName
+    ? isKm
+      ? `សូមអញ្ជើញចូលរួមពិធីមង្គលអាពាហ៍ពិពាហ៍របស់ ${groomName} និង ${brideName}`
+      : `You are invited to the wedding ceremony of ${groomName} and ${brideName}`
+    : isKm
+    ? 'សូមគោរពអញ្ជើញចូលរួមពិធីមង្គលអាពាហ៍ពិពាហ៍'
+    : 'You are warmly invited to our wedding ceremony';
 
   const pageUrl = `${baseUrl}/${locale === 'en' ? 'en/' : ''}invite/${slug}/guest/${guestId}`;
+  const dynamicOgUrl = `${baseUrl}/api/og/invite/${slug}?locale=${isKm ? 'km' : 'en'}&guestId=${guestId}`;
 
   // Image Priority:
   // 1. openingImageUrl (Blob or relative)
@@ -105,7 +104,36 @@ export async function generateMetadata({
   const mimeType = getMimeType(primaryImageUrl);
 
   // Debug log to confirm final previewImageUrl used
-  console.log(`[OG Preview Metadata] Slug: ${slug}, GuestId: ${guestId || 'N/A'}, Preview Image URL: ${primaryImageUrl}`);
+  console.log(`[OG Preview Metadata] Slug: ${slug}, GuestId: ${guestId}, Primary Image URL: ${primaryImageUrl}`);
+
+  const images: Array<{
+    url: string;
+    secureUrl?: string;
+    width?: number;
+    height?: number;
+    alt?: string;
+    type?: string;
+  }> = [
+    {
+      url: primaryImageUrl,
+      secureUrl: primaryImageUrl,
+      width: 1200,
+      height: 630,
+      alt: title,
+      type: mimeType,
+    },
+  ];
+
+  if (primaryImageUrl !== dynamicOgUrl) {
+    images.push({
+      url: dynamicOgUrl,
+      secureUrl: dynamicOgUrl,
+      width: 1200,
+      height: 630,
+      alt: title,
+      type: 'image/png',
+    });
+  }
 
   return {
     metadataBase: new URL(baseUrl),
@@ -118,22 +146,13 @@ export async function generateMetadata({
       siteName: `${groomName} & ${brideName} Wedding`,
       locale: isKm ? 'km_KH' : 'en_US',
       type: 'website',
-      images: [
-        {
-          url: primaryImageUrl,
-          secureUrl: primaryImageUrl,
-          width: 1200,
-          height: 630,
-          alt: title,
-          type: mimeType,
-        },
-      ],
+      images,
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: [primaryImageUrl],
+      images: [primaryImageUrl, ...(primaryImageUrl !== dynamicOgUrl ? [dynamicOgUrl] : [])],
     },
   };
 }

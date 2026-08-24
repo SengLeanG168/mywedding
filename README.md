@@ -13,41 +13,41 @@ The application supports dynamic Open Graph (OG) metadata and social sharing car
 To ensure social sharing cards show full preview images and accurate links, set `NEXT_PUBLIC_APP_URL` in your `.env` file to your production domain:
 
 ```env
-NEXT_PUBLIC_APP_URL=https://yourdomain.com
+NEXT_PUBLIC_APP_URL=https://leangna.online
 ```
 
 > **Note on Localhost Testing:**
-> Social media crawlers (Facebook, Telegram, WhatsApp, Messenger) cannot reach `http://localhost:3000`. To test link previews locally before deploying to production, use a tunneling tool such as [ngrok](https://ngrok.com/):
+> Social media crawlers (Facebook, Messenger, Telegram, WhatsApp, Instagram DMs) cannot reach `http://localhost:3000`. Test link previews on your live public domain (`https://leangna.online`) or via a tunnel:
 > ```bash
 > ngrok http 3000
 > ```
-> Then set `NEXT_PUBLIC_APP_URL=https://xxxx.ngrok-free.app` in `.env`.
 
 ---
 
-### 2. How to Test Link Previews
+### 2. How to Test & Force Refresh Chat App Previews
 
-#### A. Facebook Sharing Debugger
-1. Go to [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/).
-2. Paste your invitation link: `https://yourdomain.com/km/invite/your-slug/guest/guestId`.
-3. Click **Debug**.
-4. If cached data appears, click **Scrape Again** to clear Facebook's cache and pull fresh metadata and OG images.
+Chat apps heavily cache link previews. When testing new images or text, follow these steps to force refresh:
 
-#### B. Telegram Chat Preview
-1. Open Telegram desktop or mobile app.
-2. Open **Saved Messages** or a private chat.
-3. Paste the invitation link.
-4. Telegram will automatically crawl the link and render the dynamic wedding title, bride & groom names, guest name, and 1200x630 OG image.
-5. To clear Telegram cache if updating metadata, send the link to `@WebpageBot` on Telegram and choose **Update preview**.
+#### A. Cache-Busting Version Query Parameter
+When testing a link in Telegram, Messenger, or Instagram DMs, append a new version query parameter such as `?v=11` or `?v=12`:
+`https://leangna.online/invite/sample-wedding/guest/cmt6scpig0001qz3n673q1b1b?v=11`
+This forces chat app crawlers to fetch the latest server-rendered metadata immediately.
 
-#### C. WhatsApp Link Preview
-1. Paste the link into any WhatsApp chat box.
-2. Wait 1–3 seconds for WhatsApp to fetch the preview card before pressing send.
-3. The thumbnail image, guest invitation title, and description will render in the chat bubble.
+#### B. Telegram Chat Preview & WebpageBot
+1. Open Telegram.
+2. Search for `@WebpageBot`.
+3. Send your link to `@WebpageBot` and click **Update preview** to clear Telegram's cached metadata.
+4. Paste the link into any chat window; the Opening Image thumbnail and guest invitation header will appear.
 
-#### D. Facebook Messenger
-1. Send the invitation link to a friend or test account on Messenger.
-2. Messenger renders the rich card with the wedding preview image and personalized guest invitation header.
+#### C. Facebook Messenger & Meta Debugger
+1. Open [Meta Sharing Debugger](https://developers.facebook.com/tools/debug/).
+2. Paste your guest invitation link.
+3. Click **Debug** -> **Scrape Again** to invalidate Meta/Messenger cache.
+4. Share the link on Messenger or Facebook DMs.
+
+#### D. Instagram DMs & WhatsApp
+1. Paste the link into an Instagram DM or WhatsApp chat.
+2. Wait 1–3 seconds for the link preview thumbnail and personalized invitation text to fetch before pressing send.
 
 ---
 

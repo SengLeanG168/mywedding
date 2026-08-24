@@ -50,6 +50,9 @@ export async function GET(
         })
       : '';
 
+    const bgPhoto = event.openingImageUrl || event.coverImage || event.couplePhotoUrl;
+    const hasValidBg = bgPhoto && (bgPhoto.startsWith('http://') || bgPhoto.startsWith('https://'));
+
     return new ImageResponse(
       (
         <div
@@ -67,6 +70,22 @@ export async function GET(
             position: 'relative',
           }}
         >
+          {hasValidBg && (
+            <img
+              src={bgPhoto}
+              alt="Background"
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                opacity: 0.25,
+              }}
+            />
+          )}
+
           {/* Inner Decorative Border */}
           <div
             style={{
@@ -82,7 +101,7 @@ export async function GET(
               alignItems: 'center',
               justifyContent: 'center',
               padding: '30px',
-              backgroundColor: 'rgba(31, 7, 16, 0.45)',
+              backgroundColor: 'rgba(31, 7, 16, 0.65)',
             }}
           >
             {/* Top Ornamental Badge */}
