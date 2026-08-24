@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { put } from '@vercel/blob';
 
 export interface UploadConfig {
   maxSize: number;
@@ -55,35 +56,47 @@ export async function saveFile(
   }
 
   // Validate mime type
-  if (!config.allowedMimeTypes.includes(file.type)) {
-    // Some audio/video types might have inconsistent mime types on some platforms,
-    // so we will allow extension fallback validation if the browser reports blank or slightly different mime.
-    if (file.type && !file.type.startsWith('application/')) {
+  if (file.type && !file.type.startsWith('application/')) {
+    if (!config.allowedMimeTypes.includes(file.type)) {
       return { success: false, error: 'Unsupported file type' };
     }
   }
 
+  const uniqueId = crypto.randomBytes(8).toString('hex');
+  const sanitizedOriginalName = file.name
+    .replace(/[^a-zA-Z0-9.]/g, '_')
+    .replace(/_{2,}/g, '_');
+  const nameWithoutExt = path.parse(sanitizedOriginalName).name;
+  const filePrefix = config.prefix || nameWithoutExt;
+  const finalFilename = `${filePrefix}-${uniqueId}${ext}`;
+
+  // Priority 1: Vercel Blob Storage (if BLOB_READ_WRITE_TOKEN is set)
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    try {
+      const blob = await put(finalFilename, file, {
+        access: 'public',
+        addRandomSuffix: false,
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      });
+
+      if (blob && blob.url) {
+        return { success: true, path: blob.url };
+      }
+    } catch (blobErr) {
+      console.error('Vercel Blob upload failed, falling back to disk:', blobErr);
+    }
+  }
+
+  // Priority 2: Fallback to local disk storage
   try {
-    // Ensure upload directory exists
     if (!fs.existsSync(config.uploadDir)) {
       fs.mkdirSync(config.uploadDir, { recursive: true });
     }
 
-    // Generate safe unique filename
-    const uniqueId = crypto.randomBytes(8).toString('hex');
-    const sanitizedOriginalName = file.name
-      .replace(/[^a-zA-Z0-9.]/g, '_')
-      .replace(/_{2,}/g, '_');
-    const nameWithoutExt = path.parse(sanitizedOriginalName).name;
-    const filePrefix = config.prefix || nameWithoutExt;
-    const finalFilename = `${filePrefix}-${uniqueId}${ext}`;
     const destinationPath = path.join(config.uploadDir, finalFilename);
-
-    // Write file
     const buffer = Buffer.from(await file.arrayBuffer());
     fs.writeFileSync(destinationPath, buffer);
 
-    // Get public path (e.g. /uploads/images/file.jpg)
     const relativeFolder = path.basename(config.uploadDir);
     const publicPath = `/uploads/${relativeFolder}/${finalFilename}`;
 
