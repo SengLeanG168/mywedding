@@ -12,9 +12,10 @@ interface MediaUploadProps {
   value: string;
   onChange: (path: string) => void;
   label?: string;
+  autoOptimizeSocialPreview?: boolean;
 }
 
-export default function MediaUpload({ type, value, onChange, label }: MediaUploadProps) {
+export default function MediaUpload({ type, value, onChange, label, autoOptimizeSocialPreview }: MediaUploadProps) {
   const t = useTranslations('Event');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -46,7 +47,7 @@ export default function MediaUpload({ type, value, onChange, label }: MediaUploa
     setUploading(true);
 
     try {
-      const url = await uploadClientFile(file, type);
+      const url = await uploadClientFile(file, type, { autoOptimizeSocialPreview });
       onChange(url);
     } catch (err: any) {
       console.error(err);

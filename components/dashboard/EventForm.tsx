@@ -477,11 +477,13 @@ export default function EventForm({ initialData }: { initialData?: any }) {
             <label className="text-sm font-semibold block">{t('socialPreviewImage')}</label>
             <p className="text-xs text-muted-foreground">{t('previewImageHelp')}</p>
             <p className="text-xs text-amber-600 font-medium">{t('recommendedSize')}</p>
+            <p className="text-xs text-emerald-600 font-medium">{t('autoOptimizeNotice')}</p>
             <MediaUpload
               type="image"
               value={formData.socialPreviewImageUrl}
               onChange={(url) => setFormData((prev) => ({ ...prev, socialPreviewImageUrl: url }))}
               label={t('uploadPreviewImage')}
+              autoOptimizeSocialPreview={true}
             />
 
             {formData.socialPreviewImageUrl ? (
