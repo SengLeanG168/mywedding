@@ -18,17 +18,29 @@ async function getBaseUrl(): Promise<string> {
   } catch (e) {
     // Fallback if headers cannot be read
   }
-  return 'https://mywedding.com';
+  return 'https://leangna.online';
 }
 
-function getAbsoluteImageUrl(rawUrl: string | null | undefined, baseUrl: string): string | null {
-  if (!rawUrl || typeof rawUrl !== 'string' || !rawUrl.trim()) return null;
-  const trimmed = rawUrl.trim();
+function getAbsoluteImageUrl(imagePath?: string | null, baseUrl?: string): string {
+  const defaultAppUrl = baseUrl || (process.env.NEXT_PUBLIC_APP_URL ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '') : 'https://leangna.online');
+  if (!imagePath || !imagePath.trim()) {
+    return `${defaultAppUrl}/api/og/invite`;
+  }
+
+  const trimmed = imagePath.trim();
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
     return trimmed;
   }
-  const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
-  return `${baseUrl}${cleanPath}`;
+
+  return `${defaultAppUrl}${trimmed.startsWith('/') ? trimmed : `/${trimmed}`}`;
+}
+
+function getMimeType(url: string): string {
+  const lower = url.toLowerCase();
+  if (lower.endsWith('.png')) return 'image/png';
+  if (lower.endsWith('.webp')) return 'image/webp';
+  if (lower.endsWith('.gif')) return 'image/gif';
+  return 'image/jpeg';
 }
 
 export async function generateMetadata({
@@ -45,9 +57,9 @@ export async function generateMetadata({
 
   if (!event) return {};
 
-  const isKm = locale === 'km';
-  const brideName = isKm ? event.brideNameKm : event.brideNameEn;
-  const groomName = isKm ? event.groomNameKm : event.groomNameEn;
+  const isKm = locale !== 'en';
+  const brideName = (isKm ? event.brideNameKm : event.brideNameEn) || event.brideNameKm || event.brideNameEn || '';
+  const groomName = (isKm ? event.groomNameKm : event.groomNameEn) || event.groomNameKm || event.groomNameEn || '';
 
   const title = isKm
     ? `សិរីមង្គលអាពាហ៍ពិពាហ៍ ${groomName} និង ${brideName}`
@@ -57,37 +69,23 @@ export async function generateMetadata({
     ? 'សូមគោរពអញ្ជើញចូលរួមពិធីមង្គលអាពាហ៍ពិពាហ៍'
     : 'You are warmly invited to our wedding ceremony';
 
-  const pageUrl = `${baseUrl}/${locale}/invite/${slug}`;
-  const dynamicOgUrl = `${baseUrl}/api/og/invite/${slug}?locale=${locale}`;
+  const pageUrl = `${baseUrl}/${locale === 'en' ? 'en/' : ''}invite/${slug}`;
 
   // Image Priority:
-  // 1. openingImageUrl (Image used on opening screen page with "បើកធៀប" button)
+  // 1. openingImageUrl (Blob or relative)
   // 2. coverImage
   // 3. couplePhotoUrl
-  // 4. Default dynamic OG image
-  const primaryImageUrl =
-    getAbsoluteImageUrl(event.openingImageUrl, baseUrl) ||
-    getAbsoluteImageUrl(event.coverImage, baseUrl) ||
-    getAbsoluteImageUrl(event.couplePhotoUrl, baseUrl) ||
-    dynamicOgUrl;
+  // 4. Default fallback image
+  const rawImagePath =
+    event.openingImageUrl ||
+    event.coverImage ||
+    event.couplePhotoUrl;
 
-  const images: Array<{ url: string; width?: number; height?: number; alt?: string }> = [
-    {
-      url: primaryImageUrl,
-      width: 1200,
-      height: 630,
-      alt: title,
-    },
-  ];
+  const primaryImageUrl = getAbsoluteImageUrl(rawImagePath, baseUrl);
+  const mimeType = getMimeType(primaryImageUrl);
 
-  if (primaryImageUrl !== dynamicOgUrl) {
-    images.push({
-      url: dynamicOgUrl,
-      width: 1200,
-      height: 630,
-      alt: title,
-    });
-  }
+  // Debug log to confirm final previewImageUrl used
+  console.log(`[OG Preview Metadata] Slug: ${slug}, Preview Image URL: ${primaryImageUrl}`);
 
   return {
     metadataBase: new URL(baseUrl),
@@ -100,7 +98,16 @@ export async function generateMetadata({
       siteName: `${groomName} & ${brideName} Wedding`,
       locale: isKm ? 'km_KH' : 'en_US',
       type: 'website',
-      images,
+      images: [
+        {
+          url: primaryImageUrl,
+          secureUrl: primaryImageUrl,
+          width: 1200,
+          height: 630,
+          alt: title,
+          type: mimeType,
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
