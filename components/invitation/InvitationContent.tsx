@@ -23,6 +23,7 @@ import { formatLocalizedDate } from '@/lib/date';
 import ScrollReveal from '@/components/invitation/ScrollReveal';
 import MemoryGallery from '@/components/invitation/MemoryGallery';
 import FloatingBottomNav from '@/components/invitation/FloatingBottomNav';
+import WishMarquee, { WishItem } from '@/components/invitation/WishMarquee';
 
 interface InvitationContentProps {
   event: any;
@@ -60,6 +61,9 @@ export default function InvitationContent({ event, locale, guest, programDays }:
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxItems, setLightboxItems] = useState<MediaItem[]>([]);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  // Wish Marquee Real-time State
+  const [newWishes, setNewWishes] = useState<WishItem[]>([]);
 
   const isKm = true;
   const brideName = event.brideNameKm || event.brideNameEn;
@@ -285,8 +289,17 @@ export default function InvitationContent({ event, locale, guest, programDays }:
                     <h2 className="text-[clamp(1.25rem,4vw,1.5rem)] font-serif font-bold text-primary">RSVP</h2>
                     <p className="text-xs sm:text-sm text-muted-foreground mt-2 px-4">{isKm ? "សូមបញ្ជាក់ពីការចូលរួមរបស់អ្នក" : "Please let us know if you can make it"}</p>
                   </div>
-                  <RSVPForm eventId={event.id} guest={guest} />
+                  <RSVPForm 
+                    eventId={event.id} 
+                    guest={guest} 
+                    onWishSubmitted={(wish) => setNewWishes((prev) => [wish, ...prev])} 
+                  />
                 </section>
+              </ScrollReveal>
+
+              {/* 9. Wedding Wish Marquee (Bottom-most section) */}
+              <ScrollReveal direction="up">
+                <WishMarquee eventId={event.id} newWishes={newWishes} refreshTrigger={newWishes.length} />
               </ScrollReveal>
 
             </main>

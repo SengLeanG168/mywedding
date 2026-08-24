@@ -137,7 +137,7 @@ model RSVP {
   guestId        String?
   guest          Guest?   @relation(fields: [guestId], references: [id], onDelete: SetNull)
   guestName      String
-  phone          String
+  phone          String?
   status         String
   attendingCount Int      @default(1)
   message        String?  @db.Text

@@ -2,10 +2,17 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { Minus, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-export default function RSVPForm({ eventId, guest }: { eventId: string, guest?: any }) {
+interface RSVPFormProps {
+  eventId: string;
+  guest?: any;
+  onWishSubmitted?: (wish: { name?: string; guestName?: string; message: string; createdAt?: string }) => void;
+}
+
+export default function RSVPForm({ eventId, guest, onWishSubmitted }: RSVPFormProps) {
   const t = useTranslations('RSVP');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -15,7 +22,7 @@ export default function RSVPForm({ eventId, guest }: { eventId: string, guest?: 
     guestName: guest ? guest.name : '',
     phone: guest && guest.phone ? guest.phone : '',
     status: 'ATTENDING',
-    attendingCount: guest ? guest.invitedCount : 1,
+    attendingCount: guest && guest.invitedCount ? Math.max(1, guest.invitedCount) : 1,
     message: ''
   });
 
@@ -38,6 +45,14 @@ export default function RSVPForm({ eventId, guest }: { eventId: string, guest?: 
 
       if (res.ok) {
         setSuccess(true);
+        if (formData.message && formData.message.trim().length > 0 && onWishSubmitted) {
+          onWishSubmitted({
+            name: formData.guestName || 'ភ្ញៀវកិត្តិយស',
+            guestName: formData.guestName || 'ភ្ញៀវកិត្តិយស',
+            message: formData.message.trim(),
+            createdAt: new Date().toISOString(),
+          });
+        }
       } else {
         const data = await res.json();
         setError(data.error || t('error'));
@@ -71,7 +86,7 @@ export default function RSVPForm({ eventId, guest }: { eventId: string, guest?: 
 
       <div className="space-y-1">
         <label className="text-xs font-semibold text-muted-foreground">{t('phone')}</label>
-        <Input required placeholder={t('phone')} className="text-base sm:text-sm" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
+        <Input placeholder={t('phone')} className="text-base sm:text-sm" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
       </div>
 
       <div className="space-y-1">
@@ -88,9 +103,37 @@ export default function RSVPForm({ eventId, guest }: { eventId: string, guest?: 
       </div>
 
       {formData.status === 'ATTENDING' && (
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           <label className="text-xs font-semibold text-muted-foreground">{t('attendingCount')}</label>
-          <Input type="number" min="1" max="10" required placeholder={t('attendingCount')} className="text-base sm:text-sm" value={formData.attendingCount} onChange={(e) => setFormData({...formData, attendingCount: Number(e.target.value)})} />
+          <div className="flex items-center justify-between border border-input bg-background rounded-xl p-1.5 shadow-sm">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              disabled={formData.attendingCount <= 1}
+              onClick={() => setFormData((prev) => ({ ...prev, attendingCount: Math.max(1, prev.attendingCount - 1) }))}
+              className="w-10 h-10 rounded-lg border-primary/20 text-primary hover:bg-primary/10 disabled:opacity-40 active:scale-95 transition-all cursor-pointer"
+              aria-label="Decrease attendees count"
+            >
+              <Minus className="w-4 h-4" />
+            </Button>
+
+            <span className="text-lg font-serif font-bold text-primary px-4 select-none">
+              {formData.attendingCount}
+            </span>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              disabled={formData.attendingCount >= 20}
+              onClick={() => setFormData((prev) => ({ ...prev, attendingCount: Math.min(20, prev.attendingCount + 1) }))}
+              className="w-10 h-10 rounded-lg border-primary/20 text-primary hover:bg-primary/10 disabled:opacity-40 active:scale-95 transition-all cursor-pointer"
+              aria-label="Increase attendees count"
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       )}
 

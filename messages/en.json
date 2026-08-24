@@ -5,7 +5,7 @@
   "RSVP": {
     "title": "RSVP",
     "guestName": "Your Name",
-    "phone": "Phone Number",
+    "phone": "Phone Number (Optional)",
     "attendanceStatus": "Attendance Status",
     "attending": "Attending",
     "notAttending": "Not Attending",
@@ -231,7 +231,22 @@
     "showGuestNameInSharePreview": "Show guest name in shared link preview",
     "linkPreviewImage": "Link preview image",
     "youAreInvited": "You are invited",
-    "honoredGuest": "Honored Guest"
+    "honoredGuest": "Honored Guest",
+    "editRsvp": "Edit RSVP",
+    "deleteRsvp": "Delete RSVP",
+    "deleteRsvpConfirm": "Are you sure you want to delete this RSVP?",
+    "rsvpDeletedSuccessfully": "RSVP deleted successfully",
+    "rsvpDeleteFailed": "Failed to delete RSVP",
+    "rsvpUpdatedSuccessfully": "RSVP updated successfully",
+    "rsvpUpdateFailed": "Failed to update RSVP",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "guestName": "Guest Name",
+    "attendanceStatus": "Attendance Status",
+    "attendingCount": "Number of Guests",
+    "blessingMessage": "Blessing Message"
   },
   "Auth": {
     "login": "Login",

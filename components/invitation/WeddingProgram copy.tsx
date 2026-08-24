@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { formatLocalizedDate } from '@/lib/date';
 import { Calendar, Clock, Sparkles } from 'lucide-react';
@@ -36,126 +36,6 @@ function formatTime(timeStr: string, locale: string) {
   } else {
     return `${hour12}:${minuteStr} ${ampmEn}`;
   }
-}
-
-interface CurvedConnectorProps {
-  isLeft: boolean;
-  showDot: boolean;
-  isRetracting: boolean;
-  activeSegmentIndex: number;
-  animationCycle: number;
-  index: number;
-}
-
-function CurvedConnector({
-  isLeft,
-  showDot,
-  isRetracting,
-  activeSegmentIndex,
-  animationCycle,
-  index,
-}: CurvedConnectorProps) {
-  const pathRef = useRef<SVGPathElement>(null);
-  const [dotPos, setDotPos] = useState<{ x: number; y: number } | null>(null);
-
-  const leftToRightPath = "M 0,0 L 75,0 Q 100,0 100,25 L 100,100";
-  const rightToLeftPath = "M 100,0 L 25,0 Q 0,0 0,25 L 0,100";
-  const pathD = isLeft ? leftToRightPath : rightToLeftPath;
-
-  // Mathematically track the dot on the exact curve using path.getPointAtLength
-  useEffect(() => {
-    if (!showDot) {
-      setDotPos(null);
-      return;
-    }
-
-    const pathEl = pathRef.current;
-    if (!pathEl) return;
-
-    const totalLength = pathEl.getTotalLength();
-    const duration = 2200; // 2.2s duration
-    let startTimestamp: number | null = null;
-    let animationFrameId: number;
-
-    const step = (timestamp: number) => {
-      if (!startTimestamp) startTimestamp = timestamp;
-      const elapsed = timestamp - startTimestamp;
-      const progress = Math.min(elapsed / duration, 1);
-
-      const pt = pathEl.getPointAtLength(progress * totalLength);
-      setDotPos({ x: pt.x, y: pt.y });
-
-      if (progress < 1) {
-        animationFrameId = requestAnimationFrame(step);
-      }
-    };
-
-    animationFrameId = requestAnimationFrame(step);
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, [showDot, activeSegmentIndex, animationCycle]);
-
-  return (
-    <div
-      className={`absolute top-1/2 h-[calc(100%+1.5rem)] sm:h-[calc(100%+2.5rem)] pointer-events-none z-0 ${
-        isLeft
-          ? 'left-[48%] sm:left-[46%] right-[16px] sm:right-[24px]'
-          : 'left-[16px] sm:left-[24px] right-[48%] sm:right-[46%]'
-      } ${
-        isRetracting
-          ? isLeft
-            ? 'line-retracting-lr'
-            : 'line-retracting-rl'
-          : ''
-      }`}
-    >
-      <svg
-        className="w-full h-full overflow-visible"
-        preserveAspectRatio="none"
-        viewBox="0 0 100 100"
-      >
-        <defs>
-          <filter id={`goldGlowOrb-${index}`} x="-100%" y="-100%" width="300%" height="300%">
-            <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#fbbf24" floodOpacity="0.9" />
-            <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="#d4af37" floodOpacity="0.8" />
-          </filter>
-        </defs>
-
-        <path
-          ref={pathRef}
-          d={pathD}
-          fill="none"
-          stroke="rgba(212, 175, 55, 0.9)"
-          strokeWidth="2"
-          vectorEffect="non-scaling-stroke"
-          className="curved-dashed-road"
-        />
-
-        {/* Glowing Moving Dot locked with 100% precision to the centerline of the stroke */}
-        {showDot && dotPos && (
-          <g>
-            <circle
-              cx={dotPos.x}
-              cy={dotPos.y}
-              r="6"
-              fill="rgba(251, 191, 36, 0.5)"
-              filter={`url(#goldGlowOrb-${index})`}
-            />
-            <circle
-              cx={dotPos.x}
-              cy={dotPos.y}
-              r="3"
-              fill="#ffffff"
-              stroke="#d4af37"
-              strokeWidth="1"
-            />
-          </g>
-        )}
-      </svg>
-    </div>
-  );
 }
 
 interface ProgramDayCardProps {
@@ -218,6 +98,10 @@ function ProgramDayCard({
             const itemTitle = locale === 'km' ? item.titleKm || item.titleEn : item.titleEn || item.titleKm;
             const itemDesc = locale === 'km' ? item.descriptionKm || item.descriptionEn : item.descriptionEn || item.descriptionKm;
 
+            // Connector path from current card center to next card center
+            const leftToRightPath = "M 0,0 L 75,0 Q 100,0 100,25 L 100,100";
+            const rightToLeftPath = "M 100,0 L 25,0 Q 0,0 0,25 L 0,100";
+
             return (
               <div key={item.id || index} className="relative w-full">
                 {/* Program Item Card Row */}
@@ -263,15 +147,45 @@ function ProgramDayCard({
 
                 {/* Direct Connector Line from Vertical Center of Current Card to Next Card */}
                 {hasNext && showConnector && (
-                  <CurvedConnector
-                    key={`connector-${dayIndex}-${index}-${animationCycle}`}
-                    isLeft={isLeft}
-                    showDot={showDot}
-                    isRetracting={isRetracting}
-                    activeSegmentIndex={activeSegmentIndex}
-                    animationCycle={animationCycle}
-                    index={index}
-                  />
+                  <div
+                    className={`absolute top-1/2 h-[calc(100%+1.5rem)] sm:h-[calc(100%+2.5rem)] pointer-events-none z-0 ${
+                      isLeft
+                        ? 'left-[48%] sm:left-[46%] right-[16px] sm:right-[24px]'
+                        : 'left-[16px] sm:left-[24px] right-[48%] sm:right-[46%]'
+                    } ${
+                      isRetracting
+                        ? isLeft
+                          ? 'line-retracting-lr'
+                          : 'line-retracting-rl'
+                        : ''
+                    }`}
+                  >
+                    {/* SVG Connector Path */}
+                    <svg
+                      className="w-full h-full overflow-visible"
+                      preserveAspectRatio="none"
+                      viewBox="0 0 100 100"
+                    >
+                      <path
+                        d={isLeft ? leftToRightPath : rightToLeftPath}
+                        fill="none"
+                        stroke="rgba(212, 175, 55, 0.9)"
+                        strokeWidth="2"
+                        vectorEffect="non-scaling-stroke"
+                        className="curved-dashed-road"
+                      />
+                    </svg>
+
+                    {/* Glowing Moving Dot traveling smoothly along the connector */}
+                    {showDot && (
+                      <div
+                        key={`dot-travel-${dayIndex}-${activeSegmentIndex}-${animationCycle}`}
+                        className={`absolute -translate-x-1/2 -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-white border-2 border-[#d4af37] shadow-[0_0_8px_#d4af37,0_0_16px_rgba(255,215,0,0.85)] z-20 pointer-events-none ${
+                          isLeft ? 'animate-dot-travel-lr' : 'animate-dot-travel-rl'
+                        }`}
+                      />
+                    )}
+                  </div>
                 )}
               </div>
             );
@@ -364,6 +278,52 @@ export default function WeddingProgram({ programDays, locale }: WeddingProgramPr
           animation: curvedDashFlow 1.6s linear infinite;
         }
 
+        @keyframes dotTravelLR {
+          0% {
+            left: 0%;
+            top: 0%;
+          }
+          60% {
+            left: 75%;
+            top: 0%;
+          }
+          75% {
+            left: 100%;
+            top: 25%;
+          }
+          100% {
+            left: 100%;
+            top: 100%;
+          }
+        }
+
+        @keyframes dotTravelRL {
+          0% {
+            left: 100%;
+            top: 0%;
+          }
+          60% {
+            left: 25%;
+            top: 0%;
+          }
+          75% {
+            left: 0%;
+            top: 25%;
+          }
+          100% {
+            left: 0%;
+            top: 100%;
+          }
+        }
+
+        .animate-dot-travel-lr {
+          animation: dotTravelLR 2.2s linear forwards;
+        }
+
+        .animate-dot-travel-rl {
+          animation: dotTravelRL 2.2s linear forwards;
+        }
+
         @keyframes lineRetractLR {
           0% {
             clip-path: inset(0 0 0 0);
@@ -424,7 +384,9 @@ export default function WeddingProgram({ programDays, locale }: WeddingProgramPr
           .curved-dashed-road,
           .header-dashed-line,
           .line-retracting-lr,
-          .line-retracting-rl {
+          .line-retracting-rl,
+          .animate-dot-travel-lr,
+          .animate-dot-travel-rl {
             animation: none !important;
             clip-path: none !important;
             opacity: 1 !important;

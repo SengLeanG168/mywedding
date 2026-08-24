@@ -6,11 +6,52 @@ const rsvpSchema = z.object({
   eventId: z.string().min(1),
   guestId: z.string().optional(),
   guestName: z.string().min(1, "Name is required"),
-  phone: z.string().min(1, "Phone is required"),
+  phone: z.string().optional().default(""),
   status: z.enum(['ATTENDING', 'NOT_ATTENDING', 'UNSURE']),
   attendingCount: z.number().min(1).default(1),
   message: z.string().optional(),
 });
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const eventId = searchParams.get('eventId');
+
+    if (!eventId) {
+      return NextResponse.json({ error: 'eventId is required' }, { status: 400 });
+    }
+
+    const rsvps = await prisma.rSVP.findMany({
+      where: {
+        eventId,
+        message: { not: null, notIn: [''] },
+      },
+      select: {
+        id: true,
+        guestName: true,
+        message: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 40,
+    });
+
+    const wishes = rsvps
+      .filter((r) => r.message && r.message.trim().length > 0)
+      .map((r) => ({
+        id: r.id,
+        guestName: r.guestName || 'ភ្ញៀវកិត្តិយស',
+        name: r.guestName || 'ភ្ញៀវកិត្តិយស',
+        message: r.message!.trim(),
+        createdAt: r.createdAt,
+      }));
+
+    return NextResponse.json({ wishes });
+  } catch (error) {
+    console.error('Fetch wishes error:', error);
+    return NextResponse.json({ wishes: [] });
+  }
+}
 
 export async function POST(request: Request) {
   try {

@@ -6,8 +6,42 @@ import { Link } from '@/i18n/routing';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Search, Loader2, MessageSquare, Phone, User, Calendar, CheckCircle2, XCircle, HelpCircle, ClipboardList, UserCheck, Heart } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  Search, 
+  Loader2, 
+  MessageSquare, 
+  Phone, 
+  User, 
+  Calendar, 
+  CheckCircle2, 
+  XCircle, 
+  HelpCircle, 
+  ClipboardList, 
+  Edit2, 
+  Trash2, 
+  X, 
+  Check 
+} from 'lucide-react';
 import { format } from 'date-fns';
+
+interface RsvpItem {
+  id: string;
+  eventId: string;
+  guestId?: string | null;
+  guestName: string;
+  phone?: string | null;
+  status: string;
+  attendingCount: number;
+  message?: string | null;
+  createdAt?: string;
+  guest?: {
+    id: string;
+    name: string;
+    side: string;
+    phone?: string | null;
+  } | null;
+}
 
 export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eventId: string }> }) {
   const resolvedParams = use(params);
@@ -15,15 +49,39 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
 
   const t = useTranslations('Dashboard');
   const [event, setEvent] = useState<any>(null);
-  const [rsvps, setRsvps] = useState<any[]>([]);
+  const [rsvps, setRsvps] = useState<RsvpItem[]>([]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ATTENDING' | 'NOT_ATTENDING' | 'UNSURE'>('ALL');
   const [sideFilter, setSideFilter] = useState<'ALL' | 'groom' | 'bride'>('ALL');
   const [loading, setLoading] = useState(true);
 
+  // Toast Notification State
+  const [toastMsg, setToastMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Edit Modal State
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingRsvp, setEditingRsvp] = useState<RsvpItem | null>(null);
+  const [editGuestName, setEditGuestName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editStatus, setEditStatus] = useState<'ATTENDING' | 'NOT_ATTENDING' | 'UNSURE'>('ATTENDING');
+  const [editAttendingCount, setEditAttendingCount] = useState(1);
+  const [editSide, setEditSide] = useState<'groom' | 'bride'>('groom');
+  const [editMessage, setEditMessage] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Delete Modal State
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletingRsvp, setDeletingRsvp] = useState<RsvpItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   useEffect(() => {
     fetchData();
   }, [eventId]);
+
+  const showToast = (type: 'success' | 'error', text: string) => {
+    setToastMsg({ type, text });
+    setTimeout(() => setToastMsg(null), 3500);
+  };
 
   const fetchData = async () => {
     try {
@@ -42,6 +100,93 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
       console.error('Failed to fetch RSVPs:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openEditModal = (rsvp: RsvpItem) => {
+    setEditingRsvp(rsvp);
+    setEditGuestName(rsvp.guestName || '');
+    setEditPhone(rsvp.phone || '');
+    setEditStatus((rsvp.status as any) || 'ATTENDING');
+    setEditAttendingCount(rsvp.attendingCount || 1);
+    setEditSide((rsvp.guest?.side as any) || 'groom');
+    setEditMessage(rsvp.message || '');
+    setIsEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditingRsvp(null);
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingRsvp) return;
+
+    setIsSaving(true);
+    try {
+      const res = await fetch(`/api/admin/rsvps/${editingRsvp.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          guestName: editGuestName,
+          phone: editPhone || '',
+          status: editStatus,
+          attendingCount: Number(editAttendingCount) || 1,
+          side: editSide,
+          message: editMessage || '',
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setRsvps((prev) =>
+          prev.map((r) => (r.id === editingRsvp.id ? { ...r, ...data.rsvp } : r))
+        );
+        showToast('success', t('rsvpUpdatedSuccessfully') || 'RSVP updated successfully');
+        closeEditModal();
+      } else {
+        const err = await res.json();
+        showToast('error', err.error || t('rsvpUpdateFailed') || 'Failed to update RSVP');
+      }
+    } catch (err) {
+      showToast('error', t('rsvpUpdateFailed') || 'Failed to update RSVP');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const openDeleteModal = (rsvp: RsvpItem) => {
+    setDeletingRsvp(rsvp);
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setDeletingRsvp(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingRsvp) return;
+
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/rsvps/${deletingRsvp.id}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        setRsvps((prev) => prev.filter((r) => r.id !== deletingRsvp.id));
+        showToast('success', t('rsvpDeletedSuccessfully') || 'RSVP deleted successfully');
+        closeDeleteModal();
+      } else {
+        const err = await res.json();
+        showToast('error', err.error || t('rsvpDeleteFailed') || 'Failed to delete RSVP');
+      }
+    } catch (err) {
+      showToast('error', t('rsvpDeleteFailed') || 'Failed to delete RSVP');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -85,6 +230,20 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 animate-fade-in pb-12">
+      {/* Toast Notification */}
+      {toastMsg && (
+        <div
+          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium transition-all ${
+            toastMsg.type === 'success'
+              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+              : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30'
+          }`}
+        >
+          {toastMsg.type === 'success' ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
+          <span>{toastMsg.text}</span>
+        </div>
+      )}
+
       {/* Back Button & Title Header */}
       <div className="space-y-4">
         <Link href="/dashboard/rsvps">
@@ -100,7 +259,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
               {t('rsvpResponses')}: {event?.brideNameEn} & {event?.groomNameEn}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              View and manage guest RSVP confirmations separated by Groom Side & Bride Side.
+              View, edit, and manage guest RSVP confirmations separated by Groom Side & Bride Side.
             </p>
           </div>
         </div>
@@ -119,7 +278,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
           <CardContent className="p-4 text-center">
             <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">{t('attending')}</div>
             <div className="text-2xl font-bold font-serif text-emerald-600 dark:text-emerald-400 mt-1">
-              {attendingCount} <span className="text-xs font-normal font-sans">({totalPax} pax)</span>
+              {attendingCount} <span className="text-xs font-normal">({totalPax} pax)</span>
             </div>
           </CardContent>
         </Card>
@@ -127,94 +286,95 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
         <Card className="border border-rose-500/20 bg-rose-500/5">
           <CardContent className="p-4 text-center">
             <div className="text-xs text-rose-600 dark:text-rose-400 font-medium">{t('notAttending')}</div>
-            <div className="text-2xl font-bold font-serif text-rose-600 dark:text-rose-400 mt-1">{notAttendingCount}</div>
+            <div className="text-2xl font-bold font-serif text-rose-600 dark:text-rose-400 mt-1">
+              {notAttendingCount}
+            </div>
           </CardContent>
         </Card>
 
         <Card className="border border-amber-500/20 bg-amber-500/5">
           <CardContent className="p-4 text-center">
             <div className="text-xs text-amber-600 dark:text-amber-400 font-medium">{t('unsure')}</div>
-            <div className="text-2xl font-bold font-serif text-amber-600 dark:text-amber-400 mt-1">{unsureCount}</div>
+            <div className="text-2xl font-bold font-serif text-amber-600 dark:text-amber-400 mt-1">
+              {unsureCount}
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filters & Search */}
-      <div className="space-y-3 bg-card p-4 rounded-2xl border border-primary/20 shadow-sm">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-          {/* Status & Side Filters */}
+      {/* Filter Tabs & Search Row */}
+      <div className="bg-card p-4 rounded-2xl border border-primary/20 space-y-3">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          {/* Side & Status Filters */}
           <div className="flex flex-wrap items-center gap-2">
             {/* Side Filter */}
             <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-primary/10">
-              <button
+              <Button
+                variant={sideFilter === 'ALL' ? 'default' : 'ghost'}
+                size="sm"
                 onClick={() => setSideFilter('ALL')}
-                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  sideFilter === 'ALL' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                }`}
+                className="text-xs font-medium rounded-lg h-7 px-2.5"
               >
                 {t('all')}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant={sideFilter === 'groom' ? 'default' : 'ghost'}
+                size="sm"
                 onClick={() => setSideFilter('groom')}
-                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                  sideFilter === 'groom' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                className={`text-xs font-medium rounded-lg h-7 px-2.5 ${
+                  sideFilter === 'groom' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'text-blue-600 dark:text-blue-400'
                 }`}
               >
-                <UserCheck className="w-3 h-3" />
-                <span>{t('groomSide')}</span>
-              </button>
-              <button
+                {t('groomSide')}
+              </Button>
+              <Button
+                variant={sideFilter === 'bride' ? 'default' : 'ghost'}
+                size="sm"
                 onClick={() => setSideFilter('bride')}
-                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                  sideFilter === 'bride' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                className={`text-xs font-medium rounded-lg h-7 px-2.5 ${
+                  sideFilter === 'bride' ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'text-rose-600 dark:text-rose-400'
                 }`}
               >
-                <Heart className="w-3 h-3" />
-                <span>{t('brideSide')}</span>
-              </button>
+                {t('brideSide')}
+              </Button>
             </div>
 
-            <div className="h-4 w-px bg-border hidden sm:block" />
-
-            {/* Status Filter Buttons */}
-            <div className="flex flex-wrap items-center gap-1">
+            {/* Status Filters */}
+            <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-primary/10">
               <Button
                 variant={statusFilter === 'ALL' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setStatusFilter('ALL')}
-                className="text-xs font-medium rounded-xl h-8"
+                className="text-xs font-medium rounded-lg h-7 px-2.5"
               >
-                {t('all')} ({rsvps.length})
+                {t('all')}
               </Button>
-
               <Button
                 variant={statusFilter === 'ATTENDING' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setStatusFilter('ATTENDING')}
-                className={`text-xs font-medium rounded-xl h-8 ${
-                  statusFilter === 'ATTENDING' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'text-emerald-600'
+                className={`text-xs font-medium rounded-lg h-7 px-2.5 ${
+                  statusFilter === 'ATTENDING' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'text-emerald-600 dark:text-emerald-400'
                 }`}
               >
                 {t('attending')} ({rsvps.filter((r) => r.status === 'ATTENDING').length})
               </Button>
-
               <Button
                 variant={statusFilter === 'NOT_ATTENDING' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setStatusFilter('NOT_ATTENDING')}
-                className={`text-xs font-medium rounded-xl h-8 ${
-                  statusFilter === 'NOT_ATTENDING' ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'text-rose-600'
+                className={`text-xs font-medium rounded-lg h-7 px-2.5 ${
+                  statusFilter === 'NOT_ATTENDING' ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'text-rose-600 dark:text-rose-400'
                 }`}
               >
                 {t('notAttending')} ({rsvps.filter((r) => r.status === 'NOT_ATTENDING').length})
               </Button>
-
               <Button
                 variant={statusFilter === 'UNSURE' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setStatusFilter('UNSURE')}
-                className={`text-xs font-medium rounded-xl h-8 ${
-                  statusFilter === 'UNSURE' ? 'bg-amber-600 hover:bg-amber-700 text-white' : 'text-amber-600'
+                className={`text-xs font-medium rounded-lg h-7 px-2.5 ${
+                  statusFilter === 'UNSURE' ? 'bg-amber-600 hover:bg-amber-700 text-white' : 'text-amber-600 dark:text-amber-400'
                 }`}
               >
                 {t('unsure')} ({rsvps.filter((r) => r.status === 'UNSURE').length})
@@ -287,7 +447,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
                   <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Phone className="w-3.5 h-3.5 text-muted-foreground" />
-                      {rsvp.phone}
+                      {rsvp.phone || '-'}
                     </span>
 
                     {rsvp.status === 'ATTENDING' && (
@@ -312,6 +472,29 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
                     </div>
                   )}
                 </div>
+
+                {/* Actions: Edit & Delete Buttons */}
+                <div className="flex items-center gap-2 self-end sm:self-center shrink-0 pt-2 sm:pt-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openEditModal(rsvp)}
+                    className="h-8 px-3 gap-1.5 text-xs text-primary border-primary/30 hover:bg-primary/10 hover:text-primary rounded-xl"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                    <span>{t('edit')}</span>
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => openDeleteModal(rsvp)}
+                    className="h-8 px-3 gap-1.5 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive rounded-xl"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>{t('delete')}</span>
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           );
@@ -324,6 +507,180 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
           </div>
         )}
       </div>
+
+      {/* Edit RSVP Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-card border border-primary/20 rounded-2xl w-full max-w-lg shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={closeEditModal}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h2 className="text-xl font-bold font-serif text-primary mb-4 flex items-center gap-2">
+              <Edit2 className="w-5 h-5" />
+              {t('editRsvp')}
+            </h2>
+
+            <form onSubmit={handleSaveEdit} className="space-y-4">
+              {/* Guest Name */}
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-muted-foreground">{t('guestName') || 'Guest Name'}</label>
+                <Input
+                  required
+                  value={editGuestName}
+                  onChange={(e) => setEditGuestName(e.target.value)}
+                  placeholder="Enter guest name"
+                  className="bg-background text-sm"
+                />
+              </div>
+
+              {/* Phone Number (Optional) */}
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  {t('phone')} (Optional)
+                </label>
+                <Input
+                  value={editPhone}
+                  onChange={(e) => setEditPhone(e.target.value)}
+                  placeholder="Enter phone number"
+                  className="bg-background text-sm"
+                />
+              </div>
+
+              {/* Side Selector */}
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-muted-foreground">{t('guestSide') || 'Side'}</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditSide('groom')}
+                    className={`py-2 px-3 text-xs font-bold rounded-xl border transition-all ${
+                      editSide === 'groom'
+                        ? 'bg-blue-600 text-white border-blue-600 shadow'
+                        : 'bg-muted/40 text-muted-foreground border-transparent hover:bg-muted'
+                    }`}
+                  >
+                    {t('groomSide')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditSide('bride')}
+                    className={`py-2 px-3 text-xs font-bold rounded-xl border transition-all ${
+                      editSide === 'bride'
+                        ? 'bg-rose-600 text-white border-rose-600 shadow'
+                        : 'bg-muted/40 text-muted-foreground border-transparent hover:bg-muted'
+                    }`}
+                  >
+                    {t('brideSide')}
+                  </button>
+                </div>
+              </div>
+
+              {/* Attendance Status & Attendees Count */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-muted-foreground">{t('attendanceStatus') || 'Status'}</label>
+                  <select
+                    value={editStatus}
+                    onChange={(e) => setEditStatus(e.target.value as any)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                  >
+                    <option value="ATTENDING">{t('attending')}</option>
+                    <option value="NOT_ATTENDING">{t('notAttending')}</option>
+                    <option value="UNSURE">{t('unsure')}</option>
+                  </select>
+                </div>
+
+                {editStatus === 'ATTENDING' && (
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-muted-foreground">{t('attendingCount') || 'Pax'}</label>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={50}
+                      value={editAttendingCount}
+                      onChange={(e) => setEditAttendingCount(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                      className="bg-background text-sm"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Wish / Message */}
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-muted-foreground">{t('blessingMessage') || 'Blessing / Wish'}</label>
+                <textarea
+                  value={editMessage}
+                  onChange={(e) => setEditMessage(e.target.value)}
+                  placeholder="Enter blessing or wish message..."
+                  rows={3}
+                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                />
+              </div>
+
+              {/* Modal Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={closeEditModal}
+                  disabled={isSaving}
+                  className="rounded-xl text-xs"
+                >
+                  {t('cancel')}
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSaving}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl text-xs gap-1.5"
+                >
+                  {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                  <span>{t('save')}</span>
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-card border border-primary/20 rounded-2xl w-full max-w-sm shadow-2xl p-6 relative">
+            <h3 className="text-lg font-bold font-serif text-foreground mb-2">
+              {t('deleteRsvp')}
+            </h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              {t('deleteRsvpConfirm')}
+            </p>
+
+            <div className="flex items-center justify-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={closeDeleteModal}
+                disabled={isDeleting}
+                className="rounded-xl text-xs"
+              >
+                {t('cancel')}
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleConfirmDelete}
+                disabled={isDeleting}
+                className="rounded-xl text-xs gap-1.5"
+              >
+                {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                <span>{t('delete')}</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

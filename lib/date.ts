@@ -61,3 +61,33 @@ export function formatLocalizedDate(dateInput: string | Date | number, locale: s
     return `${weekday}, ${month} ${day}${ordinal}, ${year}`;
   }
 }
+
+export function formatKhmerDateTime(dateInput: string | Date | number): string {
+  if (!dateInput) return '';
+  const date = new Date(dateInput);
+  if (isNaN(date.getTime())) return '';
+
+  // Format in Asia/Phnom_Penh timezone
+  const phnomPenhDate = new Date(date.toLocaleString('en-US', { timeZone: 'Asia/Phnom_Penh' }));
+  const dayNum = toKhmerNumerals(phnomPenhDate.getDate());
+  const month = KHMER_MONTHS[phnomPenhDate.getMonth()];
+  const yearNum = toKhmerNumerals(phnomPenhDate.getFullYear());
+
+  const hours = phnomPenhDate.getHours();
+  const minutes = phnomPenhDate.getMinutes();
+  const minutesStr = toKhmerNumerals(String(minutes).padStart(2, '0'));
+
+  let period = 'ព្រឹក';
+  if (hours >= 12 && hours < 17) {
+    period = 'រសៀល';
+  } else if (hours >= 17 && hours < 20) {
+    period = 'ល្ងាច';
+  } else if (hours >= 20 || hours < 5) {
+    period = 'យប់';
+  }
+
+  const hour12 = hours % 12 || 12;
+  const hoursStr = toKhmerNumerals(String(hour12).padStart(2, '0'));
+
+  return `ថ្ងៃទី${dayNum} ខែ${month} ឆ្នាំ${yearNum} ម៉ោង ${hoursStr}:${minutesStr} ${period}`;
+}

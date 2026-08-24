@@ -5,7 +5,7 @@
   "RSVP": {
     "title": "បញ្ជាក់ការចូលរួម",
     "guestName": "ឈ្មោះរបស់អ្នក",
-    "phone": "លេខទូរស័ព្ទ",
+    "phone": "លេខទូរស័ព្ទ (មិនបាច់បំពេញក៏បាន)",
     "attendanceStatus": "ស្ថានភាពចូលរួម",
     "attending": "ចូលរួម",
     "notAttending": "មិនចូលរួម",
@@ -231,7 +231,22 @@
     "showGuestNameInSharePreview": "បង្ហាញឈ្មោះភ្ញៀវនៅពេលផ្ញើ Link",
     "linkPreviewImage": "រូបភាព Preview ពេលផ្ញើ Link",
     "youAreInvited": "សូមគោរពអញ្ជើញ",
-    "honoredGuest": "ភ្ញៀវកិត្តិយស"
+    "honoredGuest": "ភ្ញៀវកិត្តិយស",
+    "editRsvp": "កែ RSVP",
+    "deleteRsvp": "លុប RSVP",
+    "deleteRsvpConfirm": "តើអ្នកពិតជាចង់លុប RSVP នេះមែនទេ?",
+    "rsvpDeletedSuccessfully": "លុបដោយជោគជ័យ",
+    "rsvpDeleteFailed": "លុបមិនបានជោគជ័យ",
+    "rsvpUpdatedSuccessfully": "កែប្រែដោយជោគជ័យ",
+    "rsvpUpdateFailed": "កែប្រែមិនបានជោគជ័យ",
+    "edit": "កែ",
+    "delete": "លុប",
+    "save": "រក្សាទុក",
+    "cancel": "បោះបង់",
+    "guestName": "ឈ្មោះភ្ញៀវ",
+    "attendanceStatus": "ស្ថានភាពចូលរួម",
+    "attendingCount": "ចំនួនអ្នកចូលរួម",
+    "blessingMessage": "សារជូនពរ"
   },
   "Auth": {
     "login": "ចូលគណនី",
