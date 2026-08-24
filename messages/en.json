@@ -116,6 +116,8 @@
     "scanForLocation": "Scan for Location",
     "scanQrCodeToViewLocation": "Scan QR Code to view location",
     "showMapQrCode": "Show Map QR Code",
+    "showGuestNameInSharePreview": "Show guest name in shared link preview",
+    "linkPreviewImage": "Link preview image",
     "giftQrSettings": "Gift QR Settings",
     "showGiftQrCode": "Show Gift QR Code",
     "uploadGiftQrCode": "Upload Gift QR Code",

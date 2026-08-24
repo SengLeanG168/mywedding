@@ -21,6 +21,16 @@ async function getBaseUrl(): Promise<string> {
   return 'https://mywedding.com';
 }
 
+function getAbsoluteImageUrl(rawUrl: string | null | undefined, baseUrl: string): string | null {
+  if (!rawUrl || typeof rawUrl !== 'string' || !rawUrl.trim()) return null;
+  const trimmed = rawUrl.trim();
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+  const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  return `${baseUrl}${cleanPath}`;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -67,32 +77,32 @@ export async function generateMetadata({
       ? 'សូមគោរពអញ្ជើញចូលរួមពិធីមង្គលអាពាហ៍ពិពាហ៍'
       : 'You are warmly invited to our wedding ceremony';
 
-  const ogImageUrl = `${baseUrl}/api/og/invite/${slug}?guestId=${guestId}&locale=${locale}`;
   const pageUrl = `${baseUrl}/${locale}/invite/${slug}/guest/${guestId}`;
+  const dynamicOgUrl = `${baseUrl}/api/og/invite/${slug}?guestId=${guestId}&locale=${locale}`;
 
-  // Build fallback absolute image URL if available
-  const rawFallback = event.coverImage || event.couplePhotoUrl || event.openingImageUrl;
-  let absoluteFallbackImage = '';
-  if (rawFallback) {
-    if (rawFallback.startsWith('http://') || rawFallback.startsWith('https://')) {
-      absoluteFallbackImage = rawFallback;
-    } else {
-      absoluteFallbackImage = `${baseUrl}${rawFallback.startsWith('/') ? '' : '/'}${rawFallback}`;
-    }
-  }
+  // Image Priority:
+  // 1. openingImageUrl (Image used on opening screen page with "បើកធៀប" button)
+  // 2. coverImage
+  // 3. couplePhotoUrl
+  // 4. Default dynamic OG image
+  const primaryImageUrl =
+    getAbsoluteImageUrl(event.openingImageUrl, baseUrl) ||
+    getAbsoluteImageUrl(event.coverImage, baseUrl) ||
+    getAbsoluteImageUrl(event.couplePhotoUrl, baseUrl) ||
+    dynamicOgUrl;
 
-  const images = [
+  const images: Array<{ url: string; width?: number; height?: number; alt?: string }> = [
     {
-      url: ogImageUrl,
+      url: primaryImageUrl,
       width: 1200,
       height: 630,
       alt: title,
     },
   ];
 
-  if (absoluteFallbackImage) {
+  if (primaryImageUrl !== dynamicOgUrl) {
     images.push({
-      url: absoluteFallbackImage,
+      url: dynamicOgUrl,
       width: 1200,
       height: 630,
       alt: title,
@@ -116,7 +126,7 @@ export async function generateMetadata({
       card: 'summary_large_image',
       title,
       description,
-      images: [ogImageUrl, ...(absoluteFallbackImage ? [absoluteFallbackImage] : [])],
+      images: [primaryImageUrl],
     },
   };
 }
