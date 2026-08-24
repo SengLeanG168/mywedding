@@ -3,6 +3,15 @@ import prisma from '@/lib/prisma';
 
 export const runtime = 'nodejs';
 
+function getAbsoluteBgUrl(rawUrl: string | null | undefined, baseUrl: string): string | null {
+  if (!rawUrl || !rawUrl.trim()) return null;
+  const trimmed = rawUrl.trim();
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+  return `${baseUrl}${trimmed.startsWith('/') ? trimmed : `/${trimmed}`}`;
+}
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
@@ -10,8 +19,8 @@ export async function GET(
   try {
     const { slug } = await params;
     const { searchParams } = new URL(request.url);
-    const guestId = searchParams.get('guestId');
     const locale = searchParams.get('locale') || 'km';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://leangna.online';
 
     const event = await prisma.event.findUnique({
       where: { slug },
@@ -21,28 +30,11 @@ export async function GET(
       return new Response('Event not found', { status: 404 });
     }
 
-    let guestName = '';
-    if (guestId && event.showGuestNameInSharePreview !== false) {
-      const guest = await prisma.guest.findUnique({
-        where: { id: guestId, eventId: event.id },
-      });
-      if (guest) {
-        guestName = guest.name;
-      }
-    }
-
-    const isKm = locale === 'km';
-    const groomName = isKm ? event.groomNameKm : event.groomNameEn;
-    const brideName = isKm ? event.brideNameKm : event.brideNameEn;
+    const isKm = locale !== 'en';
+    const groomName = (isKm ? event.groomNameKm : event.groomNameEn) || event.groomNameKm || event.groomNameEn || 'Groom';
+    const brideName = (isKm ? event.brideNameKm : event.brideNameEn) || event.brideNameKm || event.brideNameEn || 'Bride';
 
     const titleText = isKm ? 'សិរីមង្គលអាពាហ៍ពិពាហ៍' : 'Wedding Invitation';
-    const invitationHeader = guestName
-      ? isKm
-        ? `សូមគោរពអញ្ជើញ ៖ ${guestName}`
-        : `Special Invitation For: ${guestName}`
-      : isKm
-      ? 'សូមគោរពអញ្ជើញចូលរួមពិធីមង្គលការ'
-      : 'You are warmly invited to our wedding';
 
     const dateText = event.eventDate
       ? new Date(event.eventDate).toLocaleDateString(isKm ? 'km-KH' : 'en-US', {
@@ -50,8 +42,8 @@ export async function GET(
         })
       : '';
 
-    const bgPhoto = event.openingImageUrl || event.coverImage || event.couplePhotoUrl;
-    const hasValidBg = bgPhoto && (bgPhoto.startsWith('http://') || bgPhoto.startsWith('https://'));
+    const rawBg = event.openingImageUrl || event.coverImage || event.couplePhotoUrl;
+    const bgPhoto = getAbsoluteBgUrl(rawBg, baseUrl);
 
     return new ImageResponse(
       (
@@ -65,12 +57,12 @@ export async function GET(
             justifyContent: 'center',
             background: 'linear-gradient(135deg, #1f0710 0%, #3d0c1c 50%, #15030a 100%)',
             color: '#FBF7F0',
-            fontFamily: 'serif',
+            fontFamily: 'sans-serif',
             padding: '40px',
             position: 'relative',
           }}
         >
-          {hasValidBg && (
+          {bgPhoto && (
             <img
               src={bgPhoto}
               alt="Background"
@@ -81,12 +73,12 @@ export async function GET(
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
-                opacity: 0.25,
+                opacity: 0.3,
               }}
             />
           )}
 
-          {/* Inner Decorative Border */}
+          {/* Inner Decorative Border with Dark Overlay */}
           <div
             style={{
               position: 'absolute',
@@ -94,33 +86,34 @@ export async function GET(
               left: '25px',
               right: '25px',
               bottom: '25px',
-              border: '2px solid #D4AF37',
+              border: '3px solid #D4AF37',
               borderRadius: '24px',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
               padding: '30px',
-              backgroundColor: 'rgba(31, 7, 16, 0.65)',
+              backgroundColor: 'rgba(31, 7, 16, 0.75)',
             }}
           >
-            {/* Top Ornamental Badge */}
+            {/* Top Ornamental Title */}
             <div
               style={{
-                fontSize: '22px',
+                fontSize: '26px',
                 color: '#D4AF37',
                 letterSpacing: '2px',
                 textTransform: 'uppercase',
                 marginBottom: '15px',
+                fontWeight: 'bold',
               }}
             >
               ❖ {titleText} ❖
             </div>
 
-            {/* Couple Names */}
+            {/* Couple Names Banner */}
             <div
               style={{
-                fontSize: '52px',
+                fontSize: '56px',
                 fontWeight: 'bold',
                 color: '#FFFFFF',
                 textAlign: 'center',
@@ -131,35 +124,18 @@ export async function GET(
               }}
             >
               <span>{groomName}</span>
-              <span style={{ color: '#D4AF37', fontSize: '40px' }}>&</span>
+              <span style={{ color: '#D4AF37', fontSize: '44px' }}>&</span>
               <span>{brideName}</span>
             </div>
 
-            {/* Guest Invitation Banner */}
-            <div
-              style={{
-                background: 'linear-gradient(90deg, rgba(212,175,55,0.15) 0%, rgba(212,175,55,0.3) 50%, rgba(212,175,55,0.15) 100%)',
-                border: '1px solid rgba(212,175,55,0.6)',
-                borderRadius: '50px',
-                padding: '12px 35px',
-                fontSize: '28px',
-                color: '#FCE762',
-                fontWeight: 'bold',
-                textAlign: 'center',
-                marginTop: '10px',
-                marginBottom: '20px',
-              }}
-            >
-              {invitationHeader}
-            </div>
-
-            {/* Date & Location */}
+            {/* Date */}
             {dateText && (
               <div
                 style={{
                   fontSize: '22px',
-                  color: 'rgba(255, 255, 255, 0.85)',
+                  color: 'rgba(255, 255, 255, 0.9)',
                   textAlign: 'center',
+                  marginTop: '10px',
                 }}
               >
                 {dateText}
@@ -174,7 +150,7 @@ export async function GET(
       }
     );
   } catch (e: any) {
-    console.error('OG Image Generation Error:', e);
-    return new Response('Failed to generate image', { status: 500 });
+    console.error('General OG Image Generation Error:', e);
+    return new Response('Failed to generate general OG image', { status: 500 });
   }
 }

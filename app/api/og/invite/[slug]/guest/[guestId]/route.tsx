@@ -3,6 +3,15 @@ import prisma from '@/lib/prisma';
 
 export const runtime = 'nodejs';
 
+function getAbsoluteBgUrl(rawUrl: string | null | undefined, baseUrl: string): string | null {
+  if (!rawUrl || !rawUrl.trim()) return null;
+  const trimmed = rawUrl.trim();
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+  return `${baseUrl}${trimmed.startsWith('/') ? trimmed : `/${trimmed}`}`;
+}
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string; guestId: string }> }
@@ -11,6 +20,7 @@ export async function GET(
     const { slug, guestId } = await params;
     const { searchParams } = new URL(request.url);
     const locale = searchParams.get('locale') || 'km';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://leangna.online';
 
     const event = await prisma.event.findUnique({
       where: { slug },
@@ -31,14 +41,14 @@ export async function GET(
     }
 
     const isKm = locale !== 'en';
-    const groomName = (isKm ? event.groomNameKm : event.brideNameKm ? event.groomNameKm : event.groomNameEn) || event.groomNameEn || 'Groom';
-    const brideName = (isKm ? event.brideNameKm : event.groomNameKm ? event.brideNameKm : event.brideNameEn) || event.brideNameEn || 'Bride';
+    const groomName = (isKm ? event.groomNameKm : event.groomNameEn) || event.groomNameKm || event.groomNameEn || 'Groom';
+    const brideName = (isKm ? event.brideNameKm : event.brideNameEn) || event.brideNameKm || event.brideNameEn || 'Bride';
 
-    const titleText = isKm ? 'សិរីមង្គលអាពាហ៍ពិពាហ៍' : 'Wedding Invitation';
+    const mainTitle = isKm ? 'ពិធីមង្គលអាពាហ៍ពិពាហ៍' : 'Wedding Ceremony';
     const invitationHeader = guestName
       ? isKm
-        ? `សូមគោរពអញ្ជើញ ៖ ${guestName}`
-        : `Special Invitation For: ${guestName}`
+        ? `សូមគោរពអញ្ជើញ ${guestName}`
+        : `Invitation for ${guestName}`
       : isKm
       ? 'សូមគោរពអញ្ជើញចូលរួមពិធីមង្គលការ'
       : 'You are warmly invited to our wedding';
@@ -49,8 +59,8 @@ export async function GET(
         })
       : '';
 
-    const bgPhoto = event.openingImageUrl || event.coverImage || event.couplePhotoUrl;
-    const hasValidBg = bgPhoto && (bgPhoto.startsWith('http://') || bgPhoto.startsWith('https://'));
+    const rawBg = event.openingImageUrl || event.coverImage || event.couplePhotoUrl;
+    const bgPhoto = getAbsoluteBgUrl(rawBg, baseUrl);
 
     return new ImageResponse(
       (
@@ -69,7 +79,7 @@ export async function GET(
             position: 'relative',
           }}
         >
-          {hasValidBg && (
+          {bgPhoto && (
             <img
               src={bgPhoto}
               alt="Background"
@@ -80,12 +90,12 @@ export async function GET(
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
-                opacity: 0.25,
+                opacity: 0.3,
               }}
             />
           )}
 
-          {/* Inner Decorative Border */}
+          {/* Inner Decorative Border with Dark Transparent Overlay */}
           <div
             style={{
               position: 'absolute',
@@ -100,7 +110,7 @@ export async function GET(
               alignItems: 'center',
               justifyContent: 'center',
               padding: '30px',
-              backgroundColor: 'rgba(31, 7, 16, 0.65)',
+              backgroundColor: 'rgba(31, 7, 16, 0.75)',
             }}
           >
             {/* Top Badge */}
@@ -111,9 +121,10 @@ export async function GET(
                 letterSpacing: '2px',
                 textTransform: 'uppercase',
                 marginBottom: '15px',
+                fontWeight: 'bold',
               }}
             >
-              ❖ {titleText} ❖
+              ❖ {mainTitle} ❖
             </div>
 
             {/* Groom & Bride Names */}
@@ -130,18 +141,18 @@ export async function GET(
               }}
             >
               <span>{groomName}</span>
-              <span style={{ color: '#D4AF37', fontSize: '42px' }}>&</span>
+              <span style={{ color: '#D4AF37', fontSize: '42px' }}>និង</span>
               <span>{brideName}</span>
             </div>
 
             {/* Guest Invitation Pill Banner */}
             <div
               style={{
-                background: 'linear-gradient(90deg, rgba(212,175,55,0.2) 0%, rgba(212,175,55,0.45) 50%, rgba(212,175,55,0.2) 100%)',
+                background: 'linear-gradient(90deg, rgba(212,175,55,0.2) 0%, rgba(212,175,55,0.5) 50%, rgba(212,175,55,0.2) 100%)',
                 border: '2px solid #D4AF37',
                 borderRadius: '50px',
-                padding: '14px 40px',
-                fontSize: '30px',
+                padding: '14px 45px',
+                fontSize: '32px',
                 color: '#FCE762',
                 fontWeight: 'bold',
                 textAlign: 'center',

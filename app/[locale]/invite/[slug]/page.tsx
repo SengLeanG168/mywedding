@@ -21,24 +21,6 @@ async function getBaseUrl(): Promise<string> {
   return 'https://leangna.online';
 }
 
-function getAbsoluteImageUrl(imagePath?: string | null, baseUrl?: string): string | null {
-  if (!imagePath || !imagePath.trim()) return null;
-  const defaultAppUrl = baseUrl || (process.env.NEXT_PUBLIC_APP_URL ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '') : 'https://leangna.online');
-  const trimmed = imagePath.trim();
-  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-    return trimmed;
-  }
-  return `${defaultAppUrl}${trimmed.startsWith('/') ? trimmed : `/${trimmed}`}`;
-}
-
-function getMimeType(url: string): string {
-  const lower = url.toLowerCase();
-  if (lower.endsWith('.png')) return 'image/png';
-  if (lower.endsWith('.webp')) return 'image/webp';
-  if (lower.endsWith('.gif')) return 'image/gif';
-  return 'image/jpeg';
-}
-
 export async function generateMetadata({
   params,
 }: {
@@ -67,44 +49,8 @@ export async function generateMetadata({
 
   const pageUrl = `${baseUrl}/${locale === 'en' ? 'en/' : ''}invite/${slug}`;
   
-  // Dedicated optimized 1200x630 dynamic OG card route for event
-  const dynamicOgUrl = `${baseUrl}/api/og/invite/${slug}?locale=${isKm ? 'km' : 'en'}`;
-
-  // Fallback raw uploaded photo if available
-  const rawImagePath = event.openingImageUrl || event.coverImage || event.couplePhotoUrl;
-  const primaryRawImageUrl = getAbsoluteImageUrl(rawImagePath, baseUrl);
-
-  // Debug log for OG image URL
-  console.log(`[OG Metadata Event] Slug: ${slug}, OG Image URL: ${dynamicOgUrl}`);
-
-  const images: Array<{
-    url: string;
-    secureUrl?: string;
-    width?: number;
-    height?: number;
-    alt?: string;
-    type?: string;
-  }> = [
-    {
-      url: dynamicOgUrl,
-      secureUrl: dynamicOgUrl,
-      width: 1200,
-      height: 630,
-      alt: title,
-      type: 'image/png',
-    },
-  ];
-
-  if (primaryRawImageUrl) {
-    images.push({
-      url: primaryRawImageUrl,
-      secureUrl: primaryRawImageUrl,
-      width: 1200,
-      height: 630,
-      alt: title,
-      type: getMimeType(primaryRawImageUrl),
-    });
-  }
+  // Dynamic 1200x630 OG image route for general invitation link
+  const ogImageUrl = `${baseUrl}/api/og/invite/${slug}`;
 
   return {
     metadataBase: new URL(baseUrl),
@@ -117,13 +63,22 @@ export async function generateMetadata({
       siteName: `${groomName} & ${brideName} Wedding`,
       locale: isKm ? 'km_KH' : 'en_US',
       type: 'website',
-      images,
+      images: [
+        {
+          url: ogImageUrl,
+          secureUrl: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: title,
+          type: 'image/png',
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: [dynamicOgUrl],
+      images: [ogImageUrl],
     },
   };
 }
