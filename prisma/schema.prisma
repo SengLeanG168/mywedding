@@ -71,6 +71,7 @@ model Event {
   
   showMapQrCode       Boolean  @default(true)
   showGuestNameInSharePreview Boolean @default(true)
+  socialPreviewImageUrl String?
   showGiftQrCode      Boolean  @default(false)
   giftQrImageUrl      String?
   giftQrKhImageUrl    String?

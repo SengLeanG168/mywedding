@@ -69,6 +69,7 @@ export default function EventForm({ initialData }: { initialData?: any }) {
     // QR Code & Gift Settings
     showMapQrCode: initialData?.showMapQrCode !== undefined ? initialData.showMapQrCode : true,
     showGuestNameInSharePreview: initialData?.showGuestNameInSharePreview !== undefined ? initialData.showGuestNameInSharePreview : true,
+    socialPreviewImageUrl: initialData?.socialPreviewImageUrl || '',
     showGiftQrCode: initialData?.showGiftQrCode !== undefined ? initialData.showGiftQrCode : false,
     giftQrImageUrl: initialData?.giftQrImageUrl || '',
     giftQrKhImageUrl: initialData?.giftQrKhImageUrl || '',
@@ -462,6 +463,17 @@ export default function EventForm({ initialData }: { initialData?: any }) {
             <label htmlFor="showGuestNameInSharePreview" className="text-sm font-medium">
               {t('showGuestNameInSharePreview') || 'Show guest name in shared link preview'}
             </label>
+          </div>
+          <div className="space-y-3 md:col-span-2 pt-3 border-t">
+            <label className="text-sm font-semibold block">{t('socialPreviewImage')}</label>
+            <p className="text-xs text-muted-foreground">{t('previewImageHelp')}</p>
+            <p className="text-xs text-amber-600 font-medium">{t('recommendedSize')}</p>
+            <MediaUpload
+              type="image"
+              value={formData.socialPreviewImageUrl}
+              onChange={(url) => setFormData((prev) => ({ ...prev, socialPreviewImageUrl: url }))}
+              label={t('uploadPreviewImage')}
+            />
           </div>
         </CardContent>
       </Card>

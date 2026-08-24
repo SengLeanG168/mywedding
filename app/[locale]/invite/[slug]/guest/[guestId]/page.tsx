@@ -21,6 +21,18 @@ async function getBaseUrl(): Promise<string> {
   return 'https://leangna.online';
 }
 
+function getAbsoluteImageUrl(imagePath?: string | null, baseUrl?: string): string {
+  const defaultAppUrl = baseUrl || (process.env.NEXT_PUBLIC_APP_URL ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '') : 'https://leangna.online');
+  if (!imagePath || !imagePath.trim()) {
+    return `${defaultAppUrl}/default-og-image.jpg`;
+  }
+  const trimmed = imagePath.trim();
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+  return `${defaultAppUrl}${trimmed.startsWith('/') ? trimmed : `/${trimmed}`}`;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -67,8 +79,14 @@ export async function generateMetadata({
 
   const pageUrl = `${baseUrl}/${locale === 'en' ? 'en/' : ''}invite/${slug}/guest/${guestId}`;
   
-  // Dynamic 1200x630 OG image route for guest-specific link
-  const ogImageUrl = `${baseUrl}/api/og/invite/${slug}/guest/${guestId}`;
+  // Image priority: 1. socialPreviewImageUrl, 2. openingImageUrl, 3. coverImage, 4. couplePhotoUrl, 5. default
+  const rawImagePath =
+    event.socialPreviewImageUrl ||
+    event.openingImageUrl ||
+    event.coverImage ||
+    event.couplePhotoUrl;
+
+  const previewImageUrl = getAbsoluteImageUrl(rawImagePath, baseUrl);
 
   return {
     metadataBase: new URL(baseUrl),
@@ -83,12 +101,11 @@ export async function generateMetadata({
       type: 'website',
       images: [
         {
-          url: ogImageUrl,
-          secureUrl: ogImageUrl,
+          url: previewImageUrl,
+          secureUrl: previewImageUrl,
           width: 1200,
           height: 630,
           alt: title,
-          type: 'image/png',
         },
       ],
     },
@@ -96,7 +113,7 @@ export async function generateMetadata({
       card: 'summary_large_image',
       title,
       description,
-      images: [ogImageUrl],
+      images: [previewImageUrl],
     },
   };
 }
