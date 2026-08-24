@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTranslations } from 'next-intl';
+import { Copy, ExternalLink } from 'lucide-react';
 import MediaUpload from './MediaUpload';
 import GalleryUpload from './GalleryUpload';
 
@@ -14,6 +15,14 @@ export default function EventForm({ initialData }: { initialData?: any }) {
   const t = useTranslations('Event');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [copiedUrl, setCopiedUrl] = useState(false);
+
+  const handleCopyUrl = () => {
+    if (!formData.socialPreviewImageUrl) return;
+    navigator.clipboard.writeText(formData.socialPreviewImageUrl);
+    setCopiedUrl(true);
+    setTimeout(() => setCopiedUrl(false), 2000);
+  };
   
   const [formData, setFormData] = useState({
     slug: initialData?.slug || '',
@@ -474,6 +483,42 @@ export default function EventForm({ initialData }: { initialData?: any }) {
               onChange={(url) => setFormData((prev) => ({ ...prev, socialPreviewImageUrl: url }))}
               label={t('uploadPreviewImage')}
             />
+
+            {formData.socialPreviewImageUrl ? (
+              <div className="space-y-1.5 pt-2">
+                <label className="text-xs font-medium text-muted-foreground">{t('previewImageUrlLabel')}</label>
+                <div className="flex items-center space-x-2">
+                  <Input
+                    readOnly
+                    value={formData.socialPreviewImageUrl}
+                    className="font-mono text-xs bg-muted/50 flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCopyUrl}
+                    className="shrink-0"
+                  >
+                    <Copy className="w-4 h-4 mr-1" />
+                    {copiedUrl ? t('copied') : t('copyUrl')}
+                  </Button>
+                  <a
+                    href={formData.socialPreviewImageUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center rounded-md text-xs font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 shrink-0"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-1" />
+                    {t('openImage')}
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <div className="text-xs text-muted-foreground italic pt-1">
+                {t('noPreviewImageYet')}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
