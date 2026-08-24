@@ -5,6 +5,8 @@ import { useTranslations } from 'next-intl';
 import { Upload, X, Film, Music as MusicIcon, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+import { uploadClientFile } from '@/lib/client-upload';
+
 interface MediaUploadProps {
   type: 'image' | 'video' | 'audio';
   value: string;
@@ -35,7 +37,7 @@ export default function MediaUpload({ type, value, onChange, label }: MediaUploa
     fileInputRef.current?.click();
   };
 
-  // Perform upload request to server API
+  // Perform upload request to Vercel Blob client-side (bypasses 4.5MB serverless limit)
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -43,27 +45,12 @@ export default function MediaUpload({ type, value, onChange, label }: MediaUploa
     setError('');
     setUploading(true);
 
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const apiPath = `/api/upload/${type}`;
-
     try {
-      const response = await fetch(apiPath, {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        onChange(data.url);
-      } else {
-        setError(data.error || t('uploadFailed'));
-      }
-    } catch (err) {
+      const url = await uploadClientFile(file, type);
+      onChange(url);
+    } catch (err: any) {
       console.error(err);
-      setError(t('uploadFailed'));
+      setError(err?.message || t('uploadFailed'));
     } finally {
       setUploading(false);
       if (fileInputRef.current) {

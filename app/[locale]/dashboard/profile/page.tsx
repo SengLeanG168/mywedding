@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { User, Mail, Lock, Upload, Trash2, CheckCircle2, AlertCircle, Loader2, ShieldCheck } from 'lucide-react';
 
+import { uploadClientFile } from '@/lib/client-upload';
+
 export default function AdminProfilePage() {
   const t = useTranslations('Profile');
 
@@ -75,24 +77,12 @@ export default function AdminProfilePage() {
 
     try {
       setUploadingImage(true);
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const res = await fetch('/api/upload/image', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (res.ok && data.url) {
-        setAvatarUrl(data.url);
-        setProfileSuccess(t('profileSavedSuccessfully'));
-      } else {
-        setProfileError(data.error || 'Image upload failed');
-      }
-    } catch (err) {
+      const url = await uploadClientFile(file, 'image');
+      setAvatarUrl(url);
+      setProfileSuccess(t('profileSavedSuccessfully'));
+    } catch (err: any) {
       console.error(err);
-      setProfileError('Image upload failed');
+      setProfileError(err?.message || 'Image upload failed');
     } finally {
       setUploadingImage(false);
     }

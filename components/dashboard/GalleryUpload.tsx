@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import imageCompression from 'browser-image-compression';
+import { uploadClientFile } from '@/lib/client-upload';
 
 interface GalleryUploadProps {
   value: string[];
@@ -56,20 +57,12 @@ export default function GalleryUpload({ value = [], onChange, label }: GalleryUp
           }
         }
 
-        const formData = new FormData();
-        formData.append('file', file);
-
-        const response = await fetch('/api/upload/image', {
-          method: 'POST',
-          body: formData,
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-          uploadedUrls.push(data.url);
-        } else {
-          setError(data.error || t('uploadFailed'));
+        try {
+          const url = await uploadClientFile(file, 'image');
+          uploadedUrls.push(url);
+        } catch (uploadErr: any) {
+          console.error('Gallery image upload error:', uploadErr);
+          setError(uploadErr?.message || t('uploadFailed'));
         }
       }
 
