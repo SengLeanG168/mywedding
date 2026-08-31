@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useTranslations } from 'next-intl';
-import { Copy, ExternalLink } from 'lucide-react';
+import { Copy, ExternalLink, Sparkles, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import MediaUpload from './MediaUpload';
 import GalleryUpload from './GalleryUpload';
 
@@ -15,6 +15,7 @@ export default function EventForm({ initialData }: { initialData?: any }) {
   const t = useTranslations('Event');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [copiedUrl, setCopiedUrl] = useState(false);
 
   const handleCopyUrl = () => {
@@ -30,8 +31,8 @@ export default function EventForm({ initialData }: { initialData?: any }) {
     brideNameEn: initialData?.brideNameEn || '',
     groomNameKm: initialData?.groomNameKm || '',
     groomNameEn: initialData?.groomNameEn || '',
-    eventDate: initialData?.eventDate || '',
-    eventTime: initialData?.eventTime || '17:00',
+    eventDate: initialData?.eventDate ? new Date(initialData.eventDate).toISOString().split('T')[0] : '',
+    eventTime: initialData?.eventTime || '',
     locationNameKm: initialData?.locationNameKm || '',
     locationNameEn: initialData?.locationNameEn || '',
     locationAddressKm: initialData?.locationAddressKm || '',
@@ -44,9 +45,9 @@ export default function EventForm({ initialData }: { initialData?: any }) {
     musicUrl: initialData?.musicUrl || '',
     musicTitle: initialData?.musicTitle || '',
     heroVideoUrl: initialData?.heroVideoUrl || '',
-    heroVideoType: initialData?.heroVideoType || 'mp4',
+    heroVideoType: initialData?.heroVideoType || 'file',
     heroVideoPosterUrl: initialData?.heroVideoPosterUrl || '',
-    showHeroVideo: initialData?.showHeroVideo || false,
+    showHeroVideo: initialData?.showHeroVideo !== undefined ? initialData.showHeroVideo : false,
     openingImageUrl: initialData?.openingImageUrl || '',
     openingTitleKm: initialData?.openingTitleKm || '',
     openingTitleEn: initialData?.openingTitleEn || '',
@@ -73,6 +74,7 @@ export default function EventForm({ initialData }: { initialData?: any }) {
     formalInvitationTextKm: initialData?.formalInvitationTextKm || '',
     formalInvitationTextEn: initialData?.formalInvitationTextEn || '',
     couplePhotoUrl: initialData?.couplePhotoUrl || '',
+    coupleMonogramImageUrl: initialData?.coupleMonogramImageUrl || '',
     showTraditionalInvitationSection: initialData?.showTraditionalInvitationSection !== undefined ? initialData.showTraditionalInvitationSection : true,
     
     // QR Code & Gift Settings
@@ -120,26 +122,39 @@ export default function EventForm({ initialData }: { initialData?: any }) {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccess('');
 
     const url = initialData ? `/api/events/${initialData.id}` : '/api/events';
     const method = initialData ? 'PUT' : 'POST';
 
     try {
+      const payload = {
+        ...formData,
+        coupleMonogramImageUrl: formData.coupleMonogramImageUrl ? formData.coupleMonogramImageUrl.trim() : null,
+      };
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
+      const data = await res.json().catch(() => ({}));
+
       if (res.ok) {
-        router.push('/dashboard');
-        router.refresh();
+        setSuccess('Event saved successfully!');
+        setTimeout(() => {
+          router.push('/dashboard');
+          router.refresh();
+        }, 600);
       } else {
-        const data = await res.json();
-        setError(data.error || 'Something went wrong');
+        console.error('Save event failed:', res.status, data);
+        const errMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data);
+        setError(errMsg || `Failed to save event (Status ${res.status}). Please check required fields.`);
       }
-    } catch (err) {
-      setError('Internal server error');
+    } catch (err: any) {
+      console.error('Save event error:', err);
+      setError(err?.message || 'Network error while saving event');
     } finally {
       setLoading(false);
     }
@@ -288,7 +303,7 @@ export default function EventForm({ initialData }: { initialData?: any }) {
                   name="formalInvitationTextKm" 
                   value={formData.formalInvitationTextKm} 
                   onChange={handleChange}
-                  placeholder="យើងខ្ញុំមានសេចក្ដីសោមនស្សរីករាយ..."
+                  placeholder="ឯកឧត្តម លោកឧកញ៉ា លោកជំទាវ លោក លោកស្រី..."
                   className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </div>
@@ -311,6 +326,47 @@ export default function EventForm({ initialData }: { initialData?: any }) {
                   onChange={(path) => setFormData(prev => ({ ...prev, couplePhotoUrl: path }))}
                 />
                 <Input name="couplePhotoUrl" value={formData.couplePhotoUrl || ''} onChange={handleChange} placeholder="Or enter external photo URL..." className="mt-2 text-xs" />
+              </div>
+
+              {/* Couple Monogram Logo Upload Section */}
+              <div className="space-y-3 md:col-span-2 pt-4 border-t">
+                <div>
+                  <label className="text-sm font-bold text-foreground flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                    {t('coupleMonogram')}
+                  </label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t('coupleMonogramHelp')}
+                  </p>
+                </div>
+
+                <MediaUpload
+                  type="image"
+                  value={formData.coupleMonogramImageUrl || ''}
+                  onChange={(path) => setFormData(prev => ({ ...prev, coupleMonogramImageUrl: path }))}
+                />
+
+                <div className="flex items-center gap-2 mt-2">
+                  <Input 
+                    name="coupleMonogramImageUrl" 
+                    value={formData.coupleMonogramImageUrl || ''} 
+                    onChange={handleChange} 
+                    placeholder="https://... (PNG/SVG URL)" 
+                    className="text-xs" 
+                  />
+                  {formData.coupleMonogramImageUrl && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(formData.coupleMonogramImageUrl, '_blank')}
+                      className="shrink-0 text-xs gap-1"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      {t('openImage')}
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -890,9 +946,26 @@ export default function EventForm({ initialData }: { initialData?: any }) {
         </CardContent>
       </Card>
 
-      <div className="flex justify-end gap-4">
+      {error && (
+        <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive flex items-center gap-3 font-medium text-sm">
+          <AlertCircle className="w-5 h-5 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {success && (
+        <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/30 text-green-600 dark:text-green-400 flex items-center gap-3 font-medium text-sm">
+          <CheckCircle2 className="w-5 h-5 shrink-0" />
+          <span>{success}</span>
+        </div>
+      )}
+
+      <div className="flex justify-end gap-4 items-center">
         <Button variant="outline" type="button" onClick={() => router.back()}>Cancel</Button>
-        <Button type="submit" disabled={loading}>{loading ? 'Saving...' : 'Save Event'}</Button>
+        <Button type="submit" disabled={loading} className="min-w-[130px] gap-2">
+          {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+          {loading ? 'Saving...' : 'Save Event'}
+        </Button>
       </div>
     </form>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { formatLocalizedDate } from '@/lib/date';
 import { Calendar, Clock, Sparkles } from 'lucide-react';
@@ -22,6 +22,7 @@ function formatTime(timeStr: string, locale: string) {
   
   let khmerPeriod = 'ព្រឹក';
   if (hour >= 12 && hour < 17) khmerPeriod = 'រសៀល';
+  else if (hour >= 11 && hour < 12) khmerPeriod = 'ថ្ងៃត្រង់';
   else if (hour >= 17 && hour < 20) khmerPeriod = 'ល្ងាច';
   else if (hour >= 20 || hour < 5) khmerPeriod = 'យប់';
 
@@ -38,8 +39,17 @@ function formatTime(timeStr: string, locale: string) {
   }
 }
 
-interface CurvedConnectorProps {
+interface SegmentCoord {
+  startX: number;
+  startY: number;
+  targetX: number;
+  targetY: number;
+  pathD: string;
   isLeft: boolean;
+}
+
+interface ActiveTimelineConnectorProps {
+  coord: SegmentCoord;
   showDot: boolean;
   isRetracting: boolean;
   activeSegmentIndex: number;
@@ -47,22 +57,18 @@ interface CurvedConnectorProps {
   index: number;
 }
 
-function CurvedConnector({
-  isLeft,
+function ActiveTimelineConnector({
+  coord,
   showDot,
   isRetracting,
   activeSegmentIndex,
   animationCycle,
   index,
-}: CurvedConnectorProps) {
+}: ActiveTimelineConnectorProps) {
   const pathRef = useRef<SVGPathElement>(null);
   const [dotPos, setDotPos] = useState<{ x: number; y: number } | null>(null);
 
-  const leftToRightPath = "M 0,0 L 75,0 Q 100,0 100,25 L 100,100";
-  const rightToLeftPath = "M 100,0 L 25,0 Q 0,0 0,25 L 0,100";
-  const pathD = isLeft ? leftToRightPath : rightToLeftPath;
-
-  // Mathematically track the dot on the exact curve using path.getPointAtLength
+  // Mathematically track the dot on the exact measured SVG path to top center of next card
   useEffect(() => {
     if (!showDot) {
       setDotPos(null);
@@ -95,66 +101,57 @@ function CurvedConnector({
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [showDot, activeSegmentIndex, animationCycle]);
+  }, [showDot, activeSegmentIndex, animationCycle, coord.pathD]);
 
   return (
-    <div
-      className={`absolute top-1/2 h-[calc(100%+1.5rem)] sm:h-[calc(100%+2.5rem)] pointer-events-none z-0 ${
-        isLeft
-          ? 'left-[48%] sm:left-[46%] right-[16px] sm:right-[24px]'
-          : 'left-[16px] sm:left-[24px] right-[48%] sm:right-[46%]'
-      } ${
+    <g
+      key={`connector-g-${index}-${animationCycle}`}
+      className={
         isRetracting
-          ? isLeft
+          ? coord.isLeft
             ? 'line-retracting-lr'
             : 'line-retracting-rl'
           : ''
-      }`}
+      }
     >
-      <svg
-        className="w-full h-full overflow-visible"
-        preserveAspectRatio="none"
-        viewBox="0 0 100 100"
-      >
-        <defs>
-          <filter id={`goldGlowOrb-${index}`} x="-100%" y="-100%" width="300%" height="300%">
-            <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#fbbf24" floodOpacity="0.9" />
-            <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="#d4af37" floodOpacity="0.8" />
-          </filter>
-        </defs>
+      <defs>
+        <filter id={`goldGlowOrb-${index}`} x="-100%" y="-100%" width="300%" height="300%">
+          <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#fbbf24" floodOpacity="0.9" />
+          <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="#d4af37" floodOpacity="0.8" />
+        </filter>
+      </defs>
 
-        <path
-          ref={pathRef}
-          d={pathD}
-          fill="none"
-          stroke="rgba(212, 175, 55, 0.9)"
-          strokeWidth="2"
-          vectorEffect="non-scaling-stroke"
-          className="curved-dashed-road"
-        />
+      {/* Real measured dashed connector line dropping into top-center of target card */}
+      <path
+        ref={pathRef}
+        d={coord.pathD}
+        fill="none"
+        stroke="rgba(212, 175, 55, 0.9)"
+        strokeWidth="2"
+        className="curved-dashed-road"
+      />
 
-        {/* Glowing Moving Dot locked with 100% precision to the centerline of the stroke */}
-        {showDot && dotPos && (
-          <g>
-            <circle
-              cx={dotPos.x}
-              cy={dotPos.y}
-              r="6"
-              fill="rgba(251, 191, 36, 0.5)"
-              filter={`url(#goldGlowOrb-${index})`}
-            />
-            <circle
-              cx={dotPos.x}
-              cy={dotPos.y}
-              r="3"
-              fill="#ffffff"
-              stroke="#d4af37"
-              strokeWidth="1"
-            />
-          </g>
-        )}
-      </svg>
-    </div>
+      {/* Glowing Moving Dot landing directly at the top center of next card */}
+      {showDot && dotPos && (
+        <g>
+          <circle
+            cx={dotPos.x}
+            cy={dotPos.y}
+            r="6.5"
+            fill="rgba(251, 191, 36, 0.5)"
+            filter={`url(#goldGlowOrb-${index})`}
+          />
+          <circle
+            cx={dotPos.x}
+            cy={dotPos.y}
+            r="3.5"
+            fill="#ffffff"
+            stroke="#d4af37"
+            strokeWidth="1.5"
+          />
+        </g>
+      )}
+    </g>
   );
 }
 
@@ -166,6 +163,7 @@ interface ProgramDayCardProps {
   activeSegmentIndex: number;
   animationPhase: AnimationPhase;
   animationCycle: number;
+  onVisibilityChange: (dayIndex: number, ratio: number) => void;
 }
 
 function ProgramDayCard({
@@ -176,14 +174,121 @@ function ProgramDayCard({
   activeSegmentIndex,
   animationPhase,
   animationCycle,
+  onVisibilityChange,
 }: ProgramDayCardProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+
   const items = day.items || [];
   const itemsCount = items.length;
   const dayTitle = locale === 'km' ? day.titleKm || day.titleEn : day.titleEn || day.titleKm;
   const formattedDayDate = day.date ? formatLocalizedDate(day.date, locale) : '';
 
+  // Real measured card center coordinates
+  const [segmentCoords, setSegmentCoords] = useState<SegmentCoord[]>([]);
+
+  // Dynamically calculate the path from current card edge to top-center of next card
+  const updateSegmentCoordinates = useCallback(() => {
+    if (!timelineRef.current) return;
+    const containerRect = timelineRef.current.getBoundingClientRect();
+    const newCoords: SegmentCoord[] = [];
+
+    for (let i = 0; i < itemsCount - 1; i++) {
+      const card1 = cardRefs.current[i];
+      const card2 = cardRefs.current[i + 1];
+
+      if (card1 && card2) {
+        const r1 = card1.getBoundingClientRect();
+        const r2 = card2.getBoundingClientRect();
+        const isLeft = i % 2 === 0;
+
+        // Start anchor: real vertical center of source card edge
+        const startX = isLeft
+          ? r1.right - containerRect.left
+          : r1.left - containerRect.left;
+        const startY = r1.top + r1.height / 2 - containerRect.top;
+
+        // Target anchor: TOP CENTER of target card
+        const targetX = r2.left + r2.width / 2 - containerRect.left;
+        const targetY = r2.top - containerRect.top;
+
+        // Smooth rounded corner radius
+        const dx = Math.abs(targetX - startX);
+        const dy = Math.abs(targetY - startY);
+        const radius = Math.min(18, dx / 2, dy / 2);
+
+        let pathD = '';
+        if (isLeft) {
+          // Left Card -> Right Card:
+          // Runs horizontally across from Card 1 right edge to targetX,
+          // bends around smooth corner, and drops down vertically right above Card 2 center!
+          pathD = `M ${startX},${startY} L ${targetX - radius},${startY} Q ${targetX},${startY} ${targetX},${startY + radius} L ${targetX},${targetY}`;
+        } else {
+          // Right Card -> Left Card:
+          // Runs horizontally left from Card 2 left edge to targetX,
+          // bends around smooth corner, and drops down vertically right above Card 3 center!
+          pathD = `M ${startX},${startY} L ${targetX + radius},${startY} Q ${targetX},${startY} ${targetX},${startY + radius} L ${targetX},${targetY}`;
+        }
+
+        newCoords.push({ startX, startY, targetX, targetY, pathD, isLeft });
+      }
+    }
+
+    setSegmentCoords(newCoords);
+  }, [itemsCount]);
+
+  // Recalculate on mount, window resize, and container size changes
+  useEffect(() => {
+    updateSegmentCoordinates();
+
+    const el = timelineRef.current;
+    if (!el) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateSegmentCoordinates();
+    });
+
+    resizeObserver.observe(el);
+    window.addEventListener('resize', updateSegmentCoordinates);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updateSegmentCoordinates);
+    };
+  }, [updateSegmentCoordinates]);
+
+  // IntersectionObserver to report visibility ratio to parent
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const ratio = entry.isIntersecting ? entry.intersectionRatio : 0;
+        onVisibilityChange(dayIndex, ratio);
+      },
+      {
+        threshold: [0, 0.15, 0.25, 0.35, 0.5, 0.75, 1.0],
+        rootMargin: "0px 0px -5% 0px",
+      }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [dayIndex, onVisibilityChange]);
+
+  const activeCoord = segmentCoords[activeSegmentIndex];
+  const isSegmentActive = isDayActive && activeSegmentIndex < itemsCount - 1 && !!activeCoord;
+  const showConnector = isSegmentActive && (animationPhase === 'movingDot' || animationPhase === 'retractingLine');
+  const showDot = isSegmentActive && animationPhase === 'movingDot';
+  const isRetracting = isSegmentActive && animationPhase === 'retractingLine';
+
   return (
-    <div className="relative bg-card/85 backdrop-blur-md rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 md:p-8 shadow-xl border border-primary/25 overflow-hidden">
+    <div
+      ref={containerRef}
+      className="relative bg-card/85 backdrop-blur-md rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 md:p-8 shadow-xl border border-primary/25 overflow-hidden transition-all duration-500"
+    >
       {/* Khmer ornamental top accent */}
       <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-primary to-transparent" />
       
@@ -204,16 +309,29 @@ function ProgramDayCard({
       </div>
 
       {/* Alternating Left-Right Cards Timeline Container */}
-      <div className="relative w-full max-w-xl mx-auto py-2">
-        <div className="space-y-6 sm:space-y-10 relative">
+      <div ref={timelineRef} className="relative w-full max-w-xl mx-auto py-2">
+        {/* Full-width/height SVG overlay for real measured connector lines */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible">
+          {showConnector && activeCoord && (
+            <ActiveTimelineConnector
+              key={`connector-${dayIndex}-${activeSegmentIndex}-${animationCycle}`}
+              coord={activeCoord}
+              showDot={showDot}
+              isRetracting={isRetracting}
+              activeSegmentIndex={activeSegmentIndex}
+              animationCycle={animationCycle}
+              index={activeSegmentIndex}
+            />
+          )}
+        </svg>
+
+        {/* Program Cards */}
+        <div className="space-y-6 sm:space-y-10 relative z-10">
           {items.map((item: any, index: number) => {
             const isLeft = index % 2 === 0;
             const hasNext = index < itemsCount - 1;
-            const isSegmentActive = isDayActive && hasNext && index === activeSegmentIndex;
-            const showConnector = isSegmentActive && (animationPhase === 'movingDot' || animationPhase === 'retractingLine');
-            const showDot = isSegmentActive && animationPhase === 'movingDot';
-            const isRetracting = isSegmentActive && animationPhase === 'retractingLine';
-            const showArrow = isSegmentActive && animationPhase === 'movingDot';
+            const isCardActive = isDayActive && hasNext && index === activeSegmentIndex;
+            const showArrow = isCardActive && animationPhase === 'movingDot';
 
             const itemTitle = locale === 'km' ? item.titleKm || item.titleEn : item.titleEn || item.titleKm;
             const itemDesc = locale === 'km' ? item.descriptionKm || item.descriptionEn : item.descriptionEn || item.descriptionKm;
@@ -222,8 +340,11 @@ function ProgramDayCard({
               <div key={item.id || index} className="relative w-full">
                 {/* Program Item Card Row */}
                 <div className={`relative w-full flex ${isLeft ? 'justify-start' : 'justify-end'}`}>
-                  {/* Card Element */}
+                  {/* Card Element with Ref for real coordinate measurement */}
                   <div
+                    ref={(el) => {
+                      cardRefs.current[index] = el;
+                    }}
                     className={`relative w-fit max-w-[50%] sm:max-w-[46%] h-auto bg-card/90 backdrop-blur-md rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-primary/20 shadow-sm hover:border-primary/40 transition-all text-left flex flex-col items-start z-10 ${
                       isLeft ? 'mr-auto ml-0' : 'ml-auto mr-0'
                     }`}
@@ -260,19 +381,6 @@ function ProgramDayCard({
                     )}
                   </div>
                 </div>
-
-                {/* Direct Connector Line from Vertical Center of Current Card to Next Card */}
-                {hasNext && showConnector && (
-                  <CurvedConnector
-                    key={`connector-${dayIndex}-${index}-${animationCycle}`}
-                    isLeft={isLeft}
-                    showDot={showDot}
-                    isRetracting={isRetracting}
-                    activeSegmentIndex={activeSegmentIndex}
-                    animationCycle={animationCycle}
-                    index={index}
-                  />
-                )}
               </div>
             );
           })}
@@ -288,34 +396,56 @@ function ProgramDayCard({
 export default function WeddingProgram({ programDays, locale }: WeddingProgramProps) {
   const t = useTranslations('Program');
 
-  const [activeDayIndex, setActiveDayIndex] = useState(0);
+  // Track intersection ratio of each day to select the single active visible day
+  const [dayRatios, setDayRatios] = useState<{ [index: number]: number }>({});
+  const [activeDayIndex, setActiveDayIndex] = useState<number | null>(null);
+
+  // Active segment and animation phase for the active visible day
   const [activeSegmentIndex, setActiveSegmentIndex] = useState(0);
   const [animationPhase, setAnimationPhase] = useState<AnimationPhase>('movingDot');
   const [animationCycle, setAnimationCycle] = useState(0);
 
-  const daysCount = programDays?.length || 0;
-  const currentDay = programDays?.[activeDayIndex];
+  const handleVisibilityChange = useCallback((dayIndex: number, ratio: number) => {
+    setDayRatios((prev) => {
+      const next = { ...prev, [dayIndex]: ratio };
+      let highestIdx: number | null = null;
+      let maxRatio = 0.25; // Minimum 25% visibility threshold to trigger
+
+      Object.entries(next).forEach(([idxStr, r]) => {
+        const idx = Number(idxStr);
+        if (r > maxRatio) {
+          maxRatio = r;
+          highestIdx = idx;
+        }
+      });
+
+      // Update active day and reset segment if active day changed
+      setActiveDayIndex((currentActive) => {
+        if (currentActive !== highestIdx) {
+          setActiveSegmentIndex(0);
+          setAnimationPhase('movingDot');
+          setAnimationCycle((c) => c + 1);
+          return highestIdx;
+        }
+        return currentActive;
+      });
+
+      return next;
+    });
+  }, []);
+
+  const currentDay = activeDayIndex !== null ? programDays?.[activeDayIndex] : null;
   const currentDayItemsCount = currentDay?.items?.length || 0;
   const currentDaySegmentsCount = Math.max(0, currentDayItemsCount - 1);
 
+  // Step progression effect for the single active day
   useEffect(() => {
-    if (daysCount === 0) return;
+    if (activeDayIndex === null || currentDaySegmentsCount === 0) return;
 
     let timer: NodeJS.Timeout;
 
-    // If current day has 0 or 1 item (no connector segments), transition to next day after a short pause
-    if (currentDaySegmentsCount === 0) {
-      timer = setTimeout(() => {
-        setActiveDayIndex((prev) => (prev + 1) % daysCount);
-        setActiveSegmentIndex(0);
-        setAnimationCycle((prev) => prev + 1);
-        setAnimationPhase('movingDot');
-      }, 1200);
-      return () => clearTimeout(timer);
-    }
-
     if (animationPhase === 'movingDot') {
-      // 1. Dot travels along dashed connector line for 2.2s
+      // 1. Dot moves along dashed connector line for 2.2s
       timer = setTimeout(() => {
         setAnimationPhase('retractingLine');
       }, 2200);
@@ -325,16 +455,14 @@ export default function WeddingProgram({ programDays, locale }: WeddingProgramPr
         setAnimationPhase('segmentHidden');
       }, 1000);
     } else if (animationPhase === 'segmentHidden') {
-      // 3. Keep line completely hidden for 400ms before advancing cleanly to next segment/day
+      // 3. Keep line completely hidden for 400ms before advancing cleanly
       timer = setTimeout(() => {
         if (activeSegmentIndex < currentDaySegmentsCount - 1) {
-          // Advance to next segment in the same day
           setActiveSegmentIndex((prev) => prev + 1);
           setAnimationCycle((prev) => prev + 1);
           setAnimationPhase('movingDot');
         } else {
-          // Finished all segments in this day -> advance to next day
-          setActiveDayIndex((prev) => (prev + 1) % daysCount);
+          // Finished all segments in this active day -> restart loop from segment 0
           setActiveSegmentIndex(0);
           setAnimationCycle((prev) => prev + 1);
           setAnimationPhase('movingDot');
@@ -343,7 +471,7 @@ export default function WeddingProgram({ programDays, locale }: WeddingProgramPr
     }
 
     return () => clearTimeout(timer);
-  }, [animationPhase, activeDayIndex, activeSegmentIndex, daysCount, currentDaySegmentsCount]);
+  }, [activeDayIndex, activeSegmentIndex, animationPhase, currentDaySegmentsCount]);
 
   if (!programDays || programDays.length === 0) return null;
 
@@ -454,6 +582,7 @@ export default function WeddingProgram({ programDays, locale }: WeddingProgramPr
             activeSegmentIndex={activeSegmentIndex}
             animationPhase={animationPhase}
             animationCycle={animationCycle}
+            onVisibilityChange={handleVisibilityChange}
           />
         ))}
       </div>

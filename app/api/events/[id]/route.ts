@@ -25,28 +25,33 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
   try {
     const { id } = await params;
-    const data = await request.json();
+    const body = await request.json();
     
     // Check if slug exists for other events
-    if (data.slug) {
+    if (body.slug) {
       const existing = await prisma.event.findFirst({
-        where: { slug: data.slug, id: { not: id } }
+        where: { slug: body.slug, id: { not: id } }
       });
       if (existing) {
         return NextResponse.json({ error: 'Slug already in use' }, { status: 400 });
       }
     }
 
+    // Strip relational and system fields that cannot be updated directly
+    const { id: _id, createdAt: _c, updatedAt: _u, guests: _g, rsvps: _r, programDays: _p, _count: _cnt, ...data } = body;
+
     const event = await prisma.event.update({
       where: { id },
       data: {
         ...data,
+        coupleMonogramImageUrl: data.coupleMonogramImageUrl || null,
         eventDate: data.eventDate ? new Date(data.eventDate) : undefined,
       }
     });
     return NextResponse.json(event);
-  } catch (error) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Error updating event:', error);
+    return NextResponse.json({ error: error?.message || 'Internal Server Error' }, { status: 500 });
   }
 }
 

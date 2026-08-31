@@ -156,7 +156,7 @@ export default function InvitationContent({ event, locale, guest, programDays }:
               </ScrollReveal>
 
               {/* Header section */}
-              <ScrollReveal direction="up" delay={100}>
+              {/* <ScrollReveal direction="up" delay={100}>
                 <section className="text-center space-y-4 sm:space-y-6 overflow-hidden">
                   <p className="uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] sm:text-xs text-primary font-bold px-2">
                     {isKm ? "សូមគោរពអញ្ជើញចូលរួមពិធីមង្គលការរបស់" : "You are invited to the wedding of"}
@@ -172,7 +172,7 @@ export default function InvitationContent({ event, locale, guest, programDays }:
                     {invitationMessage}
                   </p>
                 </section>
-              </ScrollReveal>
+              </ScrollReveal> */}
 
               {/* Cover Image (optional) */}
               {event.coverImage && (

@@ -25,7 +25,7 @@ export default function MediaUpload({ type, value, onChange, label, autoOptimize
   const getAcceptedFormats = () => {
     switch (type) {
       case 'image':
-        return 'image/png, image/jpeg, image/webp';
+        return 'image/png, image/jpeg, image/webp, image/svg+xml, .png, .jpg, .jpeg, .webp, .svg';
       case 'video':
         return 'video/mp4, video/webm';
       case 'audio':

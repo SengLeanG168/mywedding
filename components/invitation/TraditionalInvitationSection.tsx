@@ -1,11 +1,118 @@
 "use client"
 
 import { useTranslations } from 'next-intl';
-import HeartPhotoFrame from './HeartPhotoFrame';
 
 interface TraditionalInvitationSectionProps {
   event: any;
   locale: string;
+}
+
+function toKhmerDigits(num: number | string): string {
+  const khmerDigits = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩'];
+  return String(num).replace(/\d/g, (d) => khmerDigits[parseInt(d, 10)]);
+}
+
+const KHMER_WEEKDAYS = [
+  'ថ្ងៃអាទិត្យ',  // 0: Sunday
+  'ថ្ងៃច័ន្ទ',     // 1: Monday
+  'ថ្ងៃអង្គារ',    // 2: Tuesday
+  'ថ្ងៃពុធ',      // 3: Wednesday
+  'ថ្ងៃព្រហស្បតិ៍',  // 4: Thursday
+  'ថ្ងៃសុក្រ',     // 5: Friday
+  'ថ្ងៃសៅរ៍',     // 6: Saturday
+];
+
+const EN_WEEKDAYS = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+];
+
+const KHMER_MONTHS = [
+  'ខែមករា',    // 0: Jan
+  'ខែកុម្ភៈ',    // 1: Feb
+  'ខែមីនា',    // 2: Mar
+  'ខែមេសា',    // 3: Apr
+  'ខែឧសភា',    // 4: May
+  'ខែមិថុនា',   // 5: Jun
+  'ខែកក្កដា',   // 6: Jul
+  'ខែសីហា',    // 7: Aug
+  'ខែកញ្ញា',    // 8: Sep
+  'ខែតុលា',    // 9: Oct
+  'ខែវិច្ឆិកា',   // 10: Nov
+  'ខែធ្នូ',     // 11: Dec
+];
+
+const EN_MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+function parseEventDate(dateInput: any) {
+  if (!dateInput) return null;
+  if (typeof dateInput === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dateInput)) {
+    const parts = dateInput.substring(0, 10).split('-');
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    const d = new Date(year, month, day);
+    return {
+      year,
+      month,
+      day,
+      dayOfWeek: d.getDay(),
+    };
+  }
+  const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return null;
+  return {
+    year: d.getFullYear(),
+    month: d.getMonth(),
+    day: d.getDate(),
+    dayOfWeek: d.getDay(),
+  };
+}
+
+function formatKhmerTime(timeStr?: string | null, isKm = true): string {
+  if (!timeStr) return isKm ? '៥ៈ០០ នាទីល្ងាច' : '5:00 PM';
+  const [hourStr, minuteStr = '00'] = timeStr.split(':');
+  let hour = parseInt(hourStr, 10);
+  if (isNaN(hour)) return timeStr;
+
+  const min = parseInt(minuteStr, 10) || 0;
+  const minFormatted = String(min).padStart(2, '0');
+
+  let khmerPeriod = 'ព្រឹក';
+  if (hour >= 11 && hour < 12) khmerPeriod = 'ថ្ងៃត្រង់';
+  else if (hour >= 12 && hour < 17) khmerPeriod = 'រសៀល';
+  else if (hour >= 17 && hour < 20) khmerPeriod = 'ល្ងាច';
+  else if (hour >= 20 || hour < 5) khmerPeriod = 'យប់';
+
+  let hour12 = hour % 12;
+  if (hour12 === 0) hour12 = 12;
+
+  if (isKm) {
+    const hKhmer = toKhmerDigits(hour12);
+    const mKhmer = toKhmerDigits(minFormatted);
+    return `${hKhmer}ៈ${mKhmer} នាទី${khmerPeriod}`;
+  } else {
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    return `${hour12}:${minFormatted} ${ampm}`;
+  }
 }
 
 function renderParentName(fullName?: string | null) {
@@ -51,12 +158,23 @@ export default function TraditionalInvitationSection({ event, locale }: Traditio
     ? (event.blessingTitleKm || 'សិរីសួស្ដីជ័យមង្គលអាពាហ៍ពិពាហ៍')
     : (event.blessingTitleEn || event.blessingTitleKm || 'Wedding Blessing Ceremony');
 
-  const defaultInvitationTextKm = 'យើងខ្ញុំមានសេចក្ដីសោមនស្សរីករាយ សូមគោរពអញ្ជើញ ឯកឧត្តម លោកជំទាវ លោក លោកស្រី អ្នកនាងកញ្ញា និងភ្ញៀវកិត្តិយសទាំងអស់ អញ្ជើញចូលរួមជាកិត្តិយសក្នុងពិធីមង្គលអាពាហ៍ពិពាហ៍របស់កូនប្រុស កូនស្រីយើងខ្ញុំ។';
-  const defaultInvitationTextEn = 'We are delighted to respectfully invite you to join and honor the wedding ceremony of our beloved son and daughter.';
+  const defaultIntroKm = 'មានកិត្តិយសសូមគោរពអញ្ជើញ';
+  const defaultBodyKm = 'ឯកឧត្តម លោកឧកញ៉ា លោកជំទាវ លោក លោកស្រី អ្នកនាង កញ្ញា និងប្រិយមិត្តអញ្ជើញចូលរួមជាអធិបតី និងជាភ្ញៀវកិត្តិយសដើម្បីប្រសិទ្ធពរជ័យសិរីមង្គលក្នុងពិធីរៀបអាពាហ៍ពិពាហ៍ កូនប្រុស កូនស្រី របស់យើងខ្ញុំ ។';
 
-  const formalInvitationText = isKm
-    ? (event.formalInvitationTextKm || defaultInvitationTextKm)
-    : (event.formalInvitationTextEn || event.formalInvitationTextKm || defaultInvitationTextEn);
+  const defaultIntroEn = 'Have the Honor to Cordially Invite';
+  const defaultBodyEn = 'Excellencies, Lok Oknha, Lok Chumteav, Ladies and Gentlemen, and dear friends to join and honor the wedding ceremony of our beloved son and daughter.';
+
+  const invitationIntro = isKm ? defaultIntroKm : defaultIntroEn;
+
+  const rawCustomText = isKm 
+    ? event.formalInvitationTextKm 
+    : (event.formalInvitationTextEn || event.formalInvitationTextKm);
+
+  // If custom text exists and is not the old default, use it; otherwise use the new formal body
+  const isOldDefault = rawCustomText && rawCustomText.includes('យើងខ្ញុំមានសេចក្ដីសោមនស្ស');
+  const invitationBody = (!rawCustomText || isOldDefault) 
+    ? (isKm ? defaultBodyKm : defaultBodyEn)
+    : rawCustomText;
 
   // Fallbacks for names
   const brideName = isKm ? event.brideNameKm : event.brideNameEn;
@@ -68,8 +186,28 @@ export default function TraditionalInvitationSection({ event, locale }: Traditio
   const brideFather = isKm ? event.brideFatherNameKm : (event.brideFatherNameEn || event.brideFatherNameKm);
   const brideMother = isKm ? event.brideMotherNameKm : (event.brideMotherNameEn || event.brideMotherNameKm);
 
-  // Photo
-  const photoUrl = event.couplePhotoUrl || event.coverImage;
+  // Couple Monogram Image URL
+  const monogramImageUrl = event.coupleMonogramImageUrl;
+
+  // Date and Time Parsing
+  const parsedDate = parseEventDate(event.eventDate);
+  const weekdayText = parsedDate 
+    ? (isKm ? KHMER_WEEKDAYS[parsedDate.dayOfWeek] : EN_WEEKDAYS[parsedDate.dayOfWeek])
+    : (isKm ? 'ថ្ងៃសៅរ៍' : 'Saturday');
+
+  const monthText = parsedDate 
+    ? (isKm ? KHMER_MONTHS[parsedDate.month] : EN_MONTHS[parsedDate.month])
+    : (isKm ? 'ខែវិច្ឆិកា' : 'November');
+
+  const dayText = parsedDate 
+    ? (isKm ? toKhmerDigits(parsedDate.day) : String(parsedDate.day))
+    : (isKm ? '២០' : '20');
+
+  const yearText = parsedDate 
+    ? (isKm ? toKhmerDigits(parsedDate.year) : String(parsedDate.year))
+    : (isKm ? '២០២៦' : '2026');
+
+  const timeText = formatKhmerTime(event.eventTime, isKm);
 
   return (
     <section className="w-full relative py-12 sm:py-16 px-4 mb-12 sm:mb-16 overflow-hidden flex flex-col items-center text-center">
@@ -117,46 +255,98 @@ export default function TraditionalInvitationSection({ event, locale }: Traditio
           </div>
         </div>
 
-        {/* Formal Invitation Text */}
-        <div className="w-full mb-10 sm:mb-12 px-4">
-          <p className="text-sm sm:text-base text-foreground/80 leading-relaxed font-serif">
-            {formalInvitationText}
+        {/* Formal Invitation Text Section */}
+        <div className="w-full mb-10 sm:mb-12 px-3 sm:px-4 space-y-3 sm:space-y-3.5 max-w-2xl mx-auto">
+          {/* Line 1: Khmer OS Muol Light */}
+          <div className="text-sm sm:text-base font-serif text-primary font-bold tracking-normal leading-relaxed text-center">
+            {invitationIntro}
+          </div>
+
+          {/* Line 2: Normal Plain Khmer Font */}
+          <p className="text-[13.5px] sm:text-[15px] text-foreground/85 leading-[1.75] sm:leading-[1.85] font-sans font-normal text-center">
+            {invitationBody}
           </p>
         </div>
 
-        {/* Groom, Couple Photo, and Bride Name */}
+        {/* Groom, Couple Monogram Logo, and Bride Name */}
         <div className="w-full mt-4 relative z-10">
-          <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-center justify-items-center w-full">
+          <div className="grid grid-cols-[1fr_auto_1fr] gap-2 sm:gap-4 items-center justify-items-center w-full">
             
             {/* Groom Section */}
             <div className="flex flex-col items-center justify-center text-center px-1 space-y-2">
               <span className="text-[10px] sm:text-xs text-muted-foreground tracking-widest uppercase whitespace-nowrap">
-                {isKm ? 'កូនប្រុស' : 'Son'}
+                {isKm ? 'កូនប្រុសនាម' : 'Son'}
               </span>
               <div className="text-[clamp(0.9rem,3.5vw,1.25rem)] font-serif text-primary font-bold leading-tight whitespace-nowrap">
                 {groomName}
               </div>
             </div>
 
-            {/* Centered Heart Photo */}
+            {/* Centered Couple Monogram Logo Image (Uploaded Custom PNG/SVG) */}
             <div className="flex items-center justify-center px-1 sm:px-2">
-              {photoUrl ? (
-                <HeartPhotoFrame src={photoUrl} className="w-24 h-24 sm:w-32 sm:h-32 mb-0" />
+              {monogramImageUrl ? (
+                <div className="relative flex items-center justify-center">
+                  <img
+                    src={monogramImageUrl}
+                    alt="Couple Monogram"
+                    className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 object-contain drop-shadow-[0_2px_14px_rgba(212,175,55,0.35)] transition-transform duration-300 hover:scale-105"
+                  />
+                </div>
               ) : (
-                <div className="w-8" /> /* Spacer if no photo */
+                <div className="flex items-center justify-center w-24 h-24 sm:w-32 sm:h-32 text-primary font-serif text-3xl sm:text-4xl font-bold opacity-75">
+                  លន
+                </div>
               )}
             </div>
             
             {/* Bride Section */}
             <div className="flex flex-col items-center justify-center text-center px-1 space-y-2">
               <span className="text-[10px] sm:text-xs text-muted-foreground tracking-widest uppercase whitespace-nowrap">
-                {isKm ? 'កូនស្រី' : 'Daughter'}
+                {isKm ? 'កូនស្រីនាម' : 'Daughter'}
               </span>
               <div className="text-[clamp(0.9rem,3.5vw,1.25rem)] font-serif text-primary font-bold leading-tight whitespace-nowrap">
                 {brideName}
               </div>
             </div>
             
+          </div>
+        </div>
+
+        {/* Traditional Khmer Wedding Date/Time 3-Column Block */}
+        <div className="w-full max-w-sm sm:max-w-md md:max-w-lg mx-auto mt-6 sm:mt-8 pt-2 overflow-visible">
+          <div className="grid grid-cols-[1fr_auto_1fr] gap-2 sm:gap-4 md:gap-6 items-center justify-items-center w-full overflow-visible">
+            
+            {/* Left Column: Short 2px Top Line - Weekday - Short 2px Bottom Line */}
+            <div className="w-full flex items-center justify-center overflow-visible">
+              <div className="w-full max-w-[115px] sm:max-w-[135px] border-t-2 border-b-2 border-primary/50 py-2 sm:py-2.5 text-center overflow-visible">
+                <span className="font-serif font-bold text-xs sm:text-[13px] md:text-sm text-primary tracking-normal block leading-[1.85] sm:leading-[2.0] whitespace-nowrap overflow-visible pb-0.5">
+                  {weekdayText}
+                </span>
+              </div>
+            </div>
+
+            {/* Center Column: Month, Big Day Number, Year */}
+            <div className="flex flex-col items-center justify-center px-1 sm:px-2 text-center shrink-0 min-w-[80px] sm:min-w-[100px] overflow-visible py-1">
+              <span className="font-serif font-bold text-[11px] sm:text-xs text-primary/90 tracking-normal block leading-[1.85] sm:leading-[2.0] whitespace-nowrap overflow-visible pb-0.5">
+                {monthText}
+              </span>
+              <span className="font-serif text-3xl sm:text-4xl md:text-[44px] font-bold text-primary leading-[1.25] my-0.5 tracking-tight drop-shadow-[0_1px_3px_rgba(212,175,55,0.25)] block overflow-visible py-0.5">
+                {dayText}
+              </span>
+              <span className="font-serif font-bold text-[11px] sm:text-xs text-primary/90 tracking-normal block leading-[1.85] sm:leading-[2.0] whitespace-nowrap overflow-visible pt-0.5">
+                {yearText}
+              </span>
+            </div>
+
+            {/* Right Column: Short 2px Top Line - Time - Short 2px Bottom Line */}
+            <div className="w-full flex items-center justify-center overflow-visible">
+              <div className="w-full max-w-[115px] sm:max-w-[135px] border-t-2 border-b-2 border-primary/50 py-2 sm:py-2.5 text-center overflow-visible">
+                <span className="font-serif font-bold text-[10px] sm:text-xs md:text-[12.5px] text-primary tracking-normal block leading-[1.85] sm:leading-[2.0] whitespace-nowrap overflow-visible pb-0.5">
+                  {timeText}
+                </span>
+              </div>
+            </div>
+
           </div>
         </div>
         

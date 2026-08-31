@@ -68,6 +68,7 @@ model Event {
   formalInvitationTextKm          String?  @db.Text
   formalInvitationTextEn          String?  @db.Text
   couplePhotoUrl                  String?
+  coupleMonogramImageUrl String?
   showTraditionalInvitationSection Boolean @default(true)
   
   showMapQrCode       Boolean  @default(true)

@@ -32,7 +32,7 @@ export default function MemoryGallery({ images, isKm, onImageClick }: MemoryGall
     <section className="mt-12 sm:mt-16" id="gallery-section">
       <div className="text-center mb-6 sm:mb-8">
         <h2 className="text-[clamp(1.25rem,4vw,1.5rem)] font-serif font-bold text-primary">
-          {isKm ? 'រូបថតអនុស្សាវរីយ៍' : 'Gallery'}
+          {isKm ? 'វិចិត្រសាល' : 'Gallery'}
         </h2>
         <span className="inline-block w-8 h-[1px] bg-primary mt-2" />
       </div>
