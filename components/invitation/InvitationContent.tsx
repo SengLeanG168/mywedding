@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import RSVPForm from '@/components/invitation/RSVPForm';
 import Countdown from '@/components/invitation/Countdown';
 import InvitationVideoIntro from '@/components/invitation/InvitationVideoIntro';
-import ContinueTransitionAnimation from '@/components/invitation/ContinueTransitionAnimation';
+import InvitationTransitionVideo from '@/components/invitation/InvitationTransitionVideo';
 import FloatingButterflies from '@/components/invitation/FloatingButterflies';
 import MusicPlayer from '@/components/invitation/MusicPlayer';
 import OpeningScreen from '@/components/invitation/OpeningScreen';
@@ -36,18 +36,19 @@ export default function InvitationContent({ event, locale, guest, programDays }:
   // If event.showCurtainIntro is missing, we default to true. If explicitly false, we skip it.
   const shouldShowCurtain = event.showCurtainIntro !== false;
   const hasHeroVideo = Boolean(event.showHeroVideo && event.heroVideoUrl && event.heroVideoType !== 'none');
+  const hasTransitionVideo = Boolean(event.showTransitionVideo !== false && event.transitionVideoUrl);
 
   const [curtainDone, setCurtainDone] = useState(!shouldShowCurtain);
   const [isOpened, setIsOpened] = useState(!event.showOpeningScreen);
-  const [showContinueAnimation, setShowContinueAnimation] = useState(false);
+  const [isPlayingTransitionVideo, setIsPlayingTransitionVideo] = useState(false);
   const [videoIntroDone, setVideoIntroDone] = useState(!hasHeroVideo);
 
-  // Disable background scrolling while video intro screen or transition animation is active
+  // Disable background scrolling while video intro screen or transition video is active
   useEffect(() => {
     const isVideoActive = curtainDone && isOpened && hasHeroVideo && !videoIntroDone;
-    const isAnimating = showContinueAnimation;
+    const isTransitioning = isPlayingTransitionVideo;
 
-    if (isVideoActive || isAnimating) {
+    if (isVideoActive || isTransitioning) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -55,7 +56,7 @@ export default function InvitationContent({ event, locale, guest, programDays }:
     return () => {
       document.body.style.overflow = '';
     };
-  }, [curtainDone, isOpened, hasHeroVideo, videoIntroDone, showContinueAnimation]);
+  }, [curtainDone, isOpened, hasHeroVideo, videoIntroDone, isPlayingTransitionVideo]);
 
   // Lightbox State
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -75,7 +76,7 @@ export default function InvitationContent({ event, locale, guest, programDays }:
   // Create a full date time string for the countdown
   const eventDateTime = new Date(event.eventDate);
   const [hours, minutes] = (event.eventTime || '00:00').split(':');
-  const mainContentVisible = curtainDone && isOpened && videoIntroDone && !showContinueAnimation;
+  const mainContentVisible = curtainDone && isOpened && videoIntroDone && !isPlayingTransitionVideo;
 
   return (
     <>
@@ -107,30 +108,35 @@ export default function InvitationContent({ event, locale, guest, programDays }:
       )}
 
       {/* 3. Video Intro Screen: Displayed as a separate full screen before main invitation */}
-      {curtainDone && isOpened && hasHeroVideo && !videoIntroDone && !showContinueAnimation && (
+      {curtainDone && isOpened && hasHeroVideo && !videoIntroDone && !isPlayingTransitionVideo && (
         <InvitationVideoIntro 
           type={event.heroVideoType || 'mp4'} 
           url={event.heroVideoUrl} 
           poster={event.heroVideoPosterUrl} 
           locale={locale}
           onContinue={() => {
-            setShowContinueAnimation(true);
+            if (hasTransitionVideo) {
+              setIsPlayingTransitionVideo(true);
+            } else {
+              setVideoIntroDone(true);
+            }
           }}
         />
       )}
 
-      {/* 4. Romantic Transition Animation Screen: Shown after clicking continue on video intro */}
-      {curtainDone && isOpened && showContinueAnimation && (
-        <ContinueTransitionAnimation 
+      {/* 4. Fullscreen Content Transition Video: Shown after clicking continue on video intro */}
+      {curtainDone && isOpened && isPlayingTransitionVideo && hasTransitionVideo && (
+        <InvitationTransitionVideo 
+          url={event.transitionVideoUrl} 
           onComplete={() => {
-            setShowContinueAnimation(false);
+            setIsPlayingTransitionVideo(false);
             setVideoIntroDone(true);
           }}
         />
       )}
 
-      {/* 5. Main Content: Rendered ONLY after video intro & transition animation are finished */}
-      {curtainDone && isOpened && videoIntroDone && !showContinueAnimation && (
+      {/* 5. Main Content: Rendered ONLY after video intro & transition video are finished */}
+      {curtainDone && isOpened && videoIntroDone && !isPlayingTransitionVideo && (
         <div className="min-h-screen bg-background relative animate-fade-in">
           {/* Floating Gold & Silver Butterflies Layer */}
           <FloatingButterflies />

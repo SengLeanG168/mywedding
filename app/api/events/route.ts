@@ -58,6 +58,8 @@ export async function POST(request: Request) {
       data: {
         ...data,
         coupleMonogramImageUrl: data.coupleMonogramImageUrl || null,
+        transitionVideoUrl: data.transitionVideoUrl || null,
+        showTransitionVideo: data.showTransitionVideo !== undefined ? Boolean(data.showTransitionVideo) : true,
         eventDate: new Date(data.eventDate),
       }
     });

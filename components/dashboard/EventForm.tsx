@@ -48,6 +48,8 @@ export default function EventForm({ initialData }: { initialData?: any }) {
     heroVideoType: initialData?.heroVideoType || 'file',
     heroVideoPosterUrl: initialData?.heroVideoPosterUrl || '',
     showHeroVideo: initialData?.showHeroVideo !== undefined ? initialData.showHeroVideo : false,
+    transitionVideoUrl: initialData?.transitionVideoUrl || '',
+    showTransitionVideo: initialData?.showTransitionVideo !== undefined ? initialData.showTransitionVideo : true,
     openingImageUrl: initialData?.openingImageUrl || '',
     openingTitleKm: initialData?.openingTitleKm || '',
     openingTitleEn: initialData?.openingTitleEn || '',
@@ -131,6 +133,7 @@ export default function EventForm({ initialData }: { initialData?: any }) {
       const payload = {
         ...formData,
         coupleMonogramImageUrl: formData.coupleMonogramImageUrl ? formData.coupleMonogramImageUrl.trim() : null,
+        transitionVideoUrl: formData.transitionVideoUrl ? formData.transitionVideoUrl.trim() : null,
       };
 
       const res = await fetch(url, {
@@ -689,6 +692,45 @@ export default function EventForm({ initialData }: { initialData?: any }) {
             <label className="text-sm font-medium">{t('musicTitle')}</label>
             <Input name="musicTitle" value={formData.musicTitle || ''} onChange={handleChange} placeholder="Song Title" />
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Content Transition Video Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">{t('transitionVideo')}</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0 space-y-4">
+          <p className="text-xs sm:text-sm text-muted-foreground">{t('transitionVideoHelp')}</p>
+          
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="showTransitionVideo"
+              name="showTransitionVideo"
+              checked={formData.showTransitionVideo}
+              onChange={handleChange}
+              className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <label htmlFor="showTransitionVideo" className="text-sm font-medium">{t('showTransitionVideo')}</label>
+          </div>
+
+          {formData.showTransitionVideo && (
+            <div className="space-y-3 pt-2">
+              <MediaUpload
+                type="video"
+                value={formData.transitionVideoUrl || ''}
+                onChange={(path) => setFormData(prev => ({ ...prev, transitionVideoUrl: path }))}
+              />
+              <Input 
+                name="transitionVideoUrl" 
+                value={formData.transitionVideoUrl || ''} 
+                onChange={handleChange} 
+                placeholder="Or enter external transition video URL (MP4/WebM)..." 
+                className="text-xs" 
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 

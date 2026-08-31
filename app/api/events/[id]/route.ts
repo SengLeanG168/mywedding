@@ -45,6 +45,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       data: {
         ...data,
         coupleMonogramImageUrl: data.coupleMonogramImageUrl || null,
+        transitionVideoUrl: data.transitionVideoUrl || null,
+        showTransitionVideo: data.showTransitionVideo !== undefined ? Boolean(data.showTransitionVideo) : true,
         eventDate: data.eventDate ? new Date(data.eventDate) : undefined,
       }
     });

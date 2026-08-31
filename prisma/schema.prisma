@@ -43,6 +43,8 @@ model Event {
   heroVideoType       String?
   heroVideoPosterUrl  String?
   showHeroVideo       Boolean  @default(false)
+  transitionVideoUrl  String?
+  showTransitionVideo Boolean  @default(true)
   openingImageUrl     String?
   openingTitleKm      String?
   openingTitleEn      String?
@@ -68,7 +70,8 @@ model Event {
   formalInvitationTextKm          String?  @db.Text
   formalInvitationTextEn          String?  @db.Text
   couplePhotoUrl                  String?
-  coupleMonogramImageUrl String?
+  coupleMonogramImageUrl          String?
+  showMonogram                    Boolean @default(false)
   showTraditionalInvitationSection Boolean @default(true)
   
   showMapQrCode       Boolean  @default(true)
