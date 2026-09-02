@@ -88,7 +88,7 @@ function parseEventDate(dateInput: any) {
 }
 
 function formatKhmerTime(timeStr?: string | null, isKm = true): string {
-  if (!timeStr) return isKm ? '៥ៈ០០ នាទីល្ងាច' : '5:00 PM';
+  if (!timeStr) return isKm ? '៥:០០ នាទីល្ងាច' : '5:00 PM';
   const [hourStr, minuteStr = '00'] = timeStr.split(':');
   let hour = parseInt(hourStr, 10);
   if (isNaN(hour)) return timeStr;
@@ -210,7 +210,7 @@ export default function TraditionalInvitationSection({ event, locale }: Traditio
   const timeText = formatKhmerTime(event.eventTime, isKm);
 
   return (
-    <section className="w-full relative py-12 sm:py-16 px-4 mb-12 sm:mb-16 overflow-hidden flex flex-col items-center text-center">
+    <section className="w-full relative py-10 sm:py-12 px-4 mb-6 sm:mb-8 overflow-hidden flex flex-col items-center text-center">
       {/* Decorative Background */}
       <div className="absolute inset-0 bg-card rounded-2xl sm:rounded-3xl shadow-2xl border border-primary/20 w-full mx-auto -z-10" />
       <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none rounded-2xl sm:rounded-3xl w-full mx-auto -z-10" />

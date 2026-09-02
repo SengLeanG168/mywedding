@@ -66,7 +66,7 @@ export default function WishMarquee({ eventId, newWishes = [], refreshTrigger = 
   // Empty state fallback
   if (wishes.length === 0) {
     return (
-      <section className="mt-12 sm:mt-16 w-full text-center" id="wishes-section">
+      <section className="mt-4 sm:mt-6 w-full text-center" id="wishes-section">
         <div className="mb-4">
           <h2 className="text-[clamp(1.25rem,4vw,1.5rem)] font-serif font-bold text-primary flex items-center justify-center gap-2">
             <MessageCircleHeart className="w-6 h-6 text-primary" />
@@ -89,7 +89,7 @@ export default function WishMarquee({ eventId, newWishes = [], refreshTrigger = 
   }
 
   return (
-    <section className="mt-12 sm:mt-16 w-full overflow-hidden" id="wishes-section">
+    <section className="mt-4 sm:mt-6 w-full overflow-hidden" id="wishes-section">
       <style jsx>{`
         @keyframes marqueeMove {
           0% {

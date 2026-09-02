@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
-import { Upload, X, Film, Music as MusicIcon, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Upload, X, Film, Music as MusicIcon, Image as ImageIcon, Loader2, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 import { uploadClientFile } from '@/lib/client-upload';
@@ -13,9 +13,21 @@ interface MediaUploadProps {
   onChange: (path: string) => void;
   label?: string;
   autoOptimizeSocialPreview?: boolean;
+  uploadButtonText?: string;
+  viewButtonText?: string;
+  removeButtonText?: string;
 }
 
-export default function MediaUpload({ type, value, onChange, label, autoOptimizeSocialPreview }: MediaUploadProps) {
+export default function MediaUpload({ 
+  type, 
+  value, 
+  onChange, 
+  label, 
+  autoOptimizeSocialPreview,
+  uploadButtonText,
+  viewButtonText,
+  removeButtonText,
+}: MediaUploadProps) {
   const t = useTranslations('Event');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -99,7 +111,18 @@ export default function MediaUpload({ type, value, onChange, label, autoOptimize
           </div>
 
           {/* Action Row */}
-          <div className="flex space-x-2">
+          <div className="flex flex-wrap gap-2 items-center">
+            {value && (
+              <a
+                href={value}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-md text-xs font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 shrink-0"
+              >
+                <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                {viewButtonText || (type === 'video' ? 'មើលវីដេអូ' : t('preview'))}
+              </a>
+            )}
             <Button
               type="button"
               variant="outline"
@@ -107,7 +130,7 @@ export default function MediaUpload({ type, value, onChange, label, autoOptimize
               onClick={handleButtonClick}
               disabled={uploading}
             >
-              {t('replaceFile')}
+              {uploadButtonText || t('replaceFile')}
             </Button>
             <Button
               type="button"
@@ -117,9 +140,7 @@ export default function MediaUpload({ type, value, onChange, label, autoOptimize
               disabled={uploading}
             >
               <X className="w-4 h-4 mr-1" />
-              {type === 'image' && t('removeImage')}
-              {type === 'video' && t('removeVideo')}
-              {type === 'audio' && t('removeMusic')}
+              {removeButtonText || (type === 'image' ? t('removeImage') : type === 'video' ? t('removeVideo') : t('removeMusic'))}
             </Button>
           </div>
         </div>
@@ -153,9 +174,7 @@ export default function MediaUpload({ type, value, onChange, label, autoOptimize
                   onClick={handleButtonClick}
                 >
                   <Upload className="w-4 h-4 mr-2" />
-                  {type === 'image' && t('uploadImage')}
-                  {type === 'video' && t('uploadVideo')}
-                  {type === 'audio' && t('uploadAudio')}
+                  {uploadButtonText || (type === 'image' ? t('uploadImage') : type === 'video' ? t('uploadVideo') : t('uploadAudio'))}
                 </Button>
               </div>
             </div>

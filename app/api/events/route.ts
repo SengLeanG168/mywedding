@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { sanitizeEventData } from '@/lib/event-sanitizer';
 
 export async function GET() {
   const session = await getSession();
@@ -31,8 +32,9 @@ export async function GET() {
       }
     });
     return NextResponse.json(events);
-  } catch (error) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Error fetching events:', error);
+    return NextResponse.json({ error: error?.message || 'Internal Server Error' }, { status: 500 });
   }
 }
 
@@ -45,23 +47,16 @@ export async function POST(request: Request) {
     
     // Check if slug exists
     if (body.slug) {
-      const existing = await prisma.event.findUnique({ where: { slug: body.slug } });
+      const existing = await prisma.event.findUnique({ where: { slug: String(body.slug).trim() } });
       if (existing) {
         return NextResponse.json({ error: 'Slug already in use' }, { status: 400 });
       }
     }
 
-    // Strip relational and system fields that cannot be created directly
-    const { id: _id, createdAt: _c, updatedAt: _u, guests: _g, rsvps: _r, programDays: _p, _count: _cnt, ...data } = body;
+    const sanitizedData = sanitizeEventData(body);
 
     const event = await prisma.event.create({
-      data: {
-        ...data,
-        coupleMonogramImageUrl: data.coupleMonogramImageUrl || null,
-        transitionVideoUrl: data.transitionVideoUrl || null,
-        showTransitionVideo: data.showTransitionVideo !== undefined ? Boolean(data.showTransitionVideo) : true,
-        eventDate: new Date(data.eventDate),
-      }
+      data: sanitizedData as any
     });
     return NextResponse.json(event);
   } catch (error: any) {

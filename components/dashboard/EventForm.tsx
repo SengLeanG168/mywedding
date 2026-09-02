@@ -51,6 +51,7 @@ export default function EventForm({ initialData }: { initialData?: any }) {
     transitionVideoUrl: initialData?.transitionVideoUrl || '',
     showTransitionVideo: initialData?.showTransitionVideo !== undefined ? initialData.showTransitionVideo : true,
     openingImageUrl: initialData?.openingImageUrl || '',
+    openingCoupleNamesImageUrl: initialData?.openingCoupleNamesImageUrl || '',
     openingTitleKm: initialData?.openingTitleKm || '',
     openingTitleEn: initialData?.openingTitleEn || '',
     openingMessageKm: initialData?.openingMessageKm || '',
@@ -61,6 +62,7 @@ export default function EventForm({ initialData }: { initialData?: any }) {
     curtainIntroVideoUrl: initialData?.curtainIntroVideoUrl || '',
     allowSkipCurtainIntro: initialData?.allowSkipCurtainIntro !== undefined ? initialData.allowSkipCurtainIntro : true,
     galleryImages: Array.isArray(initialData?.galleryImages) ? (initialData.galleryImages as string[]) : [],
+    galleryVideoUrl: initialData?.galleryVideoUrl || '',
     
     // Traditional Invitation Details
     blessingTitleKm: initialData?.blessingTitleKm || '',
@@ -132,6 +134,8 @@ export default function EventForm({ initialData }: { initialData?: any }) {
     try {
       const payload = {
         ...formData,
+        galleryVideoUrl: formData.galleryVideoUrl ? formData.galleryVideoUrl.trim() : null,
+        openingCoupleNamesImageUrl: formData.openingCoupleNamesImageUrl ? formData.openingCoupleNamesImageUrl.trim() : null,
         coupleMonogramImageUrl: formData.coupleMonogramImageUrl ? formData.coupleMonogramImageUrl.trim() : null,
         transitionVideoUrl: formData.transitionVideoUrl ? formData.transitionVideoUrl.trim() : null,
       };
@@ -197,11 +201,37 @@ export default function EventForm({ initialData }: { initialData?: any }) {
         <CardHeader>
           <CardTitle className="text-lg">{t('galleryImages')}</CardTitle>
         </CardHeader>
-        <CardContent className="pt-0">
-          <GalleryUpload
-            value={formData.galleryImages}
-            onChange={(paths) => setFormData(prev => ({ ...prev, galleryImages: paths }))}
-          />
+        <CardContent className="pt-0 space-y-6">
+          {/* Gallery Video Upload */}
+          <div className="space-y-2 pb-6 border-b">
+            <label className="text-sm font-medium">វីដេអូវិចិត្រសាល</label>
+            <p className="text-xs text-muted-foreground">
+              បង្ហោះវីដេអូផ្ដេកសម្រាប់បង្ហាញនៅខាងលើរូបភាពក្នុងផ្នែកវិចិត្រសាល។
+            </p>
+            <MediaUpload
+              type="video"
+              value={formData.galleryVideoUrl}
+              onChange={(path) => setFormData(prev => ({ ...prev, galleryVideoUrl: path }))}
+              uploadButtonText="បង្ហោះវីដេអូវិចិត្រសាល"
+              viewButtonText="មើលវីដេអូ"
+              removeButtonText="លុបវីដេអូ"
+            />
+            <Input
+              name="galleryVideoUrl"
+              value={formData.galleryVideoUrl}
+              onChange={handleChange}
+              placeholder="Or enter external gallery video URL..."
+              className="mt-2 text-xs"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium block mb-2">{t('galleryImages')}</label>
+            <GalleryUpload
+              value={formData.galleryImages}
+              onChange={(paths) => setFormData(prev => ({ ...prev, galleryImages: paths }))}
+            />
+          </div>
         </CardContent>
       </Card>
 
@@ -773,6 +803,27 @@ export default function EventForm({ initialData }: { initialData?: any }) {
                   onChange={(path) => setFormData(prev => ({ ...prev, openingImageUrl: path }))}
                 />
                 <Input name="openingImageUrl" value={formData.openingImageUrl} onChange={handleChange} placeholder="Or enter external opening image URL..." className="mt-2 text-xs" />
+              </div>
+              <div className="space-y-2 md:col-span-2 pt-2 border-t">
+                <label className="text-sm font-semibold">រូបឈ្មោះកូនកម្លោះកូនក្រមុំ សម្រាប់ទំព័របើកធៀប</label>
+                <p className="text-xs text-muted-foreground">
+                  បង្ហោះរូបភាពឈ្មោះកូនកម្លោះ និងកូនក្រមុំ ដែលបានរចនាជាក្បាច់ សម្រាប់បង្ហាញនៅទំព័រមានប៊ូតុង “បើកធៀប”។
+                </p>
+                <MediaUpload
+                  type="image"
+                  value={formData.openingCoupleNamesImageUrl || ''}
+                  onChange={(path) => setFormData(prev => ({ ...prev, openingCoupleNamesImageUrl: path }))}
+                  uploadButtonText="បង្ហោះរូបឈ្មោះ"
+                  viewButtonText="មើលរូបភាព"
+                  removeButtonText="លុបរូបភាព"
+                />
+                <Input 
+                  name="openingCoupleNamesImageUrl" 
+                  value={formData.openingCoupleNamesImageUrl || ''} 
+                  onChange={handleChange} 
+                  placeholder="Or enter external couple names image URL..." 
+                  className="mt-2 text-xs" 
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">{t('openingTitle')} (Khmer)</label>

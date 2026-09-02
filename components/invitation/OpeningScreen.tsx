@@ -32,13 +32,21 @@ export default function OpeningScreen({
   const t = useTranslations('Event');
   const [isExiting, setIsExiting] = useState(false);
 
-  const guestName  = guest ? guest.name : t('honoredGuest');
+  const guestName = guest && guest.name && guest.name.trim() ? guest.name.trim() : 'ភ្ញៀវកិត្តិយស';
   const hasMusic   = !!event?.musicUrl;
   const hasVideo   = !!event?.showHeroVideo && !!event?.heroVideoUrl;
 
   // Priority: openingImageUrl → coverImage → null (default gradient)
   const bgImage: string | null =
     event?.openingImageUrl || event?.coverImage || null;
+
+  const coupleNamesImg = typeof event?.openingCoupleNamesImageUrl === 'string' && event.openingCoupleNamesImageUrl.trim()
+    ? event.openingCoupleNamesImageUrl.trim()
+    : null;
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[OpeningScreen] openingCoupleNamesImageUrl:', coupleNamesImg);
+  }
 
   const handleOpen = () => {
     // Synchronously trigger audio playback during direct user gesture on Android
@@ -113,41 +121,20 @@ export default function OpeningScreen({
           <KhmerHeart className="w-5 h-5 text-primary mt-3 opacity-90 animate-pulse drop-shadow-lg" />
         </div>
 
-        {/* 2. MIDDLE — Couple Names */}
-        <div className="flex flex-col items-center w-full my-auto space-y-4">
-          {/* Groom */}
-          <div className="flex flex-col items-center text-center">
-            <span className="text-xs text-primary/90 uppercase tracking-widest font-medium mb-1"
-                  style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>
-              {t('groom')}
-            </span>
-            <h2
-              className="text-[clamp(1.375rem,5vw,1.75rem)] font-serif font-semibold text-white px-2"
-              style={{ textShadow: '0 2px 16px rgba(0,0,0,0.8)' }}
-            >
-              {groomName}
-            </h2>
+        {/* 2. MIDDLE — Couple Names Image (Designed Ornament Image) */}
+        {coupleNamesImg ? (
+          <div className="flex flex-col items-center justify-center w-full my-auto py-2 px-2 select-none z-20">
+            <div className="w-full max-w-[90%] sm:max-w-[440px] flex items-center justify-center">
+              <img
+                src={coupleNamesImg}
+                alt="Couple Names"
+                className="max-h-[220px] sm:max-h-[260px] max-w-full w-auto h-auto object-contain drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)] filter pointer-events-none"
+              />
+            </div>
           </div>
-
-          {/* Gold divider */}
-          <div className="w-full max-w-[100px] py-1 opacity-80">
-            <DividerMotif className="w-full text-primary" />
-          </div>
-
-          {/* Bride */}
-          <div className="flex flex-col items-center text-center">
-            <span className="text-xs text-primary/90 uppercase tracking-widest font-medium mb-1"
-                  style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>
-              {t('bride')}
-            </span>
-            <h2
-              className="text-[clamp(1.375rem,5vw,1.75rem)] font-serif font-semibold text-white px-2"
-              style={{ textShadow: '0 2px 16px rgba(0,0,0,0.8)' }}
-            >
-              {brideName}
-            </h2>
-          </div>
-        </div>
+        ) : (
+          <div className="my-auto" />
+        )}
 
         {/* 3. BOTTOM — Invitation text + Guest Frame + Play Button */}
         <div className="flex flex-col items-center w-full space-y-1">

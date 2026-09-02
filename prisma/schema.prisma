@@ -46,6 +46,7 @@ model Event {
   transitionVideoUrl  String?
   showTransitionVideo Boolean  @default(true)
   openingImageUrl     String?
+  openingCoupleNamesImageUrl String?
   openingTitleKm      String?
   openingTitleEn      String?
   openingMessageKm    String?
@@ -56,6 +57,7 @@ model Event {
   curtainIntroVideoUrl     String?
   allowSkipCurtainIntro    Boolean  @default(true)
   galleryImages            Json?
+  galleryVideoUrl          String?
   
   blessingTitleKm                 String?
   blessingTitleEn                 String?
@@ -71,7 +73,8 @@ model Event {
   formalInvitationTextEn          String?  @db.Text
   couplePhotoUrl                  String?
   coupleMonogramImageUrl          String?
-  showMonogram                    Boolean @default(false)
+  showMonogram                    Boolean  @default(false)
+  showPhotoVideoTransitionVideo   Boolean  @default(false)
   showTraditionalInvitationSection Boolean @default(true)
   
   showMapQrCode       Boolean  @default(true)

@@ -43,20 +43,25 @@ export default function InvitationContent({ event, locale, guest, programDays }:
   const [isPlayingTransitionVideo, setIsPlayingTransitionVideo] = useState(false);
   const [videoIntroDone, setVideoIntroDone] = useState(!hasHeroVideo);
 
-  // Disable background scrolling while video intro screen or transition video is active
+  // Disable background scrolling while full screen video or curtain overlays are active
   useEffect(() => {
     const isVideoActive = curtainDone && isOpened && hasHeroVideo && !videoIntroDone;
     const isTransitioning = isPlayingTransitionVideo;
+    const isOpeningActive = curtainDone && event.showOpeningScreen && !isOpened;
+    const isCurtainActive = !curtainDone && shouldShowCurtain;
 
-    if (isVideoActive || isTransitioning) {
+    if (isCurtainActive || isOpeningActive || isVideoActive || isTransitioning) {
       document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     }
     return () => {
       document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     };
-  }, [curtainDone, isOpened, hasHeroVideo, videoIntroDone, isPlayingTransitionVideo]);
+  }, [curtainDone, isOpened, hasHeroVideo, videoIntroDone, isPlayingTransitionVideo, shouldShowCurtain, event.showOpeningScreen]);
 
   // Lightbox State
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -142,17 +147,20 @@ export default function InvitationContent({ event, locale, guest, programDays }:
           <FloatingButterflies />
           
           {/* Main Invitation Content Section */}
-          <div id="invitation-content" className="relative w-full min-h-screen overflow-hidden">
-            {/* Decorative background circles */}
-            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/10 blur-3xl" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-primary/10 blur-3xl" />
+          <div id="invitation-content" className="relative w-full">
+            {/* Decorative background circles confined to content bounds */}
+            <div className="absolute top-0 left-0 w-72 h-72 rounded-full bg-primary/10 blur-3xl pointer-events-none -z-10" />
+            <div className="absolute top-1/2 right-0 w-72 h-72 rounded-full bg-primary/10 blur-3xl pointer-events-none -z-10" />
 
             {/* Floating controls */}
             <div className="absolute top-4 right-4 flex gap-2 z-50">
               <ThemeToggle />
             </div>
 
-            <main className="w-full mx-auto px-4 sm:px-6 py-12 sm:py-16 pb-28 relative z-10 space-y-12 sm:space-y-16">
+            <main 
+              className="w-full mx-auto px-4 sm:px-6 pt-6 sm:pt-8 relative z-10 space-y-10 sm:space-y-14"
+              style={{ paddingBottom: 'calc(88px + env(safe-area-inset-bottom, 0px))' }}
+            >
               
               {/* 1. Traditional Invitation Section */}
               <ScrollReveal direction="up" delay={50}>
@@ -160,25 +168,6 @@ export default function InvitationContent({ event, locale, guest, programDays }:
                   <TraditionalInvitationSection event={event} locale={locale} />
                 </div>
               </ScrollReveal>
-
-              {/* Header section */}
-              {/* <ScrollReveal direction="up" delay={100}>
-                <section className="text-center space-y-4 sm:space-y-6 overflow-hidden">
-                  <p className="uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] sm:text-xs text-primary font-bold px-2">
-                    {isKm ? "សូមគោរពអញ្ជើញចូលរួមពិធីមង្គលការរបស់" : "You are invited to the wedding of"}
-                  </p>
-                  
-                  <h1 className="text-[clamp(1.625rem,6vw,2rem)] font-serif text-primary font-bold break-words px-2">
-                    {brideName}
-                    <span className="block text-xl sm:text-2xl my-2 text-foreground/50 italic font-light">&</span>
-                    {groomName}
-                  </h1>
-                  
-                  <p className="text-sm sm:text-base text-muted-foreground whitespace-pre-wrap w-full mx-auto px-4 mt-2">
-                    {invitationMessage}
-                  </p>
-                </section>
-              </ScrollReveal> */}
 
               {/* Cover Image (optional) */}
               {event.coverImage && (
@@ -189,71 +178,41 @@ export default function InvitationContent({ event, locale, guest, programDays }:
                 </ScrollReveal>
               )}
 
-              {/* 2. Wedding Program Section */}
-              <ScrollReveal direction="up">
-                <WeddingProgram programDays={programDays || []} locale={locale} />
+              {/* 2. Countdown to Wedding Day */}
+              <ScrollReveal direction="zoom">
+                <div id="calendar-section" className="scroll-mt-8 sm:scroll-mt-10">
+                  <Countdown date={eventDateTime.toISOString()} />
+                </div>
               </ScrollReveal>
 
-              {/* 3. Gallery Section (Memory Gallery) */}
-              {(() => {
-                const galleryUrls = Array.isArray(event.galleryImages)
-                  ? (event.galleryImages as string[])
-                  : (typeof event.galleryImages === 'string' && event.galleryImages
-                      ? JSON.parse(event.galleryImages)
-                      : []);
-                if (galleryUrls.length === 0) return null;
-                
-                return (
-                  <MemoryGallery 
-                    images={galleryUrls} 
-                    isKm={isKm} 
-                    onImageClick={(index) => {
-                      setLightboxItems(galleryUrls.map((src: string) => ({ src, type: 'image' })));
-                      setLightboxIndex(index);
-                      setIsLightboxOpen(true);
-                    }} 
-                  />
-                );
-              })()}
-
-              {/* 4 & 5. Thank You & Apology Letter Section */}
+              {/* 3. Add to Calendar Button */}
               <ScrollReveal direction="up">
-                <WeddingLetterSection event={event} locale={locale} />
+                <AddToCalendarButton event={event} locale={locale} />
               </ScrollReveal>
 
-              {/* 6. Location & Details section */}
+              {/* 4. Location & Details section */}
               <ScrollReveal direction="up">
-                <section className="bg-card/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-xl border border-primary/20 relative overflow-hidden" id="location-section">
+                <section className="bg-card/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-xl border border-primary/20 relative overflow-hidden scroll-mt-8 sm:scroll-mt-10" id="location-section">
                   {/* subtle pattern inside card */}
                   <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
                   
-                  <div className="space-y-6 sm:space-y-8 relative z-10 w-full">
+                  <div className="space-y-4 sm:space-y-6 relative z-10 w-full">
                     <div className="flex flex-col items-center justify-center gap-3 text-center">
-                      <Calendar className="h-8 w-8 text-primary" />
-                      <div>
-                        <div className="text-base sm:text-lg font-serif font-bold">{formatLocalizedDate(eventDateTime, locale)}</div>
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-1">
+                        <MapPin className="h-6 w-6 text-primary shrink-0" />
                       </div>
-                    </div>
-                    
-                    <div className="h-px w-full bg-border" />
-                    
-                    <div className="flex flex-col items-center justify-center gap-3 text-center">
-                      <Clock className="h-8 w-8 text-primary" />
                       <div>
-                        <div className="text-base sm:text-lg font-serif font-bold">{event.eventTime}</div>
-                        <div className="text-xs sm:text-sm text-muted-foreground mt-1">{isKm ? "កម្មវិធីចាប់ផ្តើម" : "Reception begins"}</div>
-                      </div>
-                    </div>
-                    
-                    <div className="h-px w-full bg-border" />
-                    
-                    <div className="flex flex-col items-center justify-center gap-3 text-center">
-                      <MapPin className="h-8 w-8 text-primary shrink-0" />
-                      <div>
-                        <div className="text-base sm:text-lg font-serif font-bold">{locationName}</div>
-                        <div className="text-xs sm:text-sm text-muted-foreground mt-1">{locationAddress}</div>
+                        <h3 className="text-xs uppercase tracking-widest text-primary font-bold mb-2">
+                          {isKm ? "ទីតាំងកម្មវិធី" : "Event Location"}
+                        </h3>
+                        <div className="text-base sm:text-lg font-serif font-bold text-foreground">
+                          {locationName}
+                        </div>
+                        <div className="text-xs sm:text-sm text-muted-foreground mt-1.5 max-w-md mx-auto leading-relaxed">
+                          {locationAddress}
+                        </div>
                         {event.googleMapUrl && (
-                          <a href={event.googleMapUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 mt-3 text-sm text-primary hover:underline font-medium">
+                          <a href={event.googleMapUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 mt-4 text-sm text-primary hover:underline font-medium">
                             <Map className="h-4 w-4" /> {isKm ? "បើកមើលផែនទី" : "Open in Google Maps"}
                           </a>
                         )}
@@ -271,28 +230,52 @@ export default function InvitationContent({ event, locale, guest, programDays }:
                 </section>
               </ScrollReveal>
 
-              {/* Countdown & Calendar Section */}
-              <ScrollReveal direction="zoom">
-                <div id="calendar-section">
-                  <Countdown date={eventDateTime.toISOString()} />
-                </div>
-              </ScrollReveal>
-
-              {/* Add to Calendar Button */}
+              {/* 5. Wedding Program Section */}
               <ScrollReveal direction="up">
-                <AddToCalendarButton event={event} locale={locale} />
+                <WeddingProgram programDays={programDays || []} locale={locale} />
               </ScrollReveal>
 
-              {/* 7. Gift QR Section */}
+              {/* 6. Gallery Section (Memory Gallery) */}
+              {(() => {
+                const galleryUrls = Array.isArray(event.galleryImages)
+                  ? (event.galleryImages as string[])
+                  : (typeof event.galleryImages === 'string' && event.galleryImages
+                      ? JSON.parse(event.galleryImages)
+                      : []);
+                const hasGalleryContent = galleryUrls.length > 0 || Boolean(event.galleryVideoUrl);
+                if (!hasGalleryContent) return null;
+                
+                return (
+                  <MemoryGallery 
+                    images={galleryUrls} 
+                    videoUrl={event.galleryVideoUrl || undefined}
+                    isKm={isKm} 
+                    onImageClick={(index) => {
+                      setLightboxItems(galleryUrls.map((src: string) => ({ src, type: 'image' })));
+                      setLightboxIndex(index);
+                      setIsLightboxOpen(true);
+                    }} 
+                  />
+                );
+              })()}
+
+              {/* 7. Thank You & Apology Letter Section */}
+              <ScrollReveal direction="up">
+                <WeddingLetterSection event={event} locale={locale} />
+              </ScrollReveal>
+
+              {/* 8. Gift QR Section */}
               <ScrollReveal direction="up">
                 <GiftQrSection event={event} locale={locale} />
               </ScrollReveal>
 
               {/* 8. RSVP Form */}
               <ScrollReveal direction="up">
-                <section className="w-full" id="rsvp-section">
+                <section className="w-full scroll-mt-8 sm:scroll-mt-10" id="rsvp-section">
                   <div className="text-center mb-6 sm:mb-8">
-                    <h2 className="text-[clamp(1.25rem,4vw,1.5rem)] font-serif font-bold text-primary">RSVP</h2>
+                    <h2 className="text-[clamp(1.25rem,4vw,1.5rem)] font-serif font-bold text-primary">
+                      {isKm ? "ការចូលរួម" : "RSVP"}
+                    </h2>
                     <p className="text-xs sm:text-sm text-muted-foreground mt-2 px-4">{isKm ? "សូមបញ្ជាក់ពីការចូលរួមរបស់អ្នក" : "Please let us know if you can make it"}</p>
                   </div>
                   <RSVPForm 

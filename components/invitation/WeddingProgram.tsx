@@ -476,7 +476,7 @@ export default function WeddingProgram({ programDays, locale }: WeddingProgramPr
   if (!programDays || programDays.length === 0) return null;
 
   return (
-    <section className="mt-16 relative w-full" id="program-section">
+    <section className="mt-16 relative w-full scroll-mt-8 sm:scroll-mt-10" id="program-section">
       <style jsx global>{`
         @keyframes curvedDashFlow {
           from {
