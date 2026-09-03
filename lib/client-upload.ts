@@ -130,6 +130,41 @@ export async function optimizeAudioFile(file: File): Promise<File> {
   });
 }
 
+let blobStatusCache: { blobEnabled: boolean; isProduction: boolean } | null = null;
+let hasWarnedMissingToken = false;
+
+async function getBlobStatus(): Promise<{ blobEnabled: boolean; isProduction: boolean }> {
+  if (blobStatusCache !== null) {
+    return blobStatusCache;
+  }
+
+  const isLocalHost =
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname.endsWith('.local'));
+
+  try {
+    const res = await fetch('/api/upload/blob', { method: 'GET' });
+    if (res.ok) {
+      const data = await res.json();
+      blobStatusCache = {
+        blobEnabled: Boolean(data.blobEnabled),
+        isProduction: data.isProduction !== undefined ? Boolean(data.isProduction) : !isLocalHost,
+      };
+      return blobStatusCache;
+    }
+  } catch (err) {
+    // If probe fails, assume standard environment defaults
+  }
+
+  blobStatusCache = {
+    blobEnabled: false,
+    isProduction: process.env.NODE_ENV === 'production' && !isLocalHost,
+  };
+  return blobStatusCache;
+}
+
 export async function uploadClientFile(
   file: File,
   type: 'image' | 'video' | 'audio',
@@ -166,7 +201,48 @@ export async function uploadClientFile(
     fileToUpload = await optimizeAudioFile(file);
   }
 
-  // Priority 1: Direct Vercel Blob client-side upload (bypasses 4.5MB serverless limit)
+  const { blobEnabled, isProduction } = await getBlobStatus();
+
+  // If BLOB_READ_WRITE_TOKEN is not configured:
+  if (!blobEnabled) {
+    // In production, require BLOB_READ_WRITE_TOKEN to prevent loss of files
+    if (isProduction) {
+      throw new Error(
+        'មិនទាន់បានកំណត់ BLOB_READ_WRITE_TOKEN ទេ។ សូមកំណត់ BLOB_READ_WRITE_TOKEN ក្នុង Environment Variables លើ Vercel សម្រាប់ Upload ឯកសារ។'
+      );
+    }
+
+    // In local development, bypass @vercel/blob completely and go straight to local server upload
+    if (!hasWarnedMissingToken) {
+      console.info(
+        'មិនទាន់បានកំណត់ BLOB_READ_WRITE_TOKEN ទេ។ Upload នឹងប្រើ local fallback សម្រាប់ development ប៉ុណ្ណោះ។'
+      );
+      hasWarnedMissingToken = true;
+    }
+
+    const formData = new FormData();
+    formData.append('file', fileToUpload);
+
+    const response = await fetch(`/api/upload/${type}`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (response.ok && (data.url || data.path || data.success)) {
+      return data.url || data.path;
+    }
+
+    let errorMessage = data.error || 'File upload failed';
+    if (data.error === 'File is too large') {
+      errorMessage = 'ទំហំឯកសារធំពេក! សូមជ្រើសរើសរូបភាព/វីដេអូដែលមានទំហំតូចជាង (File is too large)';
+    }
+
+    throw new Error(errorMessage);
+  }
+
+  // Priority 1: Direct Vercel Blob client-side upload when Blob is enabled
   try {
     const blob = await upload(fileToUpload.name, fileToUpload, {
       access: 'public',
@@ -177,9 +253,12 @@ export async function uploadClientFile(
     }
   } catch (blobErr: any) {
     console.warn('Vercel Blob client upload fallback triggered:', blobErr);
+    if (isProduction && fileToUpload.size > 4.5 * 1024 * 1024) {
+      throw new Error(`Upload ទៅ Vercel Blob បរាជ័យ: ${blobErr?.message || blobErr}`);
+    }
   }
 
-  // Priority 2: Fallback to server route /api/upload/[type] for local development
+  // Priority 2: Fallback to server route /api/upload/[type]
   const formData = new FormData();
   formData.append('file', fileToUpload);
 
@@ -190,7 +269,7 @@ export async function uploadClientFile(
 
   const data = await response.json();
 
-  if (response.ok && (data.url || data.success)) {
+  if (response.ok && (data.url || data.path || data.success)) {
     return data.url || data.path;
   }
 
