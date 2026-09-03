@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar as CalendarIcon, Download, X, Sparkles } from 'lucide-react';
 
 interface AddToCalendarButtonProps {
   event: any;
@@ -13,11 +13,12 @@ interface AddToCalendarButtonProps {
 export default function AddToCalendarButton({ event, locale, guestId }: AddToCalendarButtonProps) {
   const [isIOS, setIsIOS] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const isKm = locale === 'km';
 
   const slug = event?.slug || event?.id;
 
-  // Server-generated direct .ics endpoint URL for desktop
+  // Server-generated direct .ics endpoint URL for Android & desktop
   const calendarIcsUrl = guestId
     ? `/api/invite/${slug}/guest/${guestId}/calendar.ics`
     : `/api/invite/${slug}/calendar.ics`;
@@ -26,11 +27,6 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
   const calendarBridgeUrl = guestId
     ? `/${locale}/invite/${slug}/guest/${guestId}/calendar`
     : `/${locale}/invite/${slug}/calendar`;
-
-  // Android Calendar Bridge page URL (tailored for Android instruction & .ics download)
-  const androidCalendarBridgeUrl = guestId
-    ? `/${locale}/invite/${slug}/guest/${guestId}/calendar/android`
-    : `/${locale}/invite/${slug}/calendar/android`;
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -48,17 +44,22 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
           isAndroid: android,
           calendarIcsUrl,
           calendarBridgeUrl,
-          androidCalendarBridgeUrl,
         });
       }
     }
-  }, [calendarIcsUrl, calendarBridgeUrl, androidCalendarBridgeUrl]);
+  }, [calendarIcsUrl, calendarBridgeUrl]);
 
-  // Routing: iOS -> iOS Bridge, Android -> Android Bridge, Desktop -> Direct .ics download
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (isAndroid) {
+      e.preventDefault();
+      setIsBottomSheetOpen(true);
+    }
+  };
+
   const primaryTargetUrl = isIOS
     ? calendarBridgeUrl
     : isAndroid
-    ? androidCalendarBridgeUrl
+    ? '#'
     : calendarIcsUrl;
 
   return (
@@ -67,6 +68,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
       <div className="flex flex-col items-center justify-center">
         <a
           href={primaryTargetUrl}
+          onClick={handleClick}
           className="w-full max-w-xs mx-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3.5 px-6 rounded-full shadow-lg flex items-center justify-center gap-2.5 group transition-all active:scale-95 cursor-pointer border border-primary/30"
         >
           <CalendarIcon className="w-5 h-5 group-hover:scale-110 transition-transform shrink-0" />
@@ -75,6 +77,68 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
           </span>
         </a>
       </div>
+
+      {/* Android Bottom Sheet Modal */}
+      {isBottomSheetOpen && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+            onClick={() => setIsBottomSheetOpen(false)}
+          />
+
+          {/* Bottom Sheet Card */}
+          <div className="relative z-10 w-full max-w-lg mx-auto bg-card border-t border-x border-primary/30 rounded-t-3xl p-6 sm:p-7 shadow-2xl space-y-4 text-center pb-9 sm:pb-7 animate-in slide-in-from-bottom duration-300">
+            {/* Drag handle indicator */}
+            <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full mx-auto mb-1" />
+
+            {/* Header / Title */}
+            <div className="flex flex-col items-center space-y-1.5 pt-1">
+              <div className="w-12 h-12 rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center text-primary shadow-inner mb-1">
+                <CalendarIcon className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="text-lg sm:text-xl font-serif font-bold text-foreground">
+                {isKm ? 'កំណត់ចំណាំថ្ងៃចូលរួម' : 'Save Event to Calendar'}
+              </h3>
+            </div>
+
+            {/* Instruction Card */}
+            <div className="bg-primary/10 border border-primary/25 rounded-2xl p-3.5 text-center space-y-1.5">
+              <div className="flex items-center justify-center gap-1.5 text-primary text-xs font-serif font-semibold">
+                <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                <span>{isKm ? 'ការណែនាំ' : 'Instructions'}</span>
+              </div>
+              <p className="text-xs sm:text-sm text-foreground/90 font-serif leading-relaxed px-1">
+                {isKm
+                  ? 'បន្ទាប់ពីទាញយកឯកសារ Calendar រួច សូមចុចបើកឯកសារ .ics នោះ ហើយជ្រើសរើស “Save” ឬ “Add to Calendar” ដើម្បីរក្សាទុកថ្ងៃចូលរួម។'
+                  : 'After downloading the Calendar file, tap to open the .ics file and choose "Save" or "Add to Calendar" to save the wedding date.'}
+              </p>
+            </div>
+
+            {/* Action Buttons Area */}
+            <div className="space-y-2.5 pt-1">
+              {/* Primary Download / Open Button (Real Anchor Link) */}
+              <a
+                href={calendarIcsUrl}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 px-6 rounded-2xl shadow-md flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer font-serif text-sm sm:text-base"
+              >
+                <Download className="w-5 h-5 shrink-0" />
+                <span>{isKm ? 'ទាញយក/បើកឯកសារ Calendar' : 'Download / Open Calendar'}</span>
+              </a>
+
+              {/* Secondary Close Button */}
+              <button
+                type="button"
+                onClick={() => setIsBottomSheetOpen(false)}
+                className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium py-3 px-6 rounded-2xl border border-primary/20 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer font-serif text-xs sm:text-sm"
+              >
+                <X className="w-4 h-4 shrink-0 text-muted-foreground" />
+                <span>{isKm ? 'បិទ' : 'Close'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
