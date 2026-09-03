@@ -152,18 +152,23 @@ export default function OpeningScreen({
 
           {/* Guest Name inside Uploaded Decorative Frame */}
           {guestImg ? (
-            <div className="relative w-[clamp(260px,76vw,330px)] max-w-[86%] h-[95px] sm:h-[115px] flex items-center justify-center mx-auto mt-1 mb-2 sm:mt-1.5 sm:mb-2.5 select-none z-20">
+            <div className="relative w-[clamp(260px,76vw,340px)] max-w-[88%] min-h-[115px] sm:min-h-[135px] h-auto flex items-center justify-center mx-auto mt-1 mb-2 sm:mt-1.5 sm:mb-2.5 select-none z-20 overflow-visible">
               {/* Frame Background Image */}
               <img
                 src={guestImg}
                 alt="Decorative Frame"
-                className="w-full h-full object-contain object-center block pointer-events-none drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)] filter"
+                className="w-full h-auto max-h-[135px] object-contain object-center block pointer-events-none drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)] filter"
               />
-              {/* Centered Dynamic Guest Name */}
-              <div className="absolute inset-0 flex items-center justify-center text-center px-[46px] pointer-events-none">
+              {/* Centered Dynamic Guest Name with original decorative font-serif */}
+              <div className="absolute inset-0 flex items-center justify-center text-center px-[44px] py-3 sm:py-3.5 pointer-events-none overflow-visible">
                 <span
-                  className="font-serif font-semibold text-[clamp(14px,4vw,19px)] leading-[1.5] text-[#fbf0dc] drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] line-clamp-2"
-                  style={{ textShadow: '0 2px 8px rgba(0,0,0,0.95), 0 0 10px rgba(0,0,0,0.8)' }}
+                  className="font-serif font-semibold text-[clamp(14px,4vw,19px)] text-[#fbf0dc] block w-full overflow-visible"
+                  style={{
+                    lineHeight: '2.0',
+                    paddingTop: '8px',
+                    paddingBottom: '8px',
+                    textShadow: '0 2px 10px rgba(0,0,0,0.95), 0 0 14px rgba(0,0,0,0.9)',
+                  }}
                 >
                   {guestName}
                 </span>
@@ -171,10 +176,15 @@ export default function OpeningScreen({
             </div>
           ) : (
             /* Fallback if no frame image uploaded */
-            <div className="my-1.5 px-6 py-2 rounded-full border border-primary/40 bg-black/40 backdrop-blur-sm z-20 select-none">
+            <div className="my-1.5 px-6 py-2.5 rounded-full border border-primary/40 bg-black/40 backdrop-blur-sm z-20 select-none overflow-visible">
               <span
-                className="font-serif font-semibold text-[clamp(14px,3.8vw,17px)] text-primary drop-shadow-md"
-                style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}
+                className="font-serif font-semibold text-[clamp(14px,3.8vw,17px)] text-primary drop-shadow-md block overflow-visible"
+                style={{
+                  lineHeight: '1.9',
+                  paddingTop: '6px',
+                  paddingBottom: '6px',
+                  textShadow: '0 1px 6px rgba(0,0,0,0.8)',
+                }}
               >
                 {guestName}
               </span>
