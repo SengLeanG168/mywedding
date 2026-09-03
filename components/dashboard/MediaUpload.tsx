@@ -41,7 +41,7 @@ export default function MediaUpload({
       case 'video':
         return 'video/mp4, video/webm';
       case 'audio':
-        return 'audio/mpeg, audio/wav, audio/x-wav, audio/mp4, audio/x-m4a, audio/ogg';
+        return 'audio/mpeg, audio/wav, audio/x-wav, audio/mp4, audio/x-m4a, audio/ogg, audio/aac, audio/flac, audio/webm, .mp3, .wav, .m4a, .aac, .ogg, .flac, .webm';
     }
   };
 
@@ -100,12 +100,12 @@ export default function MediaUpload({
             )}
 
             {type === 'audio' && (
-              <div className="w-full py-4 px-2 bg-muted rounded-md flex flex-col items-center space-y-2">
+              <div className="w-full py-4 px-3 bg-muted rounded-md flex flex-col items-center space-y-2.5">
                 <div className="flex items-center space-x-2 text-primary">
                   <MusicIcon className="w-5 h-5" />
                   <span className="text-xs font-semibold uppercase tracking-wider">{t('preview')}</span>
                 </div>
-                <audio src={value} controls className="w-full" />
+                <audio src={value} controls preload="metadata" className="w-full" />
               </div>
             )}
           </div>

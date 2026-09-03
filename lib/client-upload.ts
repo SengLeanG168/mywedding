@@ -92,107 +92,38 @@ export async function optimizeSocialPreviewImage(
 }
 
 /**
- * Optimizes heavy audio files (>3.5MB) to a lightweight 128kbps web stream (~1.5MB) for instant loading
+ * Validates audio file duration (up to 10 minutes = 600s) without cutting or trimming the audio.
+ * Preserves the full original song quality and length.
  */
 export async function optimizeAudioFile(file: File): Promise<File> {
-  if (!file.type.startsWith('audio/') && !file.name.match(/\.(mp3|wav|m4a|aac|ogg|flac)$/i)) {
+  if (!file.type.startsWith('audio/') && !file.name.match(/\.(mp3|wav|m4a|aac|ogg|flac|webm)$/i)) {
     return file;
   }
 
-  // If already lightweight (under 3.5MB), use original file as is
-  if (file.size <= 3.5 * 1024 * 1024) {
-    return file;
-  }
-
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) {
-        resolve(file);
-        return;
-      }
+      const url = URL.createObjectURL(file);
+      const audio = new Audio();
+      audio.preload = 'metadata';
 
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        try {
-          const buffer = e.target?.result as ArrayBuffer;
-          if (!buffer) {
-            resolve(file);
-            return;
-          }
-
-          const ctx = new AudioCtx();
-          const audioBuffer = await ctx.decodeAudioData(buffer);
-
-          const maxDuration = 120; // 2 minutes max loop for web streaming
-          const duration = Math.min(audioBuffer.duration, maxDuration);
-          const sampleRate = 44100;
-          const numberOfChannels = 2;
-          const length = Math.floor(duration * sampleRate);
-
-          const offlineCtx = new OfflineAudioContext(numberOfChannels, length, sampleRate);
-          const source = offlineCtx.createBufferSource();
-          source.buffer = audioBuffer;
-          source.connect(offlineCtx.destination);
-          source.start(0);
-
-          const renderedBuffer = await offlineCtx.startRendering();
-
-          const streamDestination = ctx.createMediaStreamDestination();
-          const source2 = ctx.createBufferSource();
-          source2.buffer = renderedBuffer;
-          source2.connect(streamDestination);
-
-          const mimeType = MediaRecorder.isTypeSupported('audio/webm')
-            ? 'audio/webm'
-            : (MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '');
-
-          if (!mimeType) {
-            ctx.close();
-            resolve(file);
-            return;
-          }
-
-          const mediaRecorder = new MediaRecorder(streamDestination.stream, {
-            mimeType,
-            audioBitsPerSecond: 128000, // 128 kbps
-          });
-
-          const chunks: Blob[] = [];
-          mediaRecorder.ondataavailable = (ev) => {
-            if (ev.data.size > 0) chunks.push(ev.data);
-          };
-
-          mediaRecorder.onstop = () => {
-            ctx.close();
-            const blob = new Blob(chunks, { type: mimeType });
-            const ext = mimeType.includes('webm') ? '.webm' : '.m4a';
-            const optFileName = file.name.replace(/\.[^/.]+$/, '') + '-optimized' + ext;
-            const optFile = new File([blob], optFileName, {
-              type: mimeType,
-              lastModified: Date.now(),
-            });
-            resolve(optFile);
-          };
-
-          mediaRecorder.start();
-          source2.start(0);
-
-          setTimeout(() => {
-            try {
-              mediaRecorder.stop();
-              source2.stop();
-            } catch (e) {}
-          }, Math.ceil(duration * 1000) + 100);
-
-        } catch (err) {
-          console.warn('Audio optimization failed, using original file:', err);
-          resolve(file);
+      audio.onloadedmetadata = () => {
+        URL.revokeObjectURL(url);
+        const duration = audio.duration;
+        // Limit: 10 minutes = 600 seconds
+        if (duration && duration > 600) {
+          reject(new Error(`បទចម្រៀងត្រូវតែមានរយៈពេលមិនលើសពី 10 នាទី (Music exceeds 10 minutes limit. Duration: ${Math.round(duration)}s)`));
+          return;
         }
+        resolve(file);
       };
 
-      reader.onerror = () => resolve(file);
-      reader.readAsArrayBuffer(file);
+      audio.onerror = () => {
+        URL.revokeObjectURL(url);
+        // If browser cannot probe metadata, allow the full file to upload intact
+        resolve(file);
+      };
+
+      audio.src = url;
     } catch (err) {
       resolve(file);
     }
@@ -232,11 +163,7 @@ export async function uploadClientFile(
   }
 
   if (type === 'audio') {
-    try {
-      fileToUpload = await optimizeAudioFile(file);
-    } catch (err) {
-      console.warn('Audio optimization warning, using original file:', err);
-    }
+    fileToUpload = await optimizeAudioFile(file);
   }
 
   // Priority 1: Direct Vercel Blob client-side upload (bypasses 4.5MB serverless limit)

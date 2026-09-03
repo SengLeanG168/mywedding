@@ -27,7 +27,7 @@ export const AVATAR_CONFIG: UploadConfig = {
 };
 
 export const AUDIO_CONFIG: UploadConfig = {
-  maxSize: 50 * 1024 * 1024, // 50MB
+  maxSize: 100 * 1024 * 1024, // 100MB (Supports full 10-minute songs)
   allowedExtensions: ['.mp3', '.wav', '.m4a', '.ogg', '.aac', '.flac', '.webm'],
   allowedMimeTypes: ['audio/mpeg', 'audio/wav', 'audio/x-wav', 'audio/mp4', 'audio/x-m4a', 'audio/ogg', 'audio/aac', 'audio/flac', 'audio/webm'],
   uploadDir: path.join(process.cwd(), 'public', 'uploads', 'audio'),
