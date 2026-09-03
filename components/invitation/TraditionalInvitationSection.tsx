@@ -108,7 +108,7 @@ function formatKhmerTime(timeStr?: string | null, isKm = true): string {
   if (isKm) {
     const hKhmer = toKhmerDigits(hour12);
     const mKhmer = toKhmerDigits(minFormatted);
-    return `${hKhmer}ៈ${mKhmer} នាទី${khmerPeriod}`;
+    return `${hKhmer}:${mKhmer} នាទី${khmerPeriod}`;
   } else {
     const ampm = hour >= 12 ? 'PM' : 'AM';
     return `${hour12}:${minFormatted} ${ampm}`;
