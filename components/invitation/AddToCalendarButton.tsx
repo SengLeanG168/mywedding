@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Calendar as CalendarIcon } from 'lucide-react';
-import { generateAndroidCalendarIntent } from '@/lib/calendar-android';
+import { Calendar as CalendarIcon, Info } from 'lucide-react';
 
 interface AddToCalendarButtonProps {
   event: any;
@@ -11,14 +10,15 @@ interface AddToCalendarButtonProps {
   guestName?: string;
 }
 
-export default function AddToCalendarButton({ event, locale, guestId, guestName }: AddToCalendarButtonProps) {
+export default function AddToCalendarButton({ event, locale, guestId }: AddToCalendarButtonProps) {
   const [isIOS, setIsIOS] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
+  const [isInAppBrowser, setIsInAppBrowser] = useState(false);
   const isKm = locale === 'km';
 
   const slug = event?.slug || event?.id;
 
-  // Server-generated direct .ics endpoint URL for desktop fallback
+  // Server-generated direct .ics endpoint URL for Android & Desktop
   const calendarIcsUrl = guestId
     ? `/api/invite/${slug}/guest/${guestId}/calendar.ics`
     : `/api/invite/${slug}/calendar.ics`;
@@ -28,32 +28,16 @@ export default function AddToCalendarButton({ event, locale, guestId, guestName 
     ? `/invite/${slug}/guest/${guestId}/calendar`
     : `/invite/${slug}/calendar`;
 
-  // Android Fallback page URL (if in-app browser blocks intent)
-  const androidFallbackUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}${guestId ? `/invite/${slug}/guest/${guestId}/calendar/android?blocked=1` : `/invite/${slug}/calendar/android?blocked=1`}`
-    : '';
-
-  const baseUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}${guestId ? `/invite/${slug}/guest/${guestId}` : `/invite/${slug}`}`
-    : '';
-
-  // Generate direct Android Calendar Intent URI
-  const { intentUrl: androidCalendarIntentUrl } = generateAndroidCalendarIntent(
-    event,
-    locale,
-    baseUrl,
-    guestName,
-    androidFallbackUrl
-  );
-
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const ua = window.navigator.userAgent || '';
       const ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       const android = /Android/i.test(ua);
       const inApp = /FBAN|FBAV|Messenger|Instagram|Telegram|Line|Twitter|MicroMessenger|FB_IAB|FBSS/i.test(ua);
+      
       setIsIOS(ios);
       setIsAndroid(android);
+      setIsInAppBrowser(inApp);
 
       if (process.env.NODE_ENV === 'development') {
         console.log('[AddToCalendarButton]', {
@@ -61,22 +45,19 @@ export default function AddToCalendarButton({ event, locale, guestId, guestName 
           isIOS: ios,
           isAndroid: android,
           isInAppBrowser: inApp,
-          androidCalendarIntentUrl,
+          calendarIcsUrl,
           calendarBridgeUrl,
         });
       }
     }
-  }, [androidCalendarIntentUrl, calendarBridgeUrl]);
+  }, [calendarIcsUrl, calendarBridgeUrl]);
 
-  const primaryTargetUrl = isIOS
-    ? calendarBridgeUrl
-    : isAndroid
-    ? androidCalendarIntentUrl
-    : calendarIcsUrl;
+  // Routing: iOS -> iOS Bridge, Android -> Direct .ics download, Desktop -> Direct .ics download
+  const primaryTargetUrl = isIOS ? calendarBridgeUrl : calendarIcsUrl;
 
   return (
     <div className="relative inline-block w-full text-center my-4">
-      {/* Primary Trigger Button: Direct real anchor link for Android intent & iOS Bridge */}
+      {/* Primary Trigger Button */}
       <div className="flex flex-col items-center justify-center">
         <a
           href={primaryTargetUrl}
@@ -87,6 +68,21 @@ export default function AddToCalendarButton({ event, locale, guestId, guestName 
             {isKm ? 'សូមកត់ចំណាំថ្ងៃចូលរួម' : 'Add to Calendar'}
           </span>
         </a>
+
+        {/* Android-Only Instruction Note */}
+        {isAndroid && (
+          <div className="mt-2.5 max-w-sm mx-auto px-3 text-center animate-in fade-in duration-300">
+            <p className="text-xs sm:text-[13px] font-serif text-primary/80 leading-relaxed">
+              {isInAppBrowser
+                ? (isKm
+                    ? 'កំណត់ចំណាំ៖ បន្ទាប់ពីចុចប៊ូតុងនេះ ឯកសារ Calendar នឹងត្រូវបានទាញយក។ សូមចុចបើកឯកសារ .ics ដែលបានទាញយក រួចចុច “Save” ឬ “Add to Calendar”។'
+                    : 'Note: Tapping this button will download a calendar file. Tap to open the downloaded .ics file and choose "Save" or "Add to Calendar".')
+                : (isKm
+                    ? 'កំណត់ចំណាំ៖ បន្ទាប់ពីទាញយកឯកសារ Calendar រួច សូមចុចបើកឯកសារ .ics នោះ ហើយជ្រើសរើស “Save” ឬ “Add to Calendar” ដើម្បីរក្សាទុកថ្ងៃចូលរួម។'
+                    : 'Note: After downloading the calendar file, tap to open the .ics file and choose "Save" or "Add to Calendar" to save the wedding date.')}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
