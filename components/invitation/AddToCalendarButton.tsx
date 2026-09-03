@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Calendar as CalendarIcon, Download, X, Sparkles } from 'lucide-react';
 
 interface AddToCalendarButtonProps {
@@ -14,6 +15,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
   const [isIOS, setIsIOS] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const isKm = locale === 'km';
 
   const slug = event?.slug || event?.id;
@@ -29,6 +31,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
     : `/${locale}/invite/${slug}/calendar`;
 
   useEffect(() => {
+    setMounted(true);
     if (typeof window !== 'undefined') {
       const ua = window.navigator.userAgent || '';
       const ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -64,13 +67,6 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
     };
   }, [isModalOpen]);
 
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (isAndroid) {
-      e.preventDefault();
-      setIsModalOpen(true);
-    }
-  };
-
   const primaryTargetUrl = isIOS
     ? calendarBridgeUrl
     : isAndroid
@@ -98,7 +94,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
           </button>
         ) : (
           <a
-            href={isIOS ? calendarBridgeUrl : calendarIcsUrl}
+            href={primaryTargetUrl}
             className="w-full max-w-xs mx-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3.5 px-6 rounded-full shadow-lg flex items-center justify-center gap-2.5 group transition-all active:scale-95 cursor-pointer border border-primary/30"
           >
             <CalendarIcon className="w-5 h-5 group-hover:scale-110 transition-transform shrink-0" />
@@ -109,17 +105,17 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
         )}
       </div>
 
-      {/* Android Top Down Popup Modal */}
-      {isModalOpen && (
-        <>
+      {/* Android Top Down Popup Modal rendered via React Portal directly into document.body */}
+      {isModalOpen && mounted && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[99999] pointer-events-auto">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] transition-opacity animate-in fade-in duration-200 cursor-pointer"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9998] transition-opacity animate-in fade-in duration-200 cursor-pointer"
             onClick={() => setIsModalOpen(false)}
           />
 
           {/* Top Down Popup Panel */}
-          <div className="fixed top-0 left-0 right-0 z-[10000] w-full max-w-[430px] mx-auto bg-card border-b border-x border-primary/40 rounded-b-3xl shadow-[0_16px_40px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col pt-[calc(18px+env(safe-area-inset-top,16px))] px-[18px] pb-5 max-h-[80dvh] animate-in slide-in-from-top duration-300">
+          <div className="fixed top-0 left-0 right-0 z-[9999] w-full max-w-[430px] mx-auto bg-card border-b border-x border-primary/40 rounded-b-3xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] overflow-hidden flex flex-col pt-[calc(18px+env(safe-area-inset-top,16px))] px-[18px] pb-5 max-h-[80dvh] animate-in slide-in-from-top duration-300">
             
             {/* Scrollable Content Area inside Top Down Panel */}
             <div
@@ -176,7 +172,8 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
             <div className="w-12 h-1 bg-muted-foreground/25 rounded-full mx-auto mt-3 shrink-0" />
 
           </div>
-        </>
+        </div>,
+        document.body
       )}
     </div>
   );
