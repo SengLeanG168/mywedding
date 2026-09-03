@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { Calendar as CalendarIcon } from 'lucide-react';
+import { generateAndroidCalendarIntent } from '@/lib/calendar-android';
 
 interface AddToCalendarButtonProps {
   event: any;
   locale: string;
   guestId?: string;
+  guestName?: string;
 }
 
-export default function AddToCalendarButton({ event, locale, guestId }: AddToCalendarButtonProps) {
+export default function AddToCalendarButton({ event, locale, guestId, guestName }: AddToCalendarButtonProps) {
   const [isIOS, setIsIOS] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
   const isKm = locale === 'km';
@@ -26,10 +28,23 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
     ? `/invite/${slug}/guest/${guestId}/calendar`
     : `/invite/${slug}/calendar`;
 
-  // Android Calendar Bridge page URL (tailored for Google Calendar, Telegram & Messenger on Android)
-  const androidCalendarBridgeUrl = guestId
-    ? `/invite/${slug}/guest/${guestId}/calendar/android`
-    : `/invite/${slug}/calendar/android`;
+  // Android Fallback page URL (if in-app browser blocks intent)
+  const androidFallbackUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}${guestId ? `/invite/${slug}/guest/${guestId}/calendar/android?blocked=1` : `/invite/${slug}/calendar/android?blocked=1`}`
+    : '';
+
+  const baseUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}${guestId ? `/invite/${slug}/guest/${guestId}` : `/invite/${slug}`}`
+    : '';
+
+  // Generate direct Android Calendar Intent URI
+  const { intentUrl: androidCalendarIntentUrl } = generateAndroidCalendarIntent(
+    event,
+    locale,
+    baseUrl,
+    guestName,
+    androidFallbackUrl
+  );
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -46,34 +61,26 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
           isIOS: ios,
           isAndroid: android,
           isInAppBrowser: inApp,
-          calendarIcsUrl,
+          androidCalendarIntentUrl,
           calendarBridgeUrl,
-          androidCalendarBridgeUrl,
         });
       }
     }
-  }, [calendarIcsUrl, calendarBridgeUrl, androidCalendarBridgeUrl]);
+  }, [androidCalendarIntentUrl, calendarBridgeUrl]);
 
   const primaryTargetUrl = isIOS
     ? calendarBridgeUrl
     : isAndroid
-    ? androidCalendarBridgeUrl
+    ? androidCalendarIntentUrl
     : calendarIcsUrl;
 
   return (
     <div className="relative inline-block w-full text-center my-4">
-      {/* Primary Trigger Button: Automatically routes to iOS Bridge, Android Bridge, or Server .ics URL */}
+      {/* Primary Trigger Button: Direct real anchor link for Android intent & iOS Bridge */}
       <div className="flex flex-col items-center justify-center">
         <a
           href={primaryTargetUrl}
           className="w-full max-w-xs mx-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3.5 px-6 rounded-full shadow-lg flex items-center justify-center gap-2.5 group transition-all active:scale-95 cursor-pointer border border-primary/30"
-          onClick={(e) => {
-            if (isIOS) {
-              window.location.href = calendarBridgeUrl;
-            } else if (isAndroid) {
-              window.location.href = androidCalendarBridgeUrl;
-            }
-          }}
         >
           <CalendarIcon className="w-5 h-5 group-hover:scale-110 transition-transform shrink-0" />
           <span className="text-sm sm:text-base font-serif tracking-wide">

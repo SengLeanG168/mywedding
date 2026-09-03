@@ -8,7 +8,8 @@ export function generateAndroidCalendarIntent(
   event: any,
   locale = 'km',
   baseUrl = '',
-  guestName?: string
+  guestName?: string,
+  fallbackUrl?: string
 ): { intentUrl: string; beginTimeMs: number; endTimeMs: number; eventTitle: string } {
   const isKm = locale === 'km';
 
@@ -93,13 +94,18 @@ export function generateAndroidCalendarIntent(
 
   const description = descriptionLines.join('\n').trim();
 
-  // Construct standard Android Intent URI for calendar insert action
-  // Works seamlessly with Chrome, Samsung Internet, and Android WebViews (Telegram, Messenger)
+  // Construct native Android Calendar Intent URI
   const encodedTitle = encodeURIComponent(eventTitle);
   const encodedDesc = encodeURIComponent(description);
   const encodedLoc = encodeURIComponent(location);
 
-  const intentUrl = `intent://calendar/event#Intent;action=android.intent.action.INSERT;type=vnd.android.cursor.item/event;S.title=${encodedTitle};S.description=${encodedDesc};S.eventLocation=${encodedLoc};l.beginTime=${beginTimeMs};l.endTime=${endTimeMs};end;`;
+  let intentUrl = `intent://com.android.calendar/events#Intent;scheme=content;action=android.intent.action.INSERT;type=vnd.android.cursor.dir/event;S.title=${encodedTitle};S.description=${encodedDesc};S.eventLocation=${encodedLoc};l.beginTime=${beginTimeMs};l.endTime=${endTimeMs};`;
+
+  if (fallbackUrl) {
+    intentUrl += `S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};`;
+  }
+
+  intentUrl += `end;`;
 
   return {
     intentUrl,

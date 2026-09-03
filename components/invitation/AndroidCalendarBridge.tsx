@@ -39,26 +39,35 @@ export default function AndroidCalendarBridge({
     const inApp = /FBAN|FBAV|Messenger|Instagram|Telegram|Line|Twitter|MicroMessenger|FB_IAB|FBSS/i.test(ua);
     setIsInAppBrowser(inApp);
 
+    const isBlocked = typeof window !== 'undefined' && window.location.search.includes('blocked=1');
+    if (isBlocked) {
+      setShowRetryButton(true);
+    }
+
     if (process.env.NODE_ENV === 'development') {
       console.log('[AndroidCalendarBridge]', {
         userAgent: ua,
         isInAppBrowser: inApp,
+        isBlocked,
         intentUrl,
       });
     }
 
-    // Attempt 1: Immediate automatic launch of native Android calendar intent
-    const directTimer = setTimeout(() => {
-      window.location.href = intentUrl;
-    }, 150);
+    // Attempt: If not explicitly blocked, try automatic launch of native Android calendar intent
+    let directTimer: NodeJS.Timeout | null = null;
+    if (!isBlocked) {
+      directTimer = setTimeout(() => {
+        window.location.href = intentUrl;
+      }, 150);
+    }
 
-    // Show retry button after 1.5 seconds if still on bridge screen
+    // Show retry button after 1.2 seconds if still on bridge screen
     const retryTimer = setTimeout(() => {
       setShowRetryButton(true);
-    }, 1500);
+    }, isBlocked ? 0 : 1200);
 
     return () => {
-      clearTimeout(directTimer);
+      if (directTimer) clearTimeout(directTimer);
       clearTimeout(retryTimer);
     };
   }, [intentUrl]);
@@ -101,7 +110,7 @@ export default function AndroidCalendarBridge({
           </p>
         </div>
 
-        {/* Single Primary Action Button */}
+        {/* Single Primary Action Button - Real Native Anchor Tag */}
         {showRetryButton && (
           <div className="pt-2 animate-in fade-in duration-300">
             <a
@@ -119,17 +128,17 @@ export default function AndroidCalendarBridge({
           <div className="p-3 rounded-xl bg-primary/10 border border-primary/25 text-left text-xs font-serif text-muted-foreground space-y-1">
             <p className="font-semibold text-primary flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 shrink-0" />
-              <span>{isKm ? 'ចំណាំសម្រាប់ Telegram / Messenger' : 'Note for In-App Browser'}</span>
+              <span>{isKm ? 'កម្មវិធីនេះអាចរារាំងការបើកប្រតិទិនដោយផ្ទាល់' : 'In-App Browser Notice'}</span>
             </p>
             <p className="leading-relaxed">
               {isKm
-                ? 'កម្មវិធីនេះអាចរារាំងការបើក Calendar ដោយផ្ទាល់។ សូមចុចប៊ូតុង “បើកប្រតិទិនម្តងទៀត” ខាងលើ ឬចុចសញ្ញា ⋯ ហើយជ្រើសរើស “Open in Chrome”។'
-                : 'In-app browsers may block automatic calendar launching. Tap "Open Calendar Again" above or tap ⋯ and choose "Open in Chrome".'}
+                ? 'សូមចុចប៊ូតុង “បើកប្រតិទិនម្តងទៀត” ខាងលើ ឬចុចសញ្ញា ⋯ ហើយជ្រើសរើស “Open in Chrome”។'
+                : 'Please tap "Open Calendar Again" above or tap ⋯ and choose "Open in Chrome".'}
             </p>
           </div>
         )}
 
-        {/* Back to Invitation Link */}
+        {/* Return directly to Main Content */}
         <div className="pt-2 border-t border-border/50">
           <a
             href={returnUrl}

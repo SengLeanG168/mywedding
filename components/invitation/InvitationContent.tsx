@@ -208,7 +208,12 @@ export default function InvitationContent({ event, locale, guest, programDays }:
 
               {/* 3. Add to Calendar Button */}
               <ScrollReveal direction="up">
-                <AddToCalendarButton event={event} locale={locale} guestId={guest?.id} />
+                <AddToCalendarButton
+                  event={event}
+                  locale={locale}
+                  guestId={guest?.id}
+                  guestName={guest?.name}
+                />
               </ScrollReveal>
 
               {/* 4. Location & Details section */}
