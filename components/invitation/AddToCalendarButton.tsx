@@ -109,21 +109,21 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
         )}
       </div>
 
-      {/* Android Centered Responsive Modal Popup */}
+      {/* Android Top Down Popup Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pt-[max(16px,env(safe-area-inset-top,16px))] pb-[max(16px,env(safe-area-inset-bottom,16px))]">
+        <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity animate-in fade-in duration-200 cursor-pointer"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] transition-opacity animate-in fade-in duration-200 cursor-pointer"
             onClick={() => setIsModalOpen(false)}
           />
 
-          {/* Centered Modal Card */}
-          <div className="relative z-10 w-full max-w-lg mx-auto max-h-[calc(100dvh-32px)] sm:max-h-[calc(100dvh-48px)] bg-card border border-primary/40 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+          {/* Top Down Popup Panel */}
+          <div className="fixed top-0 left-0 right-0 z-[10000] w-full max-w-[430px] mx-auto bg-card border-b border-x border-primary/40 rounded-b-3xl shadow-[0_16px_40px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col pt-[calc(18px+env(safe-area-inset-top,16px))] px-[18px] pb-5 max-h-[80dvh] animate-in slide-in-from-top duration-300">
             
-            {/* Scrollable Content Area */}
+            {/* Scrollable Content Area inside Top Down Panel */}
             <div
-              className="overflow-y-auto max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] p-5 sm:p-6 pb-[calc(20px+env(safe-area-inset-bottom,16px))] space-y-4 text-center"
+              className="overflow-y-auto max-h-[calc(80dvh-40px)] space-y-4 text-center pr-1"
               style={{ WebkitOverflowScrolling: 'touch' }}
             >
               {/* Header / Title */}
@@ -172,8 +172,11 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
               </div>
             </div>
 
+            {/* Bottom Grab Indicator Accent */}
+            <div className="w-12 h-1 bg-muted-foreground/25 rounded-full mx-auto mt-3 shrink-0" />
+
           </div>
-        </div>
+        </>
       )}
     </div>
   );
