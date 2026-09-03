@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import ScrollReveal from './ScrollReveal';
+import VideoLoadingOverlay from './VideoLoadingOverlay';
 
 interface MemoryGalleryProps {
   images: string[];
@@ -12,6 +13,8 @@ interface MemoryGalleryProps {
 
 export default function MemoryGallery({ images = [], videoUrl, isKm, onImageClick }: MemoryGalleryProps) {
   const [orientations, setOrientations] = useState<Record<string, 'landscape' | 'portrait'>>({});
+  const [isVideoLoading, setIsVideoLoading] = useState(false);
+  const [videoError, setVideoError] = useState(false);
 
   useEffect(() => {
     if (!images || images.length === 0) return;
@@ -43,13 +46,36 @@ export default function MemoryGallery({ images = [], videoUrl, isKm, onImageClic
       {videoUrl && (
         <div className="mb-4 sm:mb-6 px-2 sm:px-0">
           <div className="relative w-full aspect-[16/9] rounded-xl sm:rounded-2xl overflow-hidden border border-primary/25 shadow-lg bg-black/95">
-            <video
-              src={videoUrl}
-              controls
-              playsInline
-              preload="metadata"
-              className="w-full h-full object-contain"
-            />
+            {videoError ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center bg-black/85 text-white/60 text-xs sm:text-sm font-serif">
+                <p>មិនអាចចាក់វីដេអូបានទេ</p>
+                <p className="text-[11px] text-white/40 mt-1">Video unavailable</p>
+              </div>
+            ) : (
+              <>
+                <video
+                  src={videoUrl}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="w-full h-full object-contain"
+                  onLoadStart={() => setIsVideoLoading(true)}
+                  onWaiting={() => setIsVideoLoading(true)}
+                  onStalled={() => setIsVideoLoading(true)}
+                  onSeeking={() => setIsVideoLoading(true)}
+                  onLoadedData={() => setIsVideoLoading(false)}
+                  onCanPlay={() => setIsVideoLoading(false)}
+                  onCanPlayThrough={() => setIsVideoLoading(false)}
+                  onPlaying={() => setIsVideoLoading(false)}
+                  onSeeked={() => setIsVideoLoading(false)}
+                  onError={() => {
+                    setIsVideoLoading(false);
+                    setVideoError(true);
+                  }}
+                />
+                <VideoLoadingOverlay isLoading={isVideoLoading && !videoError} />
+              </>
+            )}
           </div>
         </div>
       )}

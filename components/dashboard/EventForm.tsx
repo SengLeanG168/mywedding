@@ -52,6 +52,7 @@ export default function EventForm({ initialData }: { initialData?: any }) {
     showTransitionVideo: initialData?.showTransitionVideo !== undefined ? initialData.showTransitionVideo : true,
     openingImageUrl: initialData?.openingImageUrl || '',
     openingCoupleNamesImageUrl: initialData?.openingCoupleNamesImageUrl || '',
+    openingGuestImageUrl: initialData?.openingGuestImageUrl || '',
     openingTitleKm: initialData?.openingTitleKm || '',
     openingTitleEn: initialData?.openingTitleEn || '',
     openingMessageKm: initialData?.openingMessageKm || '',
@@ -136,6 +137,7 @@ export default function EventForm({ initialData }: { initialData?: any }) {
         ...formData,
         galleryVideoUrl: formData.galleryVideoUrl ? formData.galleryVideoUrl.trim() : null,
         openingCoupleNamesImageUrl: formData.openingCoupleNamesImageUrl ? formData.openingCoupleNamesImageUrl.trim() : null,
+        openingGuestImageUrl: formData.openingGuestImageUrl ? formData.openingGuestImageUrl.trim() : null,
         coupleMonogramImageUrl: formData.coupleMonogramImageUrl ? formData.coupleMonogramImageUrl.trim() : null,
         transitionVideoUrl: formData.transitionVideoUrl ? formData.transitionVideoUrl.trim() : null,
       };
@@ -822,6 +824,27 @@ export default function EventForm({ initialData }: { initialData?: any }) {
                   value={formData.openingCoupleNamesImageUrl || ''} 
                   onChange={handleChange} 
                   placeholder="Or enter external couple names image URL..." 
+                  className="mt-2 text-xs" 
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2 pt-2 border-t">
+                <label className="text-sm font-semibold">រូបភាពក្រោមពាក្យ សូមគោរពអញ្ជើញ</label>
+                <p className="text-xs text-muted-foreground">
+                  បង្ហោះរូបភាពសម្រាប់បង្ហាញក្រោមពាក្យ “សូមគោរពអញ្ជើញ” នៅទំព័រមានប៊ូតុង “បើកធៀប”។ វានឹងជំនួសស៊ុមឈ្មោះភ្ញៀវចាស់។
+                </p>
+                <MediaUpload
+                  type="image"
+                  value={formData.openingGuestImageUrl || ''}
+                  onChange={(path) => setFormData(prev => ({ ...prev, openingGuestImageUrl: path }))}
+                  uploadButtonText="បង្ហោះរូបភាព"
+                  viewButtonText="មើលរូបភាព"
+                  removeButtonText="លុបរូបភាព"
+                />
+                <Input 
+                  name="openingGuestImageUrl" 
+                  value={formData.openingGuestImageUrl || ''} 
+                  onChange={handleChange} 
+                  placeholder="Or enter external guest image URL..." 
                   className="mt-2 text-xs" 
                 />
               </div>

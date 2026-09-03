@@ -19,6 +19,16 @@ export async function generateMetadata({
     title: t('title'),
     description: "E-Invitation Platform",
     manifest: '/manifest.json',
+    icons: {
+      icon: [
+        { url: '/favicon.ico' },
+        { url: '/icon.png', sizes: '192x192', type: 'image/png' },
+      ],
+      shortcut: '/favicon.ico',
+      apple: [
+        { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
+      ],
+    },
   };
 }
 

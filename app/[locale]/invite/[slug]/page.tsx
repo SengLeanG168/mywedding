@@ -64,10 +64,24 @@ export async function generateMetadata({
 
   const previewImageUrl = getAbsoluteImageUrl(rawImagePath, baseUrl);
 
+  const faviconUrl = event.coupleMonogramImageUrl
+    ? getAbsoluteImageUrl(event.coupleMonogramImageUrl, baseUrl)
+    : `${baseUrl}/favicon.ico`;
+
   return {
     metadataBase: new URL(baseUrl),
     title,
     description,
+    icons: {
+      icon: [
+        { url: faviconUrl },
+        { url: faviconUrl, sizes: '192x192', type: 'image/png' },
+      ],
+      shortcut: faviconUrl,
+      apple: [
+        { url: faviconUrl, sizes: '180x180', type: 'image/png' },
+      ],
+    },
     openGraph: {
       title,
       description,

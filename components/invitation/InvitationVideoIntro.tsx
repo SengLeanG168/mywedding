@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react';
+import VideoLoadingOverlay from './VideoLoadingOverlay';
 
 interface InvitationVideoIntroProps {
   type: string;
@@ -18,6 +19,7 @@ export default function InvitationVideoIntro({ type, url, poster, locale, onCont
   const [error, setError] = useState(false);
   const [showContinue, setShowContinue] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   
   const handleContinue = () => {
@@ -48,6 +50,7 @@ export default function InvitationVideoIntro({ type, url, poster, locale, onCont
   };
 
   const handleEnded = () => {
+    setIsVideoLoading(false);
     setShowContinue(true);
   };
 
@@ -73,15 +76,20 @@ export default function InvitationVideoIntro({ type, url, poster, locale, onCont
             <div className="text-white/50 text-sm z-10">{t('videoUnavailable')}</div>
           ) : (
             <>
-              {!isLoaded && <div className="absolute inset-0 flex items-center justify-center text-white/50 text-sm z-0">{t('preparingVideo')}</div>}
               <iframe
                 className={`absolute top-0 left-0 w-full h-full object-cover pointer-events-none transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
                 src={getYouTubeId(url) ? `https://www.youtube.com/embed/${getYouTubeId(url)}?autoplay=1&mute=1&playsinline=1&controls=0&rel=0&disablekb=1&modestbranding=1` : url}
                 title="Hero Video"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                onLoad={() => setIsLoaded(true)}
-                onError={() => setError(true)}
+                onLoad={() => {
+                  setIsLoaded(true);
+                  setIsVideoLoading(false);
+                }}
+                onError={() => {
+                  setIsVideoLoading(false);
+                  setError(true);
+                }}
               />
             </>
           )}
@@ -92,7 +100,6 @@ export default function InvitationVideoIntro({ type, url, poster, locale, onCont
             <div className="text-white/50 text-sm z-10">{t('videoUnavailable')}</div>
           ) : (
             <>
-              {!isLoaded && <div className="absolute inset-0 flex items-center justify-center text-white/50 text-sm z-0">{t('preparingVideo')}</div>}
               <video
                 ref={videoRef}
                 className={`absolute inset-0 w-full h-full object-cover pointer-events-none transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
@@ -105,15 +112,34 @@ export default function InvitationVideoIntro({ type, url, poster, locale, onCont
                 preload="auto"
                 disablePictureInPicture
                 controlsList="nodownload nofullscreen noremoteplayback"
-                onCanPlay={() => setIsLoaded(true)}
+                onLoadStart={() => setIsVideoLoading(true)}
+                onWaiting={() => setIsVideoLoading(true)}
+                onStalled={() => setIsVideoLoading(true)}
+                onSeeking={() => setIsVideoLoading(true)}
+                onLoadedData={() => setIsVideoLoading(false)}
+                onCanPlay={() => {
+                  setIsLoaded(true);
+                  setIsVideoLoading(false);
+                }}
+                onCanPlayThrough={() => setIsVideoLoading(false)}
+                onPlaying={() => {
+                  setIsLoaded(true);
+                  setIsVideoLoading(false);
+                }}
                 onTimeUpdate={handleTimeUpdate}
                 onEnded={handleEnded}
-                onError={() => setError(true)}
+                onError={() => {
+                  setIsVideoLoading(false);
+                  setError(true);
+                }}
               />
             </>
           )}
         </>
       )}
+
+      {/* Loading Spinner Overlay */}
+      <VideoLoadingOverlay isLoading={isVideoLoading && !error} />
 
       {/* Dark gradient overlay at bottom for button readability */}
       <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/80 to-transparent pointer-events-none z-10" />

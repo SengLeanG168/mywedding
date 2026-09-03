@@ -44,8 +44,13 @@ export default function OpeningScreen({
     ? event.openingCoupleNamesImageUrl.trim()
     : null;
 
+  const guestImg = typeof event?.openingGuestImageUrl === 'string' && event.openingGuestImageUrl.trim()
+    ? event.openingGuestImageUrl.trim()
+    : null;
+
   if (process.env.NODE_ENV === 'development') {
     console.log('[OpeningScreen] openingCoupleNamesImageUrl:', coupleNamesImg);
+    console.log('[OpeningScreen] openingGuestImageUrl:', guestImg);
   }
 
   const handleOpen = () => {
@@ -136,31 +141,59 @@ export default function OpeningScreen({
           <div className="my-auto" />
         )}
 
-        {/* 3. BOTTOM — Invitation text + Guest Frame + Play Button */}
-        <div className="flex flex-col items-center w-full space-y-1">
+        {/* 3. BOTTOM — Invitation text + Uploaded Guest Decorative Frame with Name + Play Button */}
+        <div className="flex flex-col items-center w-full">
           <p
-            className="text-sm sm:text-base text-primary font-serif italic text-center px-4 font-medium"
-            style={{ textShadow: '0 1px 8px rgba(0,0,0,0.7)' }}
+            className="text-sm sm:text-base text-primary font-serif font-bold text-center px-4 leading-normal"
+            style={{ textShadow: '0 1px 8px rgba(0,0,0,0.8)' }}
           >
             {t('youAreWarmlyInvited')}
           </p>
 
-          {/* Guest Name Frame — glass style */}
-          <GuestNameFrame guestName={guestName} />
+          {/* Guest Name inside Uploaded Decorative Frame */}
+          {guestImg ? (
+            <div className="relative w-[clamp(260px,76vw,330px)] max-w-[86%] h-[95px] sm:h-[115px] flex items-center justify-center mx-auto mt-1 mb-2 sm:mt-1.5 sm:mb-2.5 select-none z-20">
+              {/* Frame Background Image */}
+              <img
+                src={guestImg}
+                alt="Decorative Frame"
+                className="w-full h-full object-contain object-center block pointer-events-none drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)] filter"
+              />
+              {/* Centered Dynamic Guest Name */}
+              <div className="absolute inset-0 flex items-center justify-center text-center px-[46px] pointer-events-none">
+                <span
+                  className="font-serif font-semibold text-[clamp(14px,4vw,19px)] leading-[1.5] text-[#fbf0dc] drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] line-clamp-2"
+                  style={{ textShadow: '0 2px 8px rgba(0,0,0,0.95), 0 0 10px rgba(0,0,0,0.8)' }}
+                >
+                  {guestName}
+                </span>
+              </div>
+            </div>
+          ) : (
+            /* Fallback if no frame image uploaded */
+            <div className="my-1.5 px-6 py-2 rounded-full border border-primary/40 bg-black/40 backdrop-blur-sm z-20 select-none">
+              <span
+                className="font-serif font-semibold text-[clamp(14px,3.8vw,17px)] text-primary drop-shadow-md"
+                style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}
+              >
+                {guestName}
+              </span>
+            </div>
+          )}
 
           {/* Play Button */}
-          <div className="flex flex-col items-center pt-2">
+          <div className="flex flex-col items-center pt-1">
             <Button
               onClick={handleOpen}
               size="icon"
-              className="w-16 h-16 rounded-full shadow-[0_0_30px_rgba(194,155,98,0.5)] hover:shadow-[0_0_45px_rgba(194,155,98,0.7)] hover:scale-105 transition-all duration-300 bg-primary hover:bg-primary/90 text-primary-foreground group relative"
+              className="w-16 h-16 rounded-full shadow-[0_0_30px_rgba(194,155,98,0.5)] hover:shadow-[0_0_45px_rgba(194,155,98,0.7)] hover:scale-105 transition-all duration-300 bg-primary hover:bg-primary/90 text-primary-foreground group relative cursor-pointer"
               aria-label={t('openInvitation')}
             >
               <span className="absolute inset-0 rounded-full border-2 border-primary animate-ping opacity-30" />
               <Play className="w-7 h-7 ml-1 group-hover:scale-110 transition-transform duration-300" fill="currentColor" />
             </Button>
             <span
-              className="mt-3 text-sm font-medium text-primary tracking-wider uppercase font-serif"
+              className="mt-2.5 text-sm font-medium text-primary tracking-wider uppercase font-serif"
               style={{ textShadow: '0 1px 6px rgba(0,0,0,0.7)' }}
             >
               {t('openInvitation')}

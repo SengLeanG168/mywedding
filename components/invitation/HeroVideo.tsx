@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react';
+import VideoLoadingOverlay from './VideoLoadingOverlay';
 
 interface HeroVideoProps {
   type: string;
@@ -10,6 +11,7 @@ interface HeroVideoProps {
 
 export default function HeroVideo({ type, url, poster }: HeroVideoProps) {
   const [error, setError] = useState(false);
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
 
   if (!url || type === 'none') {
     return null;
@@ -33,15 +35,22 @@ export default function HeroVideo({ type, url, poster }: HeroVideoProps) {
         {error ? (
           <div className="text-white/50 text-sm z-10 py-10">Video unavailable</div>
         ) : (
-          <iframe
-            className="w-full h-auto aspect-video portrait:aspect-[9/16] object-contain pointer-events-none"
-            src={embedUrl}
-            title="Hero Video"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            onError={() => setError(true)}
-          />
+          <>
+            <iframe
+              className="w-full h-auto aspect-video portrait:aspect-[9/16] object-contain pointer-events-none"
+              src={embedUrl}
+              title="Hero Video"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              onLoad={() => setIsVideoLoading(false)}
+              onError={() => {
+                setIsVideoLoading(false);
+                setError(true);
+              }}
+            />
+            <VideoLoadingOverlay isLoading={isVideoLoading && !error} />
+          </>
         )}
         {/* Overlay gradient to ensure text readability if placed over it */}
         <div className="absolute inset-0 bg-black/20 pointer-events-none" />
@@ -57,17 +66,31 @@ export default function HeroVideo({ type, url, poster }: HeroVideoProps) {
             Video unavailable
           </div>
         ) : (
-          <video
-            className="w-full h-auto aspect-video portrait:aspect-[9/16] object-contain"
-            src={url}
-            poster={poster || undefined}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            onError={() => setError(true)}
-          />
+          <>
+            <video
+              className="w-full h-auto aspect-video portrait:aspect-[9/16] object-contain"
+              src={url}
+              poster={poster || undefined}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              onLoadStart={() => setIsVideoLoading(true)}
+              onWaiting={() => setIsVideoLoading(true)}
+              onStalled={() => setIsVideoLoading(true)}
+              onSeeking={() => setIsVideoLoading(true)}
+              onLoadedData={() => setIsVideoLoading(false)}
+              onCanPlay={() => setIsVideoLoading(false)}
+              onCanPlayThrough={() => setIsVideoLoading(false)}
+              onPlaying={() => setIsVideoLoading(false)}
+              onError={() => {
+                setIsVideoLoading(false);
+                setError(true);
+              }}
+            />
+            <VideoLoadingOverlay isLoading={isVideoLoading && !error} />
+          </>
         )}
         {/* Overlay gradient */}
         <div className="absolute inset-0 bg-black/20 pointer-events-none" />

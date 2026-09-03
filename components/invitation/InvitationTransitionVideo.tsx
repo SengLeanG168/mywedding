@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from 'react';
+import VideoLoadingOverlay from './VideoLoadingOverlay';
 
 interface InvitationTransitionVideoProps {
   url: string;
@@ -13,6 +14,7 @@ export default function InvitationTransitionVideo({
 }: InvitationTransitionVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hasError, setHasError] = useState(false);
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
 
   useEffect(() => {
     // Safety fallback: if video takes unexpectedly long or gets stuck, proceed after 30s
@@ -24,11 +26,13 @@ export default function InvitationTransitionVideo({
   }, [onComplete]);
 
   const handleEnded = () => {
+    setIsVideoLoading(false);
     onComplete();
   };
 
   const handleError = () => {
     console.warn('Transition video failed to load or play, proceeding to content');
+    setIsVideoLoading(false);
     setHasError(true);
     onComplete();
   };
@@ -50,9 +54,20 @@ export default function InvitationTransitionVideo({
         disablePictureInPicture
         controlsList="nodownload nofullscreen noremoteplayback"
         className="w-full h-full object-cover pointer-events-none"
+        onLoadStart={() => setIsVideoLoading(true)}
+        onWaiting={() => setIsVideoLoading(true)}
+        onStalled={() => setIsVideoLoading(true)}
+        onSeeking={() => setIsVideoLoading(true)}
+        onLoadedData={() => setIsVideoLoading(false)}
+        onCanPlay={() => setIsVideoLoading(false)}
+        onCanPlayThrough={() => setIsVideoLoading(false)}
+        onPlaying={() => setIsVideoLoading(false)}
         onEnded={handleEnded}
         onError={handleError}
       />
+
+      {/* Loading Spinner Overlay */}
+      <VideoLoadingOverlay isLoading={isVideoLoading && !hasError} />
     </div>
   );
 }

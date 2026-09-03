@@ -27,6 +27,7 @@ export function sanitizeEventData(data: Record<string, any>) {
     showTransitionVideo: data.showTransitionVideo !== undefined ? Boolean(data.showTransitionVideo) : true,
     openingImageUrl: data.openingImageUrl && String(data.openingImageUrl).trim() ? String(data.openingImageUrl).trim() : null,
     openingCoupleNamesImageUrl: data.openingCoupleNamesImageUrl && String(data.openingCoupleNamesImageUrl).trim() ? String(data.openingCoupleNamesImageUrl).trim() : null,
+    openingGuestImageUrl: data.openingGuestImageUrl && String(data.openingGuestImageUrl).trim() ? String(data.openingGuestImageUrl).trim() : null,
     openingTitleKm: data.openingTitleKm && String(data.openingTitleKm).trim() ? String(data.openingTitleKm).trim() : null,
     openingTitleEn: data.openingTitleEn && String(data.openingTitleEn).trim() ? String(data.openingTitleEn).trim() : null,
     openingMessageKm: data.openingMessageKm && String(data.openingMessageKm).trim() ? String(data.openingMessageKm).trim() : null,

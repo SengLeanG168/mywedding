@@ -47,6 +47,7 @@ model Event {
   showTransitionVideo Boolean  @default(true)
   openingImageUrl     String?
   openingCoupleNamesImageUrl String?
+  openingGuestImageUrl String?
   openingTitleKm      String?
   openingTitleEn      String?
   openingMessageKm    String?

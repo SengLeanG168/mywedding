@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import VideoLoadingOverlay from "./VideoLoadingOverlay";
 
 interface CurtainIntroProps {
   enabled: boolean;
@@ -26,6 +27,7 @@ export default function CurtainIntro({
   // ─── VIDEO MODE STATE ────────────────────────────────────────────
   const [videoFailed, setVideoFailed] = useState(false);
   const [videoVisible, setVideoVisible] = useState(true);
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
 
   // ─── CSS CURTAIN MODE STATE ──────────────────────────────────────
   const [isOpen, setIsOpen] = useState(false);
@@ -67,6 +69,7 @@ export default function CurtainIntro({
     if (playPromise !== undefined) {
       playPromise.catch(() => {
         // If autoplay blocked, fall back to CSS curtain
+        setIsVideoLoading(false);
         setVideoFailed(true);
       });
     }
@@ -119,12 +122,22 @@ export default function CurtainIntro({
           autoPlay
           muted
           playsInline
+          onLoadStart={() => setIsVideoLoading(true)}
+          onWaiting={() => setIsVideoLoading(true)}
+          onStalled={() => setIsVideoLoading(true)}
+          onSeeking={() => setIsVideoLoading(true)}
+          onLoadedData={() => setIsVideoLoading(false)}
+          onCanPlay={() => setIsVideoLoading(false)}
+          onCanPlayThrough={() => setIsVideoLoading(false)}
+          onPlaying={() => setIsVideoLoading(false)}
           onEnded={() => {
+            setIsVideoLoading(false);
             setVideoVisible(false);
             setTimeout(onComplete, 300);
           }}
           onError={() => {
             // Video failed to load → fall back to CSS curtain
+            setIsVideoLoading(false);
             setVideoFailed(true);
           }}
           style={{
@@ -135,6 +148,9 @@ export default function CurtainIntro({
             objectFit: "cover",
           }}
         />
+
+        {/* Loading Spinner Overlay */}
+        <VideoLoadingOverlay isLoading={isVideoLoading && !videoFailed && videoVisible} />
 
         {/* Subtle dark gradient overlay at top for skip button readability */}
         <div
