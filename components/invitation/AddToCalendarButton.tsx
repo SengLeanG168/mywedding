@@ -81,16 +81,32 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
     <div className="relative inline-block w-full text-center my-4">
       {/* Primary Trigger Button: Single clean button */}
       <div className="flex flex-col items-center justify-center">
-        <a
-          href={primaryTargetUrl}
-          onClick={handleClick}
-          className="w-full max-w-xs mx-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3.5 px-6 rounded-full shadow-lg flex items-center justify-center gap-2.5 group transition-all active:scale-95 cursor-pointer border border-primary/30"
-        >
-          <CalendarIcon className="w-5 h-5 group-hover:scale-110 transition-transform shrink-0" />
-          <span className="text-sm sm:text-base font-serif tracking-wide">
-            {isKm ? 'សូមកត់ចំណាំថ្ងៃចូលរួម' : 'Add to Calendar'}
-          </span>
-        </a>
+        {isAndroid ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsModalOpen(true);
+            }}
+            className="w-full max-w-xs mx-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3.5 px-6 rounded-full shadow-lg flex items-center justify-center gap-2.5 group transition-all active:scale-95 cursor-pointer border border-primary/30"
+          >
+            <CalendarIcon className="w-5 h-5 group-hover:scale-110 transition-transform shrink-0" />
+            <span className="text-sm sm:text-base font-serif tracking-wide">
+              {isKm ? 'សូមកត់ចំណាំថ្ងៃចូលរួម' : 'Add to Calendar'}
+            </span>
+          </button>
+        ) : (
+          <a
+            href={isIOS ? calendarBridgeUrl : calendarIcsUrl}
+            className="w-full max-w-xs mx-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3.5 px-6 rounded-full shadow-lg flex items-center justify-center gap-2.5 group transition-all active:scale-95 cursor-pointer border border-primary/30"
+          >
+            <CalendarIcon className="w-5 h-5 group-hover:scale-110 transition-transform shrink-0" />
+            <span className="text-sm sm:text-base font-serif tracking-wide">
+              {isKm ? 'សូមកត់ចំណាំថ្ងៃចូលរួម' : 'Add to Calendar'}
+            </span>
+          </a>
+        )}
       </div>
 
       {/* Android Centered Responsive Modal Popup */}
@@ -103,7 +119,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
           />
 
           {/* Centered Modal Card */}
-          <div className="relative z-10 w-full max-w-[420px] max-h-[calc(100dvh-32px)] sm:max-h-[calc(100dvh-48px)] bg-card border border-primary/40 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+          <div className="relative z-10 w-full max-w-lg mx-auto max-h-[calc(100dvh-32px)] sm:max-h-[calc(100dvh-48px)] bg-card border border-primary/40 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
             
             {/* Scrollable Content Area */}
             <div
