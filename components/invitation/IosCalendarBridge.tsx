@@ -11,61 +11,60 @@ interface IosCalendarBridgeProps {
 }
 
 export default function IosCalendarBridge({ event, guestId, locale = 'km' }: IosCalendarBridgeProps) {
-  const [showWebcal, setShowWebcal] = useState(false);
+  const [showRetry, setShowRetry] = useState(false);
   const [isInAppBrowser, setIsInAppBrowser] = useState(false);
-  const [isIOS, setIsIOS] = useState(true);
-  const [mounted, setMounted] = useState(false);
+  const [isTelegram, setIsTelegram] = useState(false);
+  const [isMessenger, setIsMessenger] = useState(false);
 
   const isKm = locale === 'km';
   const slug = event?.slug || event?.id;
 
-  const returnUrl = guestId ? `/invite/${slug}/guest/${guestId}` : `/invite/${slug}`;
+  // Return directly to the main invitation content bypassing intro/curtain
+  const returnUrl = guestId
+    ? `/invite/${slug}/guest/${guestId}?skipIntro=1#calendar-section`
+    : `/invite/${slug}?skipIntro=1#calendar-section`;
+
   const calendarIcsUrl = guestId
     ? `/api/invite/${slug}/guest/${guestId}/calendar.ics`
     : `/api/invite/${slug}/calendar.ics`;
-
-  const [webcalUrl, setWebcalUrl] = useState('');
 
   const brideName = isKm ? (event.brideNameKm || event.brideNameEn || '') : (event.brideNameEn || event.brideNameKm || '');
   const groomName = isKm ? (event.groomNameKm || event.groomNameEn || '') : (event.groomNameEn || event.groomNameKm || '');
   const coupleTitle = `${groomName} & ${brideName}`;
 
   useEffect(() => {
-    setMounted(true);
     const ua = window.navigator.userAgent || '';
-    const ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    const inApp = /FBAN|FBAV|Messenger|Instagram|Telegram|Line|Twitter|MicroMessenger|FB_IAB|FBSS/i.test(ua);
+    const telegram = /Telegram/i.test(ua);
+    const messenger = /FBAN|FBAV|Messenger|Instagram|FB_IAB|FBSS/i.test(ua);
+    const inApp = telegram || messenger || /Line|Twitter|MicroMessenger/i.test(ua);
 
-    setIsIOS(ios);
+    setIsTelegram(telegram);
+    setIsMessenger(messenger);
     setIsInAppBrowser(inApp);
 
-    const host = window.location.host;
-    const computedWebcal = `webcal://${host}${calendarIcsUrl}`;
-    setWebcalUrl(computedWebcal);
-
     if (process.env.NODE_ENV === 'development') {
-      console.log('[CalendarBridge]', {
+      console.log('[IosCalendarBridge]', {
         userAgent: ua,
-        isIOS: ios,
+        isTelegram: telegram,
+        isMessenger: messenger,
         isInAppBrowser: inApp,
         calendarIcsUrl,
-        webcalUrl: computedWebcal,
       });
     }
 
-    // Attempt 1: Immediate direct .ics navigation (works instantly on iOS Safari)
+    // Primary Attempt: Direct inline .ics navigation in the same tab (no download attribute, no target="_blank")
     const directTimer = setTimeout(() => {
       window.location.href = calendarIcsUrl;
     }, 150);
 
-    // Attempt 2: Reveal fallback Apple Calendar / webcal button after 1200ms
-    const fallbackTimer = setTimeout(() => {
-      setShowWebcal(true);
-    }, 1200);
+    // After 1.5 seconds, reveal retry button if still on bridge screen
+    const retryTimer = setTimeout(() => {
+      setShowRetry(true);
+    }, 1500);
 
     return () => {
       clearTimeout(directTimer);
-      clearTimeout(fallbackTimer);
+      clearTimeout(retryTimer);
     };
   }, [calendarIcsUrl]);
 
@@ -107,52 +106,51 @@ export default function IosCalendarBridge({ event, guestId, locale = 'km' }: Ios
           </p>
         </div>
 
-        {/* Action Buttons Area */}
-        <div className="space-y-3 pt-2">
-          {/* Button 1: Webcal Apple Calendar Trigger */}
-          {webcalUrl && (
+        {/* Single Primary Action Button on Retry */}
+        {showRetry && (
+          <div className="pt-2 animate-in fade-in duration-300">
             <a
-              href={webcalUrl}
+              href={calendarIcsUrl}
+              onClick={(e) => {
+                window.location.href = calendarIcsUrl;
+              }}
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 px-6 rounded-2xl shadow-md flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer font-serif text-sm sm:text-base"
             >
               <CalendarIcon className="w-5 h-5 shrink-0" />
-              <span>{isKm ? 'បើកក្នុង Apple Calendar' : 'Open in Apple Calendar'}</span>
+              <span>{isKm ? 'បើកក្នុង Calendar ម្តងទៀត' : 'Open in Calendar Again'}</span>
             </a>
-          )}
-
-          {/* Button 2: Direct .ics link */}
-          <a
-            href={calendarIcsUrl}
-            className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium py-3 px-6 rounded-2xl border border-primary/20 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer font-serif text-xs sm:text-sm"
-          >
-            <ExternalLink className="w-4 h-4 shrink-0 text-primary" />
-            <span>{isKm ? 'ទាញយក / បើកឯកសារ .ics' : 'Download / Open .ics file'}</span>
-          </a>
-        </div>
+          </div>
+        )}
 
         {/* In-App Browser (Telegram / Messenger) Helper Note */}
         {isInAppBrowser && (
           <div className="p-3 rounded-xl bg-primary/10 border border-primary/25 text-left text-xs font-serif text-muted-foreground space-y-1">
             <p className="font-semibold text-primary flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 shrink-0" />
-              <span>{isKm ? 'ចំណាំសម្រាប់ Telegram / Messenger' : 'Note for In-App Browser'}</span>
+              <span>
+                {isMessenger
+                  ? (isKm ? 'ចំណាំសម្រាប់ Messenger' : 'Note for Messenger')
+                  : isTelegram
+                  ? (isKm ? 'ចំណាំសម្រាប់ Telegram' : 'Note for Telegram')
+                  : (isKm ? 'ចំណាំសម្រាប់កម្មវិធី' : 'Note for In-App Browser')}
+              </span>
             </p>
             <p className="leading-relaxed">
               {isKm
-                ? 'កម្មវិធីនេះអាចរារាំងការបើក Calendar ដោយស្វ័យប្រវត្តិ។ សូមចុចប៊ូតុង “បើកក្នុង Apple Calendar” ខាងលើ ឬចុចសញ្ញា ⋯ ហើយជ្រើសរើស “Open in Safari”។'
-                : 'In-app browsers may block automatic calendar links. Tap "Open in Apple Calendar" above or tap ⋯ and choose "Open in Safari".'}
+                ? 'កម្មវិធីនេះអាចរារាំងការបើក Calendar ដោយផ្ទាល់។ សូមចុច “បើកក្នុង Calendar ម្តងទៀត” ខាងលើ ឬចុចសញ្ញា ⋯ ហើយជ្រើសរើស “Open in Safari”។'
+                : 'This app may restrict automatic calendar opening. Tap "Open in Calendar Again" above or tap ⋯ and choose "Open in Safari".'}
             </p>
           </div>
         )}
 
-        {/* Back to Invitation Link */}
+        {/* Return directly to Main Content */}
         <div className="pt-2 border-t border-border/50">
           <a
             href={returnUrl}
             className="inline-flex items-center gap-2 text-xs sm:text-sm text-primary hover:text-primary/80 font-serif font-medium transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>{isKm ? 'ត្រឡប់ទៅធៀបការវិញ' : 'Back to Invitation'}</span>
+            <span>{isKm ? 'ត្រឡប់ទៅមាតិកាធៀប' : 'Back to Invitation Content'}</span>
           </a>
         </div>
 

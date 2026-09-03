@@ -32,9 +32,10 @@ export async function GET(
     return new NextResponse(icsContent, {
       status: 200,
       headers: {
-        'Content-Type': 'text/calendar; charset=utf-8',
-        'Content-Disposition': 'attachment; filename="wedding-invitation.ics"',
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Content-Type': 'text/calendar; charset=utf-8; method=PUBLISH',
+        'Content-Disposition': 'inline; filename="wedding-invitation.ics"',
+        'Cache-Control': 'no-store, max-age=0',
+        'X-Content-Type-Options': 'nosniff',
       },
     });
   } catch (error) {

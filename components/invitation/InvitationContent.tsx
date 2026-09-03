@@ -43,6 +43,27 @@ export default function InvitationContent({ event, locale, guest, programDays }:
   const [isPlayingTransitionVideo, setIsPlayingTransitionVideo] = useState(false);
   const [videoIntroDone, setVideoIntroDone] = useState(!hasHeroVideo);
 
+  // Check if returning from calendar bridge with skipIntro=1 or openContent=1
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const shouldSkip = params.get('skipIntro') === '1' || params.get('openContent') === '1';
+      if (shouldSkip) {
+        setCurtainDone(true);
+        setIsOpened(true);
+        setVideoIntroDone(true);
+        setIsPlayingTransitionVideo(false);
+
+        setTimeout(() => {
+          const calendarSection = document.getElementById('calendar-section');
+          if (calendarSection) {
+            calendarSection.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 350);
+      }
+    }
+  }, []);
+
   // Disable background scrolling while full screen video or curtain overlays are active
   useEffect(() => {
     const isVideoActive = curtainDone && isOpened && hasHeroVideo && !videoIntroDone;

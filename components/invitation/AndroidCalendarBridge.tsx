@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Calendar as CalendarIcon, ExternalLink, ArrowLeft, Loader2, Sparkles, Download } from 'lucide-react';
-import { generateGoogleCalendarUrl } from '@/lib/calendar-google';
+import { Calendar as CalendarIcon, ArrowLeft, Loader2, Sparkles, RefreshCw } from 'lucide-react';
+import { generateAndroidCalendarIntent } from '@/lib/calendar-android';
 
 interface AndroidCalendarBridgeProps {
   event: any;
@@ -18,25 +18,23 @@ export default function AndroidCalendarBridge({
   locale = 'km',
 }: AndroidCalendarBridgeProps) {
   const [isInAppBrowser, setIsInAppBrowser] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [showRetryButton, setShowRetryButton] = useState(false);
 
   const isKm = locale === 'km';
   const slug = event?.slug || event?.id;
 
-  const returnUrl = guestId ? `/invite/${slug}/guest/${guestId}` : `/invite/${slug}`;
-  const calendarIcsUrl = guestId
-    ? `/api/invite/${slug}/guest/${guestId}/calendar.ics`
-    : `/api/invite/${slug}/calendar.ics`;
+  const returnUrl = guestId
+    ? `/invite/${slug}/guest/${guestId}?skipIntro=1#calendar-section`
+    : `/invite/${slug}?skipIntro=1#calendar-section`;
+  const baseUrl = typeof window !== 'undefined' ? `${window.location.origin}${guestId ? `/invite/${slug}/guest/${guestId}` : `/invite/${slug}`}` : '';
 
-  const baseUrl = typeof window !== 'undefined' ? `${window.location.origin}${returnUrl}` : '';
-  const googleCalendarUrl = generateGoogleCalendarUrl(event, locale, baseUrl, guestName);
+  const { intentUrl } = generateAndroidCalendarIntent(event, locale, baseUrl, guestName);
 
   const brideName = isKm ? (event.brideNameKm || event.brideNameEn || '') : (event.brideNameEn || event.brideNameKm || '');
   const groomName = isKm ? (event.groomNameKm || event.groomNameEn || '') : (event.groomNameEn || event.groomNameKm || '');
   const coupleTitle = `${groomName} & ${brideName}`;
 
   useEffect(() => {
-    setMounted(true);
     const ua = window.navigator.userAgent || '';
     const inApp = /FBAN|FBAV|Messenger|Instagram|Telegram|Line|Twitter|MicroMessenger|FB_IAB|FBSS/i.test(ua);
     setIsInAppBrowser(inApp);
@@ -45,20 +43,25 @@ export default function AndroidCalendarBridge({
       console.log('[AndroidCalendarBridge]', {
         userAgent: ua,
         isInAppBrowser: inApp,
-        googleCalendarUrl,
-        calendarIcsUrl,
+        intentUrl,
       });
     }
 
-    // Attempt 1: Immediate automatic navigation to Google Calendar create-event page
+    // Attempt 1: Immediate automatic launch of native Android calendar intent
     const directTimer = setTimeout(() => {
-      window.location.href = googleCalendarUrl;
+      window.location.href = intentUrl;
     }, 150);
+
+    // Show retry button after 1.5 seconds if still on bridge screen
+    const retryTimer = setTimeout(() => {
+      setShowRetryButton(true);
+    }, 1500);
 
     return () => {
       clearTimeout(directTimer);
+      clearTimeout(retryTimer);
     };
-  }, [googleCalendarUrl]);
+  }, [intentUrl]);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden">
@@ -98,26 +101,18 @@ export default function AndroidCalendarBridge({
           </p>
         </div>
 
-        {/* Action Buttons Area */}
-        <div className="space-y-3 pt-2">
-          {/* Button 1: Direct Google Calendar Open (Primary Android Action) */}
-          <a
-            href={googleCalendarUrl}
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 px-6 rounded-2xl shadow-md flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer font-serif text-sm sm:text-base"
-          >
-            <CalendarIcon className="w-5 h-5 shrink-0" />
-            <span>{isKm ? 'បើកក្នុង Google Calendar' : 'Open in Google Calendar'}</span>
-          </a>
-
-          {/* Button 2: Secondary .ics file download fallback */}
-          <a
-            href={calendarIcsUrl}
-            className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium py-3 px-6 rounded-2xl border border-primary/20 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer font-serif text-xs sm:text-sm"
-          >
-            <Download className="w-4 h-4 shrink-0 text-primary" />
-            <span>{isKm ? 'ទាញយក Calendar File (.ics)' : 'Download Calendar File (.ics)'}</span>
-          </a>
-        </div>
+        {/* Single Primary Action Button */}
+        {showRetryButton && (
+          <div className="pt-2 animate-in fade-in duration-300">
+            <a
+              href={intentUrl}
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 px-6 rounded-2xl shadow-md flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer font-serif text-sm sm:text-base"
+            >
+              <RefreshCw className="w-5 h-5 shrink-0" />
+              <span>{isKm ? 'បើកប្រតិទិនម្តងទៀត' : 'Open Calendar Again'}</span>
+            </a>
+          </div>
+        )}
 
         {/* In-App Browser Note (Telegram / Messenger) */}
         {isInAppBrowser && (
@@ -128,8 +123,8 @@ export default function AndroidCalendarBridge({
             </p>
             <p className="leading-relaxed">
               {isKm
-                ? 'កម្មវិធីនេះអាចរារាំងការបើក Calendar ដោយស្វ័យប្រវត្តិ។ សូមចុចប៊ូតុង “បើកក្នុង Google Calendar” ខាងលើ ដើម្បីរក្សាទុកកម្មវិធី។'
-                : 'In-app browsers may block automatic calendar opening. Tap "Open in Google Calendar" above to save the event.'}
+                ? 'កម្មវិធីនេះអាចរារាំងការបើក Calendar ដោយផ្ទាល់។ សូមចុចប៊ូតុង “បើកប្រតិទិនម្តងទៀត” ខាងលើ ឬចុចសញ្ញា ⋯ ហើយជ្រើសរើស “Open in Chrome”។'
+                : 'In-app browsers may block automatic calendar launching. Tap "Open Calendar Again" above or tap ⋯ and choose "Open in Chrome".'}
             </p>
           </div>
         )}
@@ -141,7 +136,7 @@ export default function AndroidCalendarBridge({
             className="inline-flex items-center gap-2 text-xs sm:text-sm text-primary hover:text-primary/80 font-serif font-medium transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>{isKm ? 'ត្រឡប់ទៅធៀបការវិញ' : 'Back to Invitation'}</span>
+            <span>{isKm ? 'ត្រឡប់ទៅមាតិកាធៀប' : 'Back to Invitation Content'}</span>
           </a>
         </div>
 
