@@ -21,8 +21,8 @@ export default function IosCalendarBridge({ event, guestId, locale = 'km' }: Ios
 
   // Return directly to the main invitation content bypassing intro/curtain
   const returnUrl = guestId
-    ? `/invite/${slug}/guest/${guestId}?skipIntro=1#calendar-section`
-    : `/invite/${slug}?skipIntro=1#calendar-section`;
+    ? `/${locale}/invite/${slug}/guest/${guestId}?skipIntro=1#calendar-section`
+    : `/${locale}/invite/${slug}?skipIntro=1#calendar-section`;
 
   const calendarIcsUrl = guestId
     ? `/api/invite/${slug}/guest/${guestId}/calendar.ics`
@@ -150,7 +150,7 @@ export default function IosCalendarBridge({ event, guestId, locale = 'km' }: Ios
             className="inline-flex items-center gap-2 text-xs sm:text-sm text-primary hover:text-primary/80 font-serif font-medium transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>{isKm ? 'ត្រឡប់ទៅមាតិកាធៀប' : 'Back to Invitation Content'}</span>
+            <span>{isKm ? 'ត្រឡប់មកមាតិកាធៀបវិញ' : 'Back to Invitation Content'}</span>
           </a>
         </div>
 

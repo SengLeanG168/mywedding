@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Calendar as CalendarIcon, ArrowLeft, Loader2, Sparkles, RefreshCw } from 'lucide-react';
-import { generateAndroidCalendarIntent } from '@/lib/calendar-android';
+import { Calendar as CalendarIcon, ArrowLeft, Download, Sparkles, CheckCircle2 } from 'lucide-react';
 
 interface AndroidCalendarBridgeProps {
   event: any;
@@ -14,21 +13,22 @@ interface AndroidCalendarBridgeProps {
 export default function AndroidCalendarBridge({
   event,
   guestId,
-  guestName,
   locale = 'km',
 }: AndroidCalendarBridgeProps) {
   const [isInAppBrowser, setIsInAppBrowser] = useState(false);
-  const [showRetryButton, setShowRetryButton] = useState(false);
 
   const isKm = locale === 'km';
   const slug = event?.slug || event?.id;
 
+  // Direct return to main invitation content with skipIntro=1
   const returnUrl = guestId
-    ? `/invite/${slug}/guest/${guestId}?skipIntro=1#calendar-section`
-    : `/invite/${slug}?skipIntro=1#calendar-section`;
-  const baseUrl = typeof window !== 'undefined' ? `${window.location.origin}${guestId ? `/invite/${slug}/guest/${guestId}` : `/invite/${slug}`}` : '';
+    ? `/${locale}/invite/${slug}/guest/${guestId}?skipIntro=1#calendar-section`
+    : `/${locale}/invite/${slug}?skipIntro=1#calendar-section`;
 
-  const { intentUrl } = generateAndroidCalendarIntent(event, locale, baseUrl, guestName);
+  // Server .ics endpoint URL
+  const calendarIcsUrl = guestId
+    ? `/api/invite/${slug}/guest/${guestId}/calendar.ics`
+    : `/api/invite/${slug}/calendar.ics`;
 
   const brideName = isKm ? (event.brideNameKm || event.brideNameEn || '') : (event.brideNameEn || event.brideNameKm || '');
   const groomName = isKm ? (event.groomNameKm || event.groomNameEn || '') : (event.groomNameEn || event.groomNameKm || '');
@@ -38,39 +38,7 @@ export default function AndroidCalendarBridge({
     const ua = window.navigator.userAgent || '';
     const inApp = /FBAN|FBAV|Messenger|Instagram|Telegram|Line|Twitter|MicroMessenger|FB_IAB|FBSS/i.test(ua);
     setIsInAppBrowser(inApp);
-
-    const isBlocked = typeof window !== 'undefined' && window.location.search.includes('blocked=1');
-    if (isBlocked) {
-      setShowRetryButton(true);
-    }
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[AndroidCalendarBridge]', {
-        userAgent: ua,
-        isInAppBrowser: inApp,
-        isBlocked,
-        intentUrl,
-      });
-    }
-
-    // Attempt: If not explicitly blocked, try automatic launch of native Android calendar intent
-    let directTimer: NodeJS.Timeout | null = null;
-    if (!isBlocked) {
-      directTimer = setTimeout(() => {
-        window.location.href = intentUrl;
-      }, 150);
-    }
-
-    // Show retry button after 1.2 seconds if still on bridge screen
-    const retryTimer = setTimeout(() => {
-      setShowRetryButton(true);
-    }, isBlocked ? 0 : 1200);
-
-    return () => {
-      if (directTimer) clearTimeout(directTimer);
-      clearTimeout(retryTimer);
-    };
-  }, [intentUrl]);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden">
@@ -79,73 +47,55 @@ export default function AndroidCalendarBridge({
       <div className="absolute -top-32 -right-32 w-80 h-80 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
       <div className="absolute -bottom-32 -left-32 w-80 h-80 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
 
-      {/* Main Bridge Card */}
+      {/* Main Card */}
       <div className="relative z-10 w-full max-w-md bg-card/90 backdrop-blur-xl border border-primary/30 rounded-3xl p-6 sm:p-8 shadow-2xl text-center space-y-6">
         
-        {/* Header Icon / Arch */}
+        {/* Header Icon */}
         <div className="flex flex-col items-center space-y-3">
           <div className="w-16 h-16 rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center text-primary shadow-inner">
-            <CalendarIcon className="w-8 h-8 animate-pulse" />
+            <CalendarIcon className="w-8 h-8 text-primary" />
           </div>
           <div>
-            <h2 className="text-xs sm:text-sm font-serif text-primary/80 uppercase tracking-widest">
-              {isKm ? 'ពិធីមង្គលអាពាហ៍ពិពាហ៍' : 'Wedding Ceremony'}
-            </h2>
-            <h1 className="text-xl sm:text-2xl font-serif font-bold text-foreground mt-1">
-              {coupleTitle}
+            <h1 className="text-xl sm:text-2xl font-serif font-bold text-foreground">
+              {isKm ? 'កំណត់ចំណាំថ្ងៃចូលរួម' : 'Save Event to Calendar'}
             </h1>
+            <p className="text-xs sm:text-sm font-serif text-primary/80 mt-1">
+              {coupleTitle}
+            </p>
           </div>
         </div>
 
-        {/* Loading Spinner & Status Text */}
-        <div className="py-2 space-y-2">
-          <div className="flex items-center justify-center gap-2 text-primary font-serif text-lg sm:text-xl font-semibold">
-            <Loader2 className="w-5 h-5 animate-spin" />
-            <span>{isKm ? 'កំពុងបើកប្រតិទិន...' : 'Opening Calendar...'}</span>
+        {/* Clear Instruction Card */}
+        <div className="bg-primary/10 border border-primary/25 rounded-2xl p-4 text-center space-y-2">
+          <div className="flex items-center justify-center gap-1.5 text-primary text-xs font-serif font-semibold">
+            <Sparkles className="w-4 h-4 shrink-0" />
+            <span>{isKm ? 'ការណែនាំ' : 'Instructions'}</span>
           </div>
-          <p className="text-xs sm:text-sm text-muted-foreground font-serif leading-relaxed px-2">
+          <p className="text-xs sm:text-sm text-foreground/90 font-serif leading-relaxed">
             {isKm
-              ? 'សូមរង់ចាំបន្តិច ប្រព័ន្ធកំពុងបើក Calendar ដើម្បីរក្សាទុកថ្ងៃចូលរួម។'
-              : 'Please wait a moment while your calendar opens to save the wedding date.'}
+              ? 'បន្ទាប់ពីទាញយកឯកសារ Calendar រួច សូមចុចបើកឯកសារ .ics នោះ ហើយជ្រើសរើស “Save” ឬ “Add to Calendar” ដើម្បីរក្សាទុកថ្ងៃចូលរួម។'
+              : 'After downloading the Calendar file, tap to open the .ics file and choose "Save" or "Add to Calendar" to save the wedding date.'}
           </p>
         </div>
 
-        {/* Single Primary Action Button - Real Native Anchor Tag */}
-        {showRetryButton && (
-          <div className="pt-2 animate-in fade-in duration-300">
-            <a
-              href={intentUrl}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 px-6 rounded-2xl shadow-md flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer font-serif text-sm sm:text-base"
-            >
-              <RefreshCw className="w-5 h-5 shrink-0" />
-              <span>{isKm ? 'បើកប្រតិទិនម្តងទៀត' : 'Open Calendar Again'}</span>
-            </a>
-          </div>
-        )}
+        {/* Action Buttons */}
+        <div className="space-y-3 pt-1">
+          {/* Button 1: Download/Open Calendar (.ics) */}
+          <a
+            href={calendarIcsUrl}
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 px-6 rounded-2xl shadow-md flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer font-serif text-sm sm:text-base"
+          >
+            <Download className="w-5 h-5 shrink-0" />
+            <span>{isKm ? 'ទាញយក/បើកឯកសារ Calendar' : 'Download / Open Calendar'}</span>
+          </a>
 
-        {/* In-App Browser Note (Telegram / Messenger) */}
-        {isInAppBrowser && (
-          <div className="p-3 rounded-xl bg-primary/10 border border-primary/25 text-left text-xs font-serif text-muted-foreground space-y-1">
-            <p className="font-semibold text-primary flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 shrink-0" />
-              <span>{isKm ? 'កម្មវិធីនេះអាចរារាំងការបើកប្រតិទិនដោយផ្ទាល់' : 'In-App Browser Notice'}</span>
-            </p>
-            <p className="leading-relaxed">
-              {isKm
-                ? 'សូមចុចប៊ូតុង “បើកប្រតិទិនម្តងទៀត” ខាងលើ ឬចុចសញ្ញា ⋯ ហើយជ្រើសរើស “Open in Chrome”។'
-                : 'Please tap "Open Calendar Again" above or tap ⋯ and choose "Open in Chrome".'}
-            </p>
-          </div>
-        )}
-
-        {/* Return directly to Main Content */}
-        <div className="pt-2 border-t border-border/50">
+          {/* Button 2: Return directly to Main Invitation Content */}
           <a
             href={returnUrl}
-            className="inline-flex items-center gap-2 text-xs sm:text-sm text-primary hover:text-primary/80 font-serif font-medium transition-colors"
+            className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium py-3 px-6 rounded-2xl border border-primary/20 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer font-serif text-xs sm:text-sm"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>{isKm ? 'ត្រឡប់ទៅមាតិកាធៀប' : 'Back to Invitation Content'}</span>
+            <ArrowLeft className="w-4 h-4 shrink-0 text-primary" />
+            <span>{isKm ? 'ត្រឡប់មកមាតិកាធៀបវិញ' : 'Back to Invitation Content'}</span>
           </a>
         </div>
 
