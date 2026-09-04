@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Calendar as CalendarIcon, Download, X, Sparkles, Copy, Check, ExternalLink, Globe } from 'lucide-react';
+import { Calendar as CalendarIcon, Download, X, Sparkles, Check, ExternalLink, MoreHorizontal } from 'lucide-react';
 
 interface AddToCalendarButtonProps {
   event: any;
@@ -18,7 +18,6 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
   const [isMessenger, setIsMessenger] = useState(false);
   const [isInAppBrowser, setIsInAppBrowser] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
   const isKm = locale === 'km';
 
@@ -87,29 +86,6 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
     return guestId
       ? `${localePrefix}/invite/${slug}/guest/${guestId}`
       : `${localePrefix}/invite/${slug}`;
-  };
-
-  const handleCopyLink = async () => {
-    const url = getInvitationUrl();
-    try {
-      if (navigator?.clipboard?.writeText) {
-        await navigator.clipboard.writeText(url);
-      } else {
-        const textArea = document.createElement('textarea');
-        textArea.value = url;
-        textArea.style.position = 'fixed';
-        textArea.style.opacity = '0';
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-      }
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    } catch (err) {
-      console.error('Failed to copy link:', err);
-    }
   };
 
   const handleTryOpenBrowser = () => {
@@ -197,22 +173,64 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                   <Sparkles className="w-3.5 h-3.5 shrink-0" />
                   <span>{isKm ? 'ការណែនាំ' : 'Instructions'}</span>
                 </div>
-                <p className="text-xs sm:text-sm text-foreground/90 font-serif leading-relaxed px-1 text-left sm:text-center">
-                  {isIosMessenger
-                    ? (isKm
-                        ? 'ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ សូមចុចសញ្ញា ... នៅខាងលើ រួចបើក Open in external browser បន្ទាប់មកចុច សូមកត់ចំណាំថ្ងៃចូលរួមម្ដងទៀត រួចចុច Continue និងចុច Add To Calendar រួចចុចសញ្ញា គ្រីស នៅខាងលើជាការស្រេច។ ហើយដើម្បីត្រឡប់ទៅកាន់ធៀបវិញបន្ទាប់ពីចុចសញ្ញាគ្រីស សូមចុចសញ្ញា ខ្វែងនៅខាងលើ។'
-                        : 'To properly save the event date to your calendar, tap the ... icon at the top and select Open in external browser. Then tap Add to Calendar again, tap Continue and Add To Calendar, then tap the Checkmark icon at the top to finish. To return to the invitation, tap the X icon at the top.')
-                    : isIosInApp
-                    ? (isKm
-                        ? 'ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅ Calendar បានត្រឹមត្រូវ សូមបើក Link នេះក្នុង Browser ខាងក្រៅជាមុនសិន។'
-                        : 'To save the event date to Calendar properly, please open this link in an external browser first.')
-                    : (isKm
-                        ? 'បន្ទាប់ពីទាញយកឯកសារ Calendar រួច សូមចុចបើកឯកសារ .ics នោះ ហើយជ្រើសរើស “Save” ឬ “Add to Calendar” ដើម្បីរក្សាទុកថ្ងៃចូលរួម។'
-                        : 'After downloading the Calendar file, tap to open the .ics file and choose "Save" or "Add to Calendar" to save the wedding date.')}
+                <p className="text-xs sm:text-sm text-foreground/90 font-serif leading-relaxed px-1 text-left">
+                  {isIosMessenger ? (
+                    isKm ? (
+                      <>
+                        ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ សូមចុចសញ្ញា{' '}
+                        <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
+                          <MoreHorizontal className="w-3.5 h-3.5 shrink-0" />
+                        </span>{' '}
+                        នៅខាងលើ រួចបើក <span className="font-semibold text-foreground">Open in external browser</span> បន្ទាប់មកចុច{' '}
+                        <span className="font-semibold text-primary">សូមកត់ចំណាំថ្ងៃចូលរួម</span> ម្ដងទៀត រួចចុច{' '}
+                        <span className="font-semibold text-foreground">Continue</span> និងចុច{' '}
+                        <span className="font-semibold text-foreground">Add To Calendar</span> រួចចុចសញ្ញា{' '}
+                        <span className="inline-flex items-center justify-center align-middle mx-1 w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 leading-none border border-emerald-500/40 font-bold">
+                          <Check className="w-3 h-3 stroke-[3]" />
+                        </span>{' '}
+                        នៅខាងលើជាការស្រេច។ ហើយដើម្បីត្រឡប់ទៅកាន់ធៀបវិញបន្ទាប់ពីចុចសញ្ញា{' '}
+                        <span className="inline-flex items-center justify-center align-middle mx-1 w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 leading-none border border-emerald-500/40 font-bold">
+                          <Check className="w-3 h-3 stroke-[3]" />
+                        </span>{' '}
+                        សូមចុចសញ្ញា{' '}
+                        <span className="inline-flex items-center justify-center align-middle mx-1 w-4 h-4 rounded-full bg-destructive/20 text-destructive leading-none border border-destructive/40 font-bold">
+                          <X className="w-3 h-3 stroke-[3]" />
+                        </span>{' '}
+                        នៅខាងលើ។
+                      </>
+                    ) : (
+                      <>
+                        To properly save the event date to your calendar, tap the{' '}
+                        <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
+                          <MoreHorizontal className="w-3.5 h-3.5 shrink-0" />
+                        </span>{' '}
+                        icon at the top and select <span className="font-semibold text-foreground">Open in external browser</span>. Then tap{' '}
+                        <span className="font-semibold text-primary">Add to Calendar</span> again, tap{' '}
+                        <span className="font-semibold text-foreground">Continue</span> and tap{' '}
+                        <span className="font-semibold text-foreground">Add To Calendar</span>, then tap the{' '}
+                        <span className="inline-flex items-center justify-center align-middle mx-1 w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 leading-none border border-emerald-500/40 font-bold">
+                          <Check className="w-3 h-3 stroke-[3]" />
+                        </span>{' '}
+                        icon at the top to complete. To return to the invitation, tap the{' '}
+                        <span className="inline-flex items-center justify-center align-middle mx-1 w-4 h-4 rounded-full bg-destructive/20 text-destructive leading-none border border-destructive/40 font-bold">
+                          <X className="w-3 h-3 stroke-[3]" />
+                        </span>{' '}
+                        icon at the top.
+                      </>
+                    )
+                  ) : isIosInApp ? (
+                    isKm
+                      ? 'ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅ Calendar បានត្រឹមត្រូវ សូមបើក Link នេះក្នុង Browser ខាងក្រៅជាមុនសិន។'
+                      : 'To save the event date to Calendar properly, please open this link in an external browser first.'
+                  ) : (
+                    isKm
+                      ? 'បន្ទាប់ពីទាញយកឯកសារ Calendar រួច សូមចុចបើកឯកសារ .ics នោះ ហើយជ្រើសរើស “Save” ឬ “Add to Calendar” ដើម្បីរក្សាទុកថ្ងៃចូលរួម។'
+                      : 'After downloading the Calendar file, tap to open the .ics file and choose "Save" or "Add to Calendar" to save the wedding date.'
+                  )}
                 </p>
               </div>
 
-              {/* iOS In-App Helper Guide (for Telegram or other in-app browsers, not Messenger) */}
+              {/* iOS In-App Helper Guide (for Telegram or other non-Messenger in-app browsers) */}
               {isIosInApp && !isIosMessenger && (
                 <div className="bg-primary/10 border border-primary/25 rounded-2xl p-3 text-left space-y-1.5">
                   <p className="text-xs font-serif text-primary/90 font-semibold flex items-center gap-1.5">
@@ -238,36 +256,15 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
               {/* Action Buttons Area */}
               <div className="space-y-2.5 pt-1">
                 {isIosInApp ? (
-                  <>
-                    {/* 1. Copy Link Button */}
-                    <button
-                      type="button"
-                      onClick={handleCopyLink}
-                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 px-6 rounded-2xl shadow-md flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer font-serif text-sm sm:text-base border border-primary/30"
-                    >
-                      {copied ? (
-                        <>
-                          <Check className="w-5 h-5 shrink-0 text-emerald-400" />
-                          <span>{isKm ? 'បានចម្លង Link រួចរាល់!' : 'Link Copied!'}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-5 h-5 shrink-0" />
-                          <span>{isKm ? 'ចម្លង Link' : 'Copy Link'}</span>
-                        </>
-                      )}
-                    </button>
-
-                    {/* 2. Try Open in Browser Button */}
-                    <button
-                      type="button"
-                      onClick={handleTryOpenBrowser}
-                      className="w-full bg-primary/15 hover:bg-primary/25 text-primary font-medium py-3 px-6 rounded-2xl border border-primary/30 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer font-serif text-xs sm:text-sm"
-                    >
-                      <ExternalLink className="w-4 h-4 shrink-0" />
-                      <span>{isKm ? 'សាកបើកក្នុង Browser' : 'Try Open in Browser'}</span>
-                    </button>
-                  </>
+                  /* iOS In-App Action Button: សូមបើកក្នុង Browser */
+                  <button
+                    type="button"
+                    onClick={handleTryOpenBrowser}
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 px-6 rounded-2xl shadow-md flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer font-serif text-sm sm:text-base border border-primary/30"
+                  >
+                    <ExternalLink className="w-4 h-4 shrink-0" />
+                    <span>{isKm ? 'សូមបើកក្នុង Browser' : 'Open in Browser'}</span>
+                  </button>
                 ) : (
                   /* Android Download Action */
                   <a
@@ -279,7 +276,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                   </a>
                 )}
 
-                {/* 3. Close Button */}
+                {/* Close Button */}
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
