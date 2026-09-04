@@ -27,12 +27,6 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
     ? `/api/invite/${slug}/guest/${guestId}/calendar.ics`
     : `/api/invite/${slug}/calendar.ics`;
 
-  // Direct bridge route for iOS Telegram
-  const localePrefix = locale === 'km' ? '' : `/${locale}`;
-  const calendarBridgeUrl = guestId
-    ? `${localePrefix}/invite/${slug}/guest/${guestId}/calendar`
-    : `${localePrefix}/invite/${slug}/calendar`;
-
   useEffect(() => {
     setMounted(true);
     if (typeof window !== 'undefined') {
@@ -55,11 +49,10 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
           isTelegram: telegram,
           isMessenger: messenger,
           calendarIcsUrl,
-          calendarBridgeUrl,
         });
       }
     }
-  }, [calendarIcsUrl, calendarBridgeUrl]);
+  }, [calendarIcsUrl]);
 
   // Lock background scroll when popup modal is open
   useEffect(() => {
@@ -77,25 +70,14 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
   }, [isModalOpen]);
 
   const isIosTelegram = isIOS && isTelegram;
-  // Non-Telegram mobile users (iOS Messenger, Safari, Android) use the top-down popup modal
-  const usePopup = (isIOS || isAndroid) && !isIosTelegram;
+  // Mobile popup used strictly for iOS Messenger / Facebook and Android (not iOS Telegram)
+  const usePopup = mounted && ((isIOS && !isTelegram) || isAndroid);
 
   return (
     <div className="relative inline-block w-full text-center my-4">
       {/* Primary Trigger Button: Single clean button */}
       <div className="flex flex-col items-center justify-center">
-        {mounted && isIosTelegram ? (
-          /* iOS Telegram: direct calendar bridge link (no popup) */
-          <a
-            href={calendarBridgeUrl}
-            className="w-full max-w-xs mx-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3.5 px-6 rounded-full shadow-lg flex items-center justify-center gap-2.5 group transition-all active:scale-95 cursor-pointer border border-primary/30"
-          >
-            <CalendarIcon className="w-5 h-5 group-hover:scale-110 transition-transform shrink-0" />
-            <span className="text-sm sm:text-base font-serif tracking-wide">
-              {isKm ? 'សូមកត់ចំណាំថ្ងៃចូលរួម' : 'Add to Calendar'}
-            </span>
-          </a>
-        ) : mounted && usePopup ? (
+        {usePopup ? (
           /* iOS Messenger & Android: open working top-down popup */
           <button
             type="button"
@@ -112,7 +94,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
             </span>
           </button>
         ) : (
-          /* Desktop / default fallback: direct .ics download */
+          /* iOS Telegram & Desktop: direct real anchor link to .ics URL (same-tab, no popup, no download attr) */
           <a
             href={calendarIcsUrl}
             className="w-full max-w-xs mx-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3.5 px-6 rounded-full shadow-lg flex items-center justify-center gap-2.5 group transition-all active:scale-95 cursor-pointer border border-primary/30"
@@ -126,7 +108,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
       </div>
 
       {/* Top Down Popup Modal rendered via React Portal directly into document.body */}
-      {usePopup && isModalOpen && mounted && typeof document !== 'undefined' && createPortal(
+      {usePopup && isModalOpen && typeof document !== 'undefined' && createPortal(
         <div className="fixed inset-0 z-[99999] pointer-events-auto">
           {/* Backdrop */}
           <div
