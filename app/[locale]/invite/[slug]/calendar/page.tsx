@@ -23,5 +23,5 @@ export default async function CalendarBridgePage({ params }: CalendarPageProps) 
     notFound();
   }
 
-  return <IosCalendarBridge event={event} locale={locale} />;
+  return <IosCalendarBridge event={event} />;
 }

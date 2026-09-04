@@ -23,5 +23,5 @@ export default async function AndroidCalendarPage({ params }: AndroidCalendarPag
     notFound();
   }
 
-  return <AndroidCalendarBridge event={event} locale={locale} />;
+  return <AndroidCalendarBridge event={event} />;
 }

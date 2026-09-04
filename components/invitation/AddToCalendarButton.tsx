@@ -52,7 +52,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
   const [isInAppBrowser, setIsInAppBrowser] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const isKm = locale === 'km';
+  const isKm = true;
 
   const slug = event?.slug || event?.id;
 
@@ -61,15 +61,9 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
     ? `/api/invite/${slug}/guest/${guestId}/calendar.ics`
     : `/api/invite/${slug}/calendar.ics`;
 
-  const groomName = isKm 
-    ? (event?.groomNameKm || event?.groomNameEn || 'ហេង សេងលៀង') 
-    : (event?.groomNameEn || event?.groomNameKm || 'Heng Sengleang');
-  const brideName = isKm 
-    ? (event?.brideNameKm || event?.brideNameEn || 'ល័ក្ខ ចលនា') 
-    : (event?.brideNameEn || event?.brideNameKm || 'Leak Cholana');
-  const weddingSubtitle = isKm
-    ? `ពិធីមង្គលអាពាហ៍ពិពាហ៍របស់ ${groomName} និង ${brideName}`
-    : `Wedding Ceremony of ${groomName} and ${brideName}`;
+  const groomName = event?.groomNameKm || event?.groomNameEn || 'ហេង សេងលៀង';
+  const brideName = event?.brideNameKm || event?.brideNameEn || 'ល័ក្ខ ចលនា';
+  const weddingSubtitle = `ពិធីមង្គលអាពាហ៍ពិពាហ៍របស់ ${groomName} និង ${brideName}`;
 
   useEffect(() => {
     setMounted(true);
@@ -241,11 +235,11 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
           />
 
           {/* Top Down Popup Panel */}
-          <div className="fixed top-0 left-0 right-0 z-[9999] w-full max-w-[430px] mx-auto bg-card border-b border-x border-primary/40 rounded-b-3xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] overflow-hidden flex flex-col pt-[calc(18px+env(safe-area-inset-top,16px))] px-[18px] pb-5 max-h-[85dvh] animate-in slide-in-from-top duration-300">
+          <div className="fixed top-0 left-0 right-0 z-[9999] w-full max-w-[430px] mx-auto bg-card border-b border-x border-primary/40 rounded-b-3xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] overflow-hidden flex flex-col pt-[calc(14px+env(safe-area-inset-top,14px))] px-3.5 sm:px-4 pb-4 max-h-[85dvh] animate-in slide-in-from-top duration-300">
             
             {/* Scrollable Content Area inside Top Down Panel */}
             <div
-              className="overflow-y-auto max-h-[calc(85dvh-40px)] space-y-4 text-center pr-1"
+              className="overflow-y-auto flex-1 min-h-0 space-y-3.5 sm:space-y-4 text-center pr-1"
               style={{ WebkitOverflowScrolling: 'touch' }}
             >
               {/* Header / Title */}
@@ -430,7 +424,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                         : 'Because Messenger cannot save the event date to your calendar directly, you need to download the file first so you can properly save the date to your calendar.'
                     ) : isIosTelegram ? (
                       isKm
-                        ? 'ដោយសារតែនៅក្នុង Telegram មិនអាចរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានដោយផ្ទាល់បានទេ ដូច្នេះសូមបើកធៀបការនេះក្នុង Browser ខាងក្រៅជាមុនសិន ដើម្បីអាចចុចរក្សាទុកទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ។'
+                        ? 'ដោយសារតែនៅក្នុង Telegram មិនអាចរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានដោយផ្ទាល់ទេ ដូច្នេះសូមបើកធៀបការនេះក្នុង Browser ខាងក្រៅជាមុនសិន ដើម្បីអាចចុចរក្សាទុកទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ។'
                         : 'Because Telegram cannot save the event date to your calendar directly, please open this invitation in an external browser first so you can properly save the date to your calendar.'
                     ) : isIosMessenger ? (
                       isKm

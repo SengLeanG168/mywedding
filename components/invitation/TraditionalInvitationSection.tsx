@@ -145,46 +145,38 @@ function renderParentName(fullName?: string | null) {
   );
 }
 
-export default function TraditionalInvitationSection({ event, locale }: TraditionalInvitationSectionProps) {
-  const t = useTranslations('Event');
-  const isKm = locale === 'km';
+export default function TraditionalInvitationSection({ event }: TraditionalInvitationSectionProps) {
+  const isKm = true;
 
   if (event.showTraditionalInvitationSection === false) {
     return null;
   }
 
   // Fallbacks for texts
-  const blessingTitle = isKm 
-    ? (event.blessingTitleKm || 'សិរីសួស្ដីជ័យមង្គលអាពាហ៍ពិពាហ៍')
-    : (event.blessingTitleEn || event.blessingTitleKm || 'Wedding Blessing Ceremony');
+  const blessingTitle = event.blessingTitleKm || event.blessingTitleEn || 'សិរីសួស្ដីជ័យមង្គលអាពាហ៍ពិពាហ៍';
 
   const defaultIntroKm = 'មានកិត្តិយសសូមគោរពអញ្ជើញ';
   const defaultBodyKm = 'ឯកឧត្តម លោកឧកញ៉ា លោកជំទាវ លោក លោកស្រី អ្នកនាង កញ្ញា និងប្រិយមិត្តអញ្ជើញចូលរួមជាអធិបតី និងជាភ្ញៀវកិត្តិយសដើម្បីប្រសិទ្ធពរជ័យសិរីមង្គលក្នុងពិធីរៀបអាពាហ៍ពិពាហ៍ កូនប្រុស កូនស្រី របស់យើងខ្ញុំ ។';
 
-  const defaultIntroEn = 'Have the Honor to Cordially Invite';
-  const defaultBodyEn = 'Excellencies, Lok Oknha, Lok Chumteav, Ladies and Gentlemen, and dear friends to join and honor the wedding ceremony of our beloved son and daughter.';
+  const invitationIntro = defaultIntroKm;
 
-  const invitationIntro = isKm ? defaultIntroKm : defaultIntroEn;
-
-  const rawCustomText = isKm 
-    ? event.formalInvitationTextKm 
-    : (event.formalInvitationTextEn || event.formalInvitationTextKm);
+  const rawCustomText = event.formalInvitationTextKm || event.formalInvitationTextEn;
 
   // If custom text exists and is not the old default, use it; otherwise use the new formal body
   const isOldDefault = rawCustomText && rawCustomText.includes('យើងខ្ញុំមានសេចក្ដីសោមនស្ស');
   const invitationBody = (!rawCustomText || isOldDefault) 
-    ? (isKm ? defaultBodyKm : defaultBodyEn)
+    ? defaultBodyKm
     : rawCustomText;
 
   // Fallbacks for names
-  const brideName = isKm ? event.brideNameKm : event.brideNameEn;
-  const groomName = isKm ? event.groomNameKm : event.groomNameEn;
+  const brideName = event.brideNameKm || event.brideNameEn || '';
+  const groomName = event.groomNameKm || event.groomNameEn || '';
 
   // Parents
-  const groomFather = isKm ? event.groomFatherNameKm : (event.groomFatherNameEn || event.groomFatherNameKm);
-  const groomMother = isKm ? event.groomMotherNameKm : (event.groomMotherNameEn || event.groomMotherNameKm);
-  const brideFather = isKm ? event.brideFatherNameKm : (event.brideFatherNameEn || event.brideFatherNameKm);
-  const brideMother = isKm ? event.brideMotherNameKm : (event.brideMotherNameEn || event.brideMotherNameKm);
+  const groomFather = event.groomFatherNameKm || event.groomFatherNameEn;
+  const groomMother = event.groomMotherNameKm || event.groomMotherNameEn;
+  const brideFather = event.brideFatherNameKm || event.brideFatherNameEn;
+  const brideMother = event.brideMotherNameKm || event.brideMotherNameEn;
 
   // Couple Monogram Image URL
   const monogramImageUrl = event.coupleMonogramImageUrl;
@@ -192,22 +184,22 @@ export default function TraditionalInvitationSection({ event, locale }: Traditio
   // Date and Time Parsing
   const parsedDate = parseEventDate(event.eventDate);
   const weekdayText = parsedDate 
-    ? (isKm ? KHMER_WEEKDAYS[parsedDate.dayOfWeek] : EN_WEEKDAYS[parsedDate.dayOfWeek])
-    : (isKm ? 'ថ្ងៃសៅរ៍' : 'Saturday');
+    ? KHMER_WEEKDAYS[parsedDate.dayOfWeek]
+    : 'ថ្ងៃសៅរ៍';
 
   const monthText = parsedDate 
-    ? (isKm ? KHMER_MONTHS[parsedDate.month] : EN_MONTHS[parsedDate.month])
-    : (isKm ? 'ខែវិច្ឆិកា' : 'November');
+    ? KHMER_MONTHS[parsedDate.month]
+    : 'ខែវិច្ឆិកា';
 
   const dayText = parsedDate 
-    ? (isKm ? toKhmerDigits(parsedDate.day) : String(parsedDate.day))
-    : (isKm ? '២០' : '20');
+    ? toKhmerDigits(parsedDate.day)
+    : '២០';
 
   const yearText = parsedDate 
-    ? (isKm ? toKhmerDigits(parsedDate.year) : String(parsedDate.year))
-    : (isKm ? '២០២៦' : '2026');
+    ? toKhmerDigits(parsedDate.year)
+    : '២០២៦';
 
-  const timeText = formatKhmerTime(event.eventTime, isKm);
+  const timeText = formatKhmerTime(event.eventTime, true);
 
   return (
     <section className="w-full relative py-10 sm:py-12 px-4 mb-6 sm:mb-8 overflow-hidden flex flex-col items-center text-center">
@@ -270,41 +262,41 @@ export default function TraditionalInvitationSection({ event, locale }: Traditio
 
         {/* Groom, Couple Monogram Logo, and Bride Name */}
         <div className="w-full mt-4 relative z-10">
-          <div className="grid grid-cols-[1fr_auto_1fr] gap-2 sm:gap-4 items-center justify-items-center w-full">
+          <div className="grid grid-cols-[1fr_auto_1fr] gap-1.5 sm:gap-4 items-center justify-items-center w-full">
             
             {/* Groom Section */}
-            <div className="flex flex-col items-center justify-center text-center px-1 space-y-2">
-              <span className="text-[10px] sm:text-xs text-muted-foreground tracking-widest uppercase whitespace-nowrap">
+            <div className="flex flex-col items-center justify-center text-center px-1 space-y-1.5 sm:space-y-2 w-full min-w-0">
+              <span className="text-[10px] sm:text-xs text-muted-foreground tracking-widest uppercase">
                 {isKm ? 'កូនប្រុសនាម' : 'Son'}
               </span>
-              <div className="text-[clamp(0.9rem,3.5vw,1.25rem)] font-serif text-primary font-bold leading-tight whitespace-nowrap">
+              <div className="text-[clamp(0.85rem,3.2vw,1.2rem)] font-serif text-primary font-bold leading-snug break-words text-center w-full">
                 {groomName}
               </div>
             </div>
 
             {/* Centered Couple Monogram Logo Image (Uploaded Custom PNG/SVG) */}
-            <div className="flex items-center justify-center px-1 sm:px-2">
+            <div className="flex items-center justify-center px-1 sm:px-2 shrink-0">
               {monogramImageUrl ? (
                 <div className="relative flex items-center justify-center">
                   <img
                     src={monogramImageUrl}
                     alt="Couple Monogram"
-                    className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 object-contain drop-shadow-[0_2px_14px_rgba(212,175,55,0.35)] transition-transform duration-300 hover:scale-105"
+                    className="w-20 h-20 xs:w-24 xs:h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 object-contain drop-shadow-[0_2px_14px_rgba(212,175,55,0.35)] transition-transform duration-300 hover:scale-105"
                   />
                 </div>
               ) : (
-                <div className="flex items-center justify-center w-24 h-24 sm:w-32 sm:h-32 text-primary font-serif text-3xl sm:text-4xl font-bold opacity-75">
+                <div className="flex items-center justify-center w-16 h-16 sm:w-24 sm:h-24 text-primary font-serif text-2xl sm:text-3xl font-bold opacity-75">
                   លន
                 </div>
               )}
             </div>
             
             {/* Bride Section */}
-            <div className="flex flex-col items-center justify-center text-center px-1 space-y-2">
-              <span className="text-[10px] sm:text-xs text-muted-foreground tracking-widest uppercase whitespace-nowrap">
+            <div className="flex flex-col items-center justify-center text-center px-1 space-y-1.5 sm:space-y-2 w-full min-w-0">
+              <span className="text-[10px] sm:text-xs text-muted-foreground tracking-widest uppercase">
                 {isKm ? 'កូនស្រីនាម' : 'Daughter'}
               </span>
-              <div className="text-[clamp(0.9rem,3.5vw,1.25rem)] font-serif text-primary font-bold leading-tight whitespace-nowrap">
+              <div className="text-[clamp(0.85rem,3.2vw,1.2rem)] font-serif text-primary font-bold leading-snug break-words text-center w-full">
                 {brideName}
               </div>
             </div>

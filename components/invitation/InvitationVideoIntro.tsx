@@ -64,12 +64,10 @@ export default function InvitationVideoIntro({ type, url, poster, locale, onCont
     return (match && match[2].length === 11) ? match[2] : null;
   };
 
-  const continueText = locale === 'km' 
-    ? 'ចុចមើលធៀបបន្ទាប់' 
-    : (locale ? 'Continue to Invitation' : t('continueToInvitation'));
+  const continueText = 'ចុចមើលធៀបបន្ទាប់';
 
   return (
-    <div className="fixed inset-0 z-50 w-full h-full min-h-[100vh] overflow-hidden bg-black flex flex-col items-center justify-center">
+    <div className="fixed inset-0 z-50 w-full h-[100dvh] min-h-[100dvh] max-h-[100dvh] overflow-hidden bg-black flex flex-col items-center justify-center">
       {type === 'youtube' ? (
         <>
           {error ? (
@@ -146,18 +144,21 @@ export default function InvitationVideoIntro({ type, url, poster, locale, onCont
 
       {/* Continue Button */}
       <div 
-        className={`absolute bottom-12 z-20 transition-all duration-1000 ${
+        className={`absolute z-20 transition-all duration-1000 ${
           showContinue ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-8 pointer-events-none'
         }`}
+        style={{
+          bottom: 'calc(2.5rem + env(safe-area-inset-bottom, 0px))',
+        }}
       >
         <Button 
           onClick={handleContinue}
-          className="bg-white/10 hover:bg-white/20 text-white border border-white/30 backdrop-blur-md rounded-full px-8 py-6 flex items-center gap-2 group shadow-xl cursor-pointer"
+          className="bg-white/10 hover:bg-white/20 text-white border border-white/30 backdrop-blur-md rounded-full px-6 sm:px-8 py-5 sm:py-6 flex items-center gap-2 group shadow-xl cursor-pointer"
         >
-          <span className="text-base font-medium font-serif tracking-wide">
+          <span className="text-sm sm:text-base font-medium font-serif tracking-wide">
             {continueText}
           </span>
-          <ChevronDown className="w-5 h-5 group-hover:translate-y-1 transition-transform" />
+          <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-y-1 transition-transform" />
         </Button>
       </div>
     </div>

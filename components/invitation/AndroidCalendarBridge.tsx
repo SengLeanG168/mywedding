@@ -13,25 +13,24 @@ interface AndroidCalendarBridgeProps {
 export default function AndroidCalendarBridge({
   event,
   guestId,
-  locale = 'km',
 }: AndroidCalendarBridgeProps) {
   const [isInAppBrowser, setIsInAppBrowser] = useState(false);
 
-  const isKm = locale === 'km';
+  const isKm = true;
   const slug = event?.slug || event?.id;
 
   // Direct return to main invitation content with skipIntro=1
   const returnUrl = guestId
-    ? `/${locale}/invite/${slug}/guest/${guestId}?skipIntro=1#calendar-section`
-    : `/${locale}/invite/${slug}?skipIntro=1#calendar-section`;
+    ? `/invite/${slug}/guest/${guestId}?skipIntro=1#calendar-section`
+    : `/invite/${slug}?skipIntro=1#calendar-section`;
 
   // Server .ics endpoint URL
   const calendarIcsUrl = guestId
     ? `/api/invite/${slug}/guest/${guestId}/calendar.ics`
     : `/api/invite/${slug}/calendar.ics`;
 
-  const brideName = isKm ? (event.brideNameKm || event.brideNameEn || '') : (event.brideNameEn || event.brideNameKm || '');
-  const groomName = isKm ? (event.groomNameKm || event.groomNameEn || '') : (event.groomNameEn || event.groomNameKm || '');
+  const brideName = event.brideNameKm || event.brideNameEn || '';
+  const groomName = event.groomNameKm || event.groomNameEn || '';
   const coupleTitle = `${groomName} & ${brideName}`;
 
   useEffect(() => {

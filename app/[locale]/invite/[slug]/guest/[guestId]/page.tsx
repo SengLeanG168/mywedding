@@ -153,5 +153,5 @@ export default async function GuestInvitationPage({
     });
   }
 
-  return <InvitationContent event={event} locale={locale} guest={guestData} programDays={event.programDays} />;
+  return <InvitationContent event={event} locale="km" guest={guestData} programDays={event.programDays} />;
 }

@@ -131,5 +131,5 @@ export default async function InvitationPage({
 
   if (!event) notFound();
 
-  return <InvitationContent event={event} locale={locale} programDays={event.programDays} />;
+  return <InvitationContent event={event} locale="km" programDays={event.programDays} />;
 }

@@ -64,7 +64,7 @@ export default function OpeningScreen({
 
   return (
     <div
-      className={`fixed inset-0 z-[100] overflow-hidden transition-all duration-1000 ease-in-out ${
+      className={`fixed inset-0 z-[100] h-[100dvh] min-h-[100dvh] max-h-[100dvh] w-full overflow-hidden transition-all duration-1000 ease-in-out ${
         isExiting
           ? 'opacity-0 -translate-y-full pointer-events-none'
           : 'opacity-100 translate-y-0'
@@ -75,7 +75,7 @@ export default function OpeningScreen({
         <>
           {/* Full-screen photo */}
           <div
-            className="absolute inset-0"
+            className="absolute inset-0 w-full h-full"
             style={{
               backgroundImage: `url(${bgImage})`,
               backgroundSize: 'cover',
@@ -94,46 +94,52 @@ export default function OpeningScreen({
       {/* ── DECORATIVE CORNER ORNAMENTS ─────────────────────────── */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Gold corner motifs */}
-        <CornerMotif className="absolute top-4 left-4 w-14 h-14 text-primary opacity-70" />
-        <CornerMotif className="absolute top-4 right-4 w-14 h-14 text-primary opacity-70 rotate-90" />
-        <CornerMotif className="absolute bottom-4 left-4 w-14 h-14 text-primary opacity-70 -rotate-90" />
-        <CornerMotif className="absolute bottom-4 right-4 w-14 h-14 text-primary opacity-70 rotate-180" />
+        <CornerMotif className="absolute top-4 left-4 w-12 h-12 sm:w-14 sm:h-14 text-primary opacity-70" />
+        <CornerMotif className="absolute top-4 right-4 w-12 h-12 sm:w-14 sm:h-14 text-primary opacity-70 rotate-90" />
+        <CornerMotif className="absolute bottom-4 left-4 w-12 h-12 sm:w-14 sm:h-14 text-primary opacity-70 -rotate-90" />
+        <CornerMotif className="absolute bottom-4 right-4 w-12 h-12 sm:w-14 sm:h-14 text-primary opacity-70 rotate-180" />
 
         {/* Inner decorative border lines */}
         <div className="absolute inset-3 border border-primary/30 rounded-none pointer-events-none" />
         <div className="absolute inset-[18px] border border-primary/15 pointer-events-none" />
 
         {/* Floral clusters at bottom corners */}
-        <CornerFloral className="absolute bottom-0 left-0 w-36 h-36 -translate-x-4 translate-y-4 opacity-60" />
-        <CornerFloral className="absolute bottom-0 right-0 w-36 h-36 translate-x-4 translate-y-4 rotate-90 opacity-60" />
+        <CornerFloral className="absolute bottom-0 left-0 w-28 h-28 sm:w-36 sm:h-36 -translate-x-4 translate-y-4 opacity-60" />
+        <CornerFloral className="absolute bottom-0 right-0 w-28 h-28 sm:w-36 sm:h-36 translate-x-4 translate-y-4 rotate-90 opacity-60" />
 
         {/* Scattered petals near bottom */}
         <PetalScatters className="bottom-20 left-1/2 -translate-x-1/2" />
       </div>
 
       {/* ── MAIN CONTENT (directly on image) ────────────────────── */}
-      <div className="relative z-10 w-full h-full flex flex-col items-center justify-between py-8 sm:py-12 px-4 sm:px-6 overflow-y-auto hide-scrollbar">
+      <div 
+        className="relative z-10 w-full max-w-[430px] mx-auto h-full flex flex-col items-center justify-between px-3.5 sm:px-6 overflow-y-auto hide-scrollbar"
+        style={{
+          paddingTop: 'calc(16px + env(safe-area-inset-top, 0px))',
+          paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0px))',
+        }}
+      >
 
         {/* 1. TOP — Arch + Wedding Title + Heart */}
-        <div className="flex flex-col items-center w-full mt-2">
-          <KhmerArch className="w-full max-w-[180px] h-8 text-primary opacity-90 mb-4 drop-shadow-lg" />
+        <div className="flex flex-col items-center w-full mt-1 shrink-0">
+          <KhmerArch className="w-full max-w-[160px] sm:max-w-[180px] h-7 sm:h-8 text-primary opacity-90 mb-2.5 sm:mb-4 drop-shadow-lg" />
           <h1
-            className="text-[clamp(1.625rem,6vw,2rem)] text-primary font-serif font-bold text-center leading-tight px-2"
+            className="text-[clamp(1.4rem,5.5vw,1.9rem)] text-primary font-serif font-bold text-center leading-tight px-2"
             style={{ textShadow: '0 2px 12px rgba(0,0,0,0.7)' }}
           >
             {t('weddingCeremony')}
           </h1>
-          <KhmerHeart className="w-5 h-5 text-primary mt-3 opacity-90 animate-pulse drop-shadow-lg" />
+          <KhmerHeart className="w-4 h-4 sm:w-5 sm:h-5 text-primary mt-2 sm:mt-3 opacity-90 animate-pulse drop-shadow-lg" />
         </div>
 
         {/* 2. MIDDLE — Couple Names Image (Designed Ornament Image) */}
         {coupleNamesImg ? (
-          <div className="flex flex-col items-center justify-center w-full my-auto py-2 px-2 select-none z-20">
-            <div className="w-full max-w-[90%] sm:max-w-[440px] flex items-center justify-center">
+          <div className="flex flex-col items-center justify-center w-full my-auto py-2 px-2 select-none z-20 shrink min-h-0">
+            <div className="w-full max-w-[92%] sm:max-w-[440px] flex items-center justify-center">
               <img
                 src={coupleNamesImg}
                 alt="Couple Names"
-                className="max-h-[220px] sm:max-h-[260px] max-w-full w-auto h-auto object-contain drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)] filter pointer-events-none"
+                className="max-h-[170px] xs:max-h-[200px] sm:max-h-[250px] max-w-full w-auto h-auto object-contain drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)] filter pointer-events-none"
               />
             </div>
           </div>
@@ -142,9 +148,9 @@ export default function OpeningScreen({
         )}
 
         {/* 3. BOTTOM — Invitation text + Uploaded Guest Decorative Frame with Name + Play Button */}
-        <div className="flex flex-col items-center w-full">
+        <div className="flex flex-col items-center w-full shrink-0">
           <p
-            className="text-sm sm:text-base text-primary font-serif font-bold text-center px-4 leading-normal"
+            className="text-xs sm:text-base text-primary font-serif font-bold text-center px-4 leading-normal"
             style={{ textShadow: '0 1px 8px rgba(0,0,0,0.8)' }}
           >
             {t('youAreWarmlyInvited')}
@@ -152,21 +158,21 @@ export default function OpeningScreen({
 
           {/* Guest Name inside Uploaded Decorative Frame */}
           {guestImg ? (
-            <div className="relative w-[clamp(260px,76vw,340px)] max-w-[88%] min-h-[115px] sm:min-h-[135px] h-auto flex items-center justify-center mx-auto mt-1 mb-2 sm:mt-1.5 sm:mb-2.5 select-none z-20 overflow-visible">
+            <div className="relative w-[clamp(240px,76vw,330px)] max-w-[90%] min-h-[105px] sm:min-h-[130px] h-auto flex items-center justify-center mx-auto mt-1 mb-1.5 sm:mt-1.5 sm:mb-2 select-none z-20 overflow-visible">
               {/* Frame Background Image */}
               <img
                 src={guestImg}
                 alt="Decorative Frame"
-                className="w-full h-auto max-h-[135px] object-contain object-center block pointer-events-none drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)] filter"
+                className="w-full h-auto max-h-[125px] sm:max-h-[135px] object-contain object-center block pointer-events-none drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)] filter"
               />
               {/* Centered Dynamic Guest Name with original decorative font-serif */}
-              <div className="absolute inset-0 flex items-center justify-center text-center px-[44px] py-3 sm:py-3.5 pointer-events-none overflow-visible">
+              <div className="absolute inset-0 flex items-center justify-center text-center px-8 sm:px-11 py-2.5 sm:py-3.5 pointer-events-none overflow-visible">
                 <span
-                  className="font-serif font-semibold text-[clamp(14px,4vw,19px)] text-[#fbf0dc] block w-full overflow-visible"
+                  className="font-serif font-semibold text-[clamp(13px,3.8vw,18px)] text-[#fbf0dc] block w-full overflow-visible break-words"
                   style={{
-                    lineHeight: '2.0',
-                    paddingTop: '8px',
-                    paddingBottom: '8px',
+                    lineHeight: '1.9',
+                    paddingTop: '6px',
+                    paddingBottom: '6px',
                     textShadow: '0 2px 10px rgba(0,0,0,0.95), 0 0 14px rgba(0,0,0,0.9)',
                   }}
                 >
@@ -176,13 +182,13 @@ export default function OpeningScreen({
             </div>
           ) : (
             /* Fallback if no frame image uploaded */
-            <div className="my-1.5 px-6 py-2.5 rounded-full border border-primary/40 bg-black/40 backdrop-blur-sm z-20 select-none overflow-visible">
+            <div className="my-1.5 px-5 py-2 sm:px-6 sm:py-2.5 rounded-full border border-primary/40 bg-black/40 backdrop-blur-sm z-20 select-none overflow-visible">
               <span
-                className="font-serif font-semibold text-[clamp(14px,3.8vw,17px)] text-primary drop-shadow-md block overflow-visible"
+                className="font-serif font-semibold text-[clamp(13px,3.6vw,17px)] text-primary drop-shadow-md block overflow-visible break-words"
                 style={{
-                  lineHeight: '1.9',
-                  paddingTop: '6px',
-                  paddingBottom: '6px',
+                  lineHeight: '1.85',
+                  paddingTop: '4px',
+                  paddingBottom: '4px',
                   textShadow: '0 1px 6px rgba(0,0,0,0.8)',
                 }}
               >
@@ -196,14 +202,14 @@ export default function OpeningScreen({
             <Button
               onClick={handleOpen}
               size="icon"
-              className="w-16 h-16 rounded-full shadow-[0_0_30px_rgba(194,155,98,0.5)] hover:shadow-[0_0_45px_rgba(194,155,98,0.7)] hover:scale-105 transition-all duration-300 bg-primary hover:bg-primary/90 text-primary-foreground group relative cursor-pointer"
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-full shadow-[0_0_30px_rgba(194,155,98,0.5)] hover:shadow-[0_0_45px_rgba(194,155,98,0.7)] hover:scale-105 transition-all duration-300 bg-primary hover:bg-primary/90 text-primary-foreground group relative cursor-pointer"
               aria-label={t('openInvitation')}
             >
               <span className="absolute inset-0 rounded-full border-2 border-primary animate-ping opacity-30" />
-              <Play className="w-7 h-7 ml-1 group-hover:scale-110 transition-transform duration-300" fill="currentColor" />
+              <Play className="w-6 h-6 sm:w-7 sm:h-7 ml-0.5 group-hover:scale-110 transition-transform duration-300" fill="currentColor" />
             </Button>
             <span
-              className="mt-2.5 text-sm font-medium text-primary tracking-wider uppercase font-serif"
+              className="mt-2 text-xs sm:text-sm font-medium text-primary tracking-wider uppercase font-serif"
               style={{ textShadow: '0 1px 6px rgba(0,0,0,0.7)' }}
             >
               {t('openInvitation')}

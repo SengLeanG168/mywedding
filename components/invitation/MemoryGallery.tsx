@@ -37,7 +37,7 @@ export default function MemoryGallery({ images = [], videoUrl, isKm, onImageClic
     <section className="mt-12 sm:mt-16 scroll-mt-8 sm:scroll-mt-10" id="gallery-section">
       <div className="text-center mb-6 sm:mb-8">
         <h2 className="text-[clamp(1.25rem,4vw,1.5rem)] font-serif font-bold text-primary">
-          {isKm ? 'វិចិត្រសាល' : 'Gallery'}
+          វិចិត្រសាល
         </h2>
         <span className="inline-block w-8 h-[1px] bg-primary mt-2" />
       </div>
@@ -49,7 +49,6 @@ export default function MemoryGallery({ images = [], videoUrl, isKm, onImageClic
             {videoError ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center bg-black/85 text-white/60 text-xs sm:text-sm font-serif">
                 <p>មិនអាចចាក់វីដេអូបានទេ</p>
-                <p className="text-[11px] text-white/40 mt-1">Video unavailable</p>
               </div>
             ) : (
               <>

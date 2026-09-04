@@ -57,8 +57,13 @@ export default function FloatingBottomNav({ visible = true }: FloatingBottomNavP
   ];
 
   return (
-    <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+12px)] left-1/2 -translate-x-1/2 z-40 pointer-events-auto max-w-[390px] w-[92%] sm:w-auto">
-      <div className="bg-background/90 dark:bg-card/95 backdrop-blur-xl border border-primary/30 shadow-[0_8px_32px_rgba(0,0,0,0.22)] rounded-full px-3 py-1.5 flex items-center justify-between sm:justify-center gap-1.5 sm:gap-3 transition-all duration-300">
+    <div 
+      className="fixed left-1/2 -translate-x-1/2 z-40 pointer-events-auto max-w-[390px] w-[95%] sm:w-auto"
+      style={{
+        bottom: 'calc(10px + env(safe-area-inset-bottom, 0px))',
+      }}
+    >
+      <div className="bg-background/90 dark:bg-card/95 backdrop-blur-xl border border-primary/30 shadow-[0_8px_32px_rgba(0,0,0,0.25)] rounded-full px-2 sm:px-3.5 py-1 sm:py-1.5 flex items-center justify-between sm:justify-center gap-0.5 sm:gap-2 transition-all duration-300">
         {navItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -66,11 +71,11 @@ export default function FloatingBottomNav({ visible = true }: FloatingBottomNavP
               key={item.id}
               type="button"
               onClick={() => scrollToSection(item.id)}
-              className="w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center text-primary/80 hover:text-primary hover:bg-primary/15 active:scale-90 transition-all cursor-pointer"
+              className="w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center text-primary/80 hover:text-primary hover:bg-primary/15 active:scale-90 transition-all cursor-pointer shrink-0"
               title={item.label}
               aria-label={item.label}
             >
-              <Icon className="w-5 h-5 sm:w-5 sm:h-5 transition-transform" />
+              <Icon className="w-4 h-4 sm:w-5 sm:h-5 transition-transform" />
             </button>
           );
         })}

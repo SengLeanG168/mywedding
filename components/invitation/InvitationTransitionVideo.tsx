@@ -42,7 +42,7 @@ export default function InvitationTransitionVideo({
   }
 
   return (
-    <div className="fixed inset-0 z-50 w-full h-full min-h-[100vh] bg-black overflow-hidden pointer-events-none select-none flex items-center justify-center">
+    <div className="fixed inset-0 z-50 w-full h-[100dvh] min-h-[100dvh] max-h-[100dvh] bg-black overflow-hidden pointer-events-none select-none flex items-center justify-center">
       <video
         ref={videoRef}
         src={url}

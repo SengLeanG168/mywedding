@@ -19,14 +19,14 @@ interface MediaLightboxProps {
   locale: string;
 }
 
-export default function MediaLightbox({ items, initialIndex, isOpen, onClose, locale }: MediaLightboxProps) {
+export default function MediaLightbox({ items, initialIndex, isOpen, onClose }: MediaLightboxProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [touchStart, setTouchStart] = useState<number | null>(null);
 
-  const isKm = locale === 'km';
-  const tClose = isKm ? "បិទ" : "Close";
-  const tPrev = isKm ? "រូបមុន" : "Previous";
-  const tNext = isKm ? "រូបបន្ទាប់" : "Next";
+  const isKm = true;
+  const tClose = "បិទ";
+  const tPrev = "រូបមុន";
+  const tNext = "រូបបន្ទាប់";
 
   useEffect(() => {
     if (isOpen) {
@@ -78,12 +78,19 @@ export default function MediaLightbox({ items, initialIndex, isOpen, onClose, lo
 
   return (
     <div 
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in select-none"
+      className="fixed inset-0 z-[100] h-[100dvh] min-h-[100dvh] max-h-[100dvh] w-full flex flex-col items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in select-none overflow-hidden"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Header */}
-      <div className="absolute top-0 w-full flex items-center justify-between p-4 z-30">
+      {/* Header with Safe Area Insets */}
+      <div 
+        className="absolute top-0 w-full flex items-center justify-between p-4 z-30"
+        style={{
+          paddingTop: 'calc(14px + env(safe-area-inset-top, 0px))',
+          paddingRight: 'calc(16px + env(safe-area-inset-right, 0px))',
+          paddingLeft: 'calc(16px + env(safe-area-inset-left, 0px))',
+        }}
+      >
         <div className="text-white/80 text-sm font-medium">
           {items.length > 1 && `${currentIndex + 1} / ${items.length}`}
         </div>
@@ -125,12 +132,13 @@ export default function MediaLightbox({ items, initialIndex, isOpen, onClose, lo
           </button>
         )}
 
-        <div className="w-full h-full max-h-[85vh] flex flex-col items-center justify-center relative z-0 pointer-events-none">
+        <div className="w-full h-full max-h-[85dvh] flex flex-col items-center justify-center relative z-0 pointer-events-none">
           {currentItem.type === 'map-qr' ? (
-            <div className="bg-white p-6 rounded-3xl shadow-2xl flex items-center justify-center pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-2xl flex items-center justify-center pointer-events-auto max-w-[90%]" onClick={(e) => e.stopPropagation()}>
               <QRCodeSVG 
                 value={currentItem.src} 
-                size={280}
+                size={240}
+                className="w-48 h-48 sm:w-60 sm:h-60"
                 bgColor={"#ffffff"}
                 fgColor={"#000000"}
                 level={"L"}

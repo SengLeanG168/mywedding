@@ -14,8 +14,8 @@ const DEFAULT_THANK_YOU_EN = "We sincerely thank all honored guests for joining 
 const DEFAULT_APOLOGY_KM = "ក្នុងឱកាសពិធីមង្គលអាពាហ៍ពិពាហ៍នេះ បើមានការខ្វះខាត ឬការទទួលភ្ញៀវមិនបានសមរម្យតាមប្រការណាមួយ យើងខ្ញុំសូមមេត្តាអភ័យទោសដោយក្តីគោរព។";
 const DEFAULT_APOLOGY_EN = "If there are any shortcomings during our wedding ceremony or hospitality, we respectfully ask for your kind understanding and forgiveness.";
 
-export default function WeddingLetterSection({ event, locale }: WeddingLetterSectionProps) {
-  const isKm = locale === 'km';
+export default function WeddingLetterSection({ event }: WeddingLetterSectionProps) {
+  const isKm = true;
 
   const showThankYou = event.showThankYouLetter !== false;
   const showApology = event.showApologyLetter !== false;
@@ -25,22 +25,12 @@ export default function WeddingLetterSection({ event, locale }: WeddingLetterSec
   }
 
   // Thank You Title & Text
-  const thankYouTitle = isKm
-    ? (event.thankYouTitleKm || 'លិខិតថ្លែងអំណរគុណ')
-    : (event.thankYouTitleEn || event.thankYouTitleKm || 'Thank You Letter');
-
-  const thankYouText = isKm
-    ? (event.thankYouTextKm || DEFAULT_THANK_YOU_KM)
-    : (event.thankYouTextEn || event.thankYouTextKm || DEFAULT_THANK_YOU_EN);
+  const thankYouTitle = event.thankYouTitleKm || event.thankYouTitleEn || 'លិខិតថ្លែងអំណរគុណ';
+  const thankYouText = event.thankYouTextKm || event.thankYouTextEn || DEFAULT_THANK_YOU_KM;
 
   // Apology Title & Text
-  const apologyTitle = isKm
-    ? (event.apologyTitleKm || 'លិខិតសូមអភ័យទោស')
-    : (event.apologyTitleEn || event.apologyTitleKm || 'Apology Letter');
-
-  const apologyText = isKm
-    ? (event.apologyTextKm || DEFAULT_APOLOGY_KM)
-    : (event.apologyTextEn || event.apologyTextKm || DEFAULT_APOLOGY_EN);
+  const apologyTitle = event.apologyTitleKm || event.apologyTitleEn || 'លិខិតសូមអភ័យទោស';
+  const apologyText = event.apologyTextKm || event.apologyTextEn || DEFAULT_APOLOGY_KM;
 
   return (
     <section className="my-10 sm:my-14 space-y-6">

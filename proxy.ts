@@ -8,6 +8,13 @@ const intlMiddleware = createMiddleware(routing);
 export default async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   
+  // If URL contains /en/invite, redirect to /invite (Khmer only public invitation)
+  if (pathname.startsWith('/en/invite')) {
+    const url = request.nextUrl.clone();
+    url.pathname = pathname.replace(/^\/en\/invite/, '/invite');
+    return NextResponse.redirect(url);
+  }
+
   // Apply next-intl middleware first to get the response with locale
   const response = intlMiddleware(request);
 

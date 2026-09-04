@@ -9,23 +9,21 @@ interface IosCalendarBridgeProps {
   locale?: string;
 }
 
-export default function IosCalendarBridge({ event, guestId, locale = 'km' }: IosCalendarBridgeProps) {
-  const isKm = locale === 'km';
+export default function IosCalendarBridge({ event, guestId }: IosCalendarBridgeProps) {
+  const isKm = true;
   const slug = event?.slug || event?.id;
-
-  const localePrefix = locale === 'km' ? '' : `/${locale}`;
 
   // Return directly to the main invitation content bypassing intro/curtain
   const returnUrl = guestId
-    ? `${localePrefix}/invite/${slug}/guest/${guestId}?skipIntro=1#calendar-section`
-    : `${localePrefix}/invite/${slug}?skipIntro=1#calendar-section`;
+    ? `/invite/${slug}/guest/${guestId}?skipIntro=1#calendar-section`
+    : `/invite/${slug}?skipIntro=1#calendar-section`;
 
   const calendarIcsUrl = guestId
     ? `/api/invite/${slug}/guest/${guestId}/calendar.ics`
     : `/api/invite/${slug}/calendar.ics`;
 
-  const brideName = isKm ? (event.brideNameKm || event.brideNameEn || '') : (event.brideNameEn || event.brideNameKm || '');
-  const groomName = isKm ? (event.groomNameKm || event.groomNameEn || '') : (event.groomNameEn || event.groomNameKm || '');
+  const brideName = event.brideNameKm || event.brideNameEn || '';
+  const groomName = event.groomNameKm || event.groomNameEn || '';
   const coupleTitle = `${groomName} & ${brideName}`;
 
   useEffect(() => {

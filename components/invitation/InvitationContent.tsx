@@ -8,7 +8,6 @@ import InvitationTransitionVideo from '@/components/invitation/InvitationTransit
 import FloatingButterflies from '@/components/invitation/FloatingButterflies';
 import MusicPlayer from '@/components/invitation/MusicPlayer';
 import OpeningScreen from '@/components/invitation/OpeningScreen';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import CurtainIntro from '@/components/invitation/CurtainIntro';
 import WeddingProgram from '@/components/invitation/WeddingProgram';
 import TraditionalInvitationSection from '@/components/invitation/TraditionalInvitationSection';
@@ -16,7 +15,6 @@ import MapQrCode from '@/components/invitation/MapQrCode';
 import GiftQrSection from '@/components/invitation/GiftQrSection';
 import WeddingLetterSection from '@/components/invitation/WeddingLetterSection';
 import AddToCalendarButton from '@/components/invitation/AddToCalendarButton';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { MapPin, Calendar, Clock, Map } from 'lucide-react';
 import MediaLightbox, { MediaItem } from '@/components/invitation/MediaLightbox';
 import { formatLocalizedDate } from '@/lib/date';
@@ -33,8 +31,14 @@ interface InvitationContentProps {
 }
 
 export default function InvitationContent({ event, locale, guest, programDays }: InvitationContentProps) {
-  // If event.showCurtainIntro is missing, we default to true. If explicitly false, we skip it.
-  const shouldShowCurtain = event.showCurtainIntro !== false;
+  // Only show curtain if explicitly enabled AND actual curtain media (video or image) exists
+  const hasCurtainMedia = Boolean(
+    (event.curtainIntroVideoUrl && String(event.curtainIntroVideoUrl).trim()) ||
+    (event.curtainVideoUrl && String(event.curtainVideoUrl).trim()) ||
+    (event.curtainImageUrl && String(event.curtainImageUrl).trim()) ||
+    (event.curtainIntroImageUrl && String(event.curtainIntroImageUrl).trim())
+  );
+  const shouldShowCurtain = Boolean(event.showCurtainIntro !== false && hasCurtainMedia);
   const hasHeroVideo = Boolean(event.showHeroVideo && event.heroVideoUrl && event.heroVideoType !== 'none');
   const hasTransitionVideo = Boolean(event.showTransitionVideo !== false && event.transitionVideoUrl);
 
@@ -42,6 +46,14 @@ export default function InvitationContent({ event, locale, guest, programDays }:
   const [isOpened, setIsOpened] = useState(!event.showOpeningScreen);
   const [isPlayingTransitionVideo, setIsPlayingTransitionVideo] = useState(false);
   const [videoIntroDone, setVideoIntroDone] = useState(!hasHeroVideo);
+
+  // Force dark mode exclusively on public invitation
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    }
+  }, []);
 
   // Check if returning from calendar bridge with skipIntro=1 or openContent=1
   useEffect(() => {
@@ -111,13 +123,14 @@ export default function InvitationContent({ event, locale, guest, programDays }:
         <MusicPlayer url={event.musicUrl} title={event.musicTitle} />
       )}
 
-      {/* 1. Curtain Intro overlay */}
-      {!curtainDone && (
+      {/* 1. Curtain Intro overlay (Only rendered if actual curtain media exists) */}
+      {!curtainDone && shouldShowCurtain && (
         <CurtainIntro
           enabled={shouldShowCurtain}
           onComplete={() => setCurtainDone(true)}
-          curtainIntroType={event.curtainIntroType || 'css'}
-          curtainIntroVideoUrl={event.curtainIntroVideoUrl || ''}
+          curtainIntroType={event.curtainIntroType || 'video'}
+          curtainIntroVideoUrl={event.curtainIntroVideoUrl || event.curtainVideoUrl || ''}
+          curtainImageUrl={event.curtainImageUrl || event.curtainIntroImageUrl || ''}
           allowSkip={event.allowSkipCurtainIntro ?? true}
         />
       )}
@@ -139,7 +152,7 @@ export default function InvitationContent({ event, locale, guest, programDays }:
           type={event.heroVideoType || 'mp4'} 
           url={event.heroVideoUrl} 
           poster={event.heroVideoPosterUrl} 
-          locale={locale}
+          locale="km"
           onContinue={() => {
             if (hasTransitionVideo) {
               setIsPlayingTransitionVideo(true);
@@ -163,30 +176,25 @@ export default function InvitationContent({ event, locale, guest, programDays }:
 
       {/* 5. Main Content: Rendered ONLY after video intro & transition video are finished */}
       {curtainDone && isOpened && videoIntroDone && !isPlayingTransitionVideo && (
-        <div className="min-h-screen bg-background relative animate-fade-in">
+        <div className="dark min-h-[100dvh] bg-background text-foreground relative overflow-x-hidden animate-fade-in">
           {/* Floating Gold & Silver Butterflies Layer */}
           <FloatingButterflies />
           
-          {/* Main Invitation Content Section */}
-          <div id="invitation-content" className="relative w-full">
+          {/* Main Invitation Content Section constrained to mobile max width */}
+          <div id="invitation-content" className="relative w-full max-w-[430px] mx-auto overflow-x-hidden">
             {/* Decorative background circles confined to content bounds */}
             <div className="absolute top-0 left-0 w-72 h-72 rounded-full bg-primary/10 blur-3xl pointer-events-none -z-10" />
             <div className="absolute top-1/2 right-0 w-72 h-72 rounded-full bg-primary/10 blur-3xl pointer-events-none -z-10" />
 
-            {/* Floating controls */}
-            <div className="absolute top-4 right-4 flex gap-2 z-50">
-              <ThemeToggle />
-            </div>
-
             <main 
-              className="w-full mx-auto px-4 sm:px-6 pt-6 sm:pt-8 relative z-10 space-y-10 sm:space-y-14"
-              style={{ paddingBottom: 'calc(88px + env(safe-area-inset-bottom, 0px))' }}
+              className="w-full mx-auto px-3.5 sm:px-4 pt-6 sm:pt-8 relative z-10 space-y-10 sm:space-y-14"
+              style={{ paddingBottom: 'calc(84px + env(safe-area-inset-bottom, 0px))' }}
             >
               
               {/* 1. Traditional Invitation Section */}
               <ScrollReveal direction="up" delay={50}>
-                <div className="-mx-4">
-                  <TraditionalInvitationSection event={event} locale={locale} />
+                <div className="w-full">
+                  <TraditionalInvitationSection event={event} locale="km" />
                 </div>
               </ScrollReveal>
 
@@ -210,7 +218,7 @@ export default function InvitationContent({ event, locale, guest, programDays }:
               <ScrollReveal direction="up">
                 <AddToCalendarButton
                   event={event}
-                  locale={locale}
+                  locale="km"
                   guestId={guest?.id}
                   guestName={guest?.name}
                 />
@@ -229,7 +237,7 @@ export default function InvitationContent({ event, locale, guest, programDays }:
                       </div>
                       <div>
                         <h3 className="text-xs uppercase tracking-widest text-primary font-bold mb-2">
-                          {isKm ? "ទីតាំងកម្មវិធី" : "Event Location"}
+                          ទីតាំងកម្មវិធី
                         </h3>
                         <div className="text-base sm:text-lg font-serif font-bold text-foreground">
                           {locationName}
@@ -239,15 +247,15 @@ export default function InvitationContent({ event, locale, guest, programDays }:
                         </div>
                         {event.googleMapUrl && (
                           <a href={event.googleMapUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 mt-4 text-sm text-primary hover:underline font-medium">
-                            <Map className="h-4 w-4" /> {isKm ? "បើកមើលផែនទី" : "Open in Google Maps"}
+                            <Map className="h-4 w-4" /> បើកមើលផែនទី
                           </a>
                         )}
                         {event.showMapQrCode && event.googleMapUrl && (
                           <MapQrCode 
                             url={event.googleMapUrl} 
-                            buttonLabel={isKm ? "ស្កេនមើលទីតាំង" : "Scan for Location"}
-                            qrLabel={isKm ? "ស្កេន QR Code ដើម្បីមើលទីតាំង" : "Scan QR Code to view location"}
-                            locale={locale}
+                            buttonLabel="ស្កេនមើលទីតាំង"
+                            qrLabel="ស្កេន QR Code ដើម្បីមើលទីតាំង"
+                            locale="km"
                           />
                         )}
                       </div>
@@ -258,7 +266,7 @@ export default function InvitationContent({ event, locale, guest, programDays }:
 
               {/* 5. Wedding Program Section */}
               <ScrollReveal direction="up">
-                <WeddingProgram programDays={programDays || []} locale={locale} />
+                <WeddingProgram programDays={programDays || []} locale="km" />
               </ScrollReveal>
 
               {/* 6. Gallery Section (Memory Gallery) */}
@@ -275,7 +283,7 @@ export default function InvitationContent({ event, locale, guest, programDays }:
                   <MemoryGallery 
                     images={galleryUrls} 
                     videoUrl={event.galleryVideoUrl || undefined}
-                    isKm={isKm} 
+                    isKm={true} 
                     onImageClick={(index) => {
                       setLightboxItems(galleryUrls.map((src: string) => ({ src, type: 'image' })));
                       setLightboxIndex(index);
@@ -287,12 +295,12 @@ export default function InvitationContent({ event, locale, guest, programDays }:
 
               {/* 7. Thank You & Apology Letter Section */}
               <ScrollReveal direction="up">
-                <WeddingLetterSection event={event} locale={locale} />
+                <WeddingLetterSection event={event} locale="km" />
               </ScrollReveal>
 
               {/* 8. Gift QR Section */}
               <ScrollReveal direction="up">
-                <GiftQrSection event={event} locale={locale} />
+                <GiftQrSection event={event} locale="km" />
               </ScrollReveal>
 
               {/* 8. RSVP Form */}
@@ -300,9 +308,9 @@ export default function InvitationContent({ event, locale, guest, programDays }:
                 <section className="w-full scroll-mt-8 sm:scroll-mt-10" id="rsvp-section">
                   <div className="text-center mb-6 sm:mb-8">
                     <h2 className="text-[clamp(1.25rem,4vw,1.5rem)] font-serif font-bold text-primary">
-                      {isKm ? "ការចូលរួម" : "RSVP"}
+                      ការចូលរួម
                     </h2>
-                    <p className="text-xs sm:text-sm text-muted-foreground mt-2 px-4">{isKm ? "សូមបញ្ជាក់ពីការចូលរួមរបស់អ្នក" : "Please let us know if you can make it"}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-2 px-4">សូមបញ្ជាក់ពីការចូលរួមរបស់អ្នក</p>
                   </div>
                   <RSVPForm 
                     eventId={event.id} 
@@ -332,7 +340,7 @@ export default function InvitationContent({ event, locale, guest, programDays }:
         onClose={() => setIsLightboxOpen(false)} 
         items={lightboxItems} 
         initialIndex={lightboxIndex}
-        locale={locale}
+        locale="km"
       />
     </>
   );

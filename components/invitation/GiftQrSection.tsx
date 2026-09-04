@@ -15,9 +15,9 @@ export default function GiftQrSection({ event, locale }: GiftQrSectionProps) {
 
   if (!event.showGiftQrCode || (!khrImage && !usdImage)) return null;
 
-  const isKm = locale === 'km';
-  const title = isKm ? event.giftQrTitleKm : event.giftQrTitleEn;
-  const note = isKm ? event.giftQrNoteKm : event.giftQrNoteEn;
+  const isKm = true;
+  const title = event.giftQrTitleKm || event.giftQrTitleEn || "ចងដៃតាម QR Code";
+  const note = event.giftQrNoteKm || event.giftQrNoteEn;
 
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -31,7 +31,7 @@ export default function GiftQrSection({ event, locale }: GiftQrSectionProps) {
     qrItems.push({
       src: khrImage,
       type: 'qr',
-      title: isKm ? 'QR Code លុយខ្មែរ' : 'Khmer Riel QR Code'
+      title: 'QR Code លុយខ្មែរ'
     });
   }
 
@@ -40,7 +40,7 @@ export default function GiftQrSection({ event, locale }: GiftQrSectionProps) {
     qrItems.push({
       src: usdImage,
       type: 'qr',
-      title: isKm ? 'QR Code លុយដុល្លារ' : 'US Dollar QR Code'
+      title: 'QR Code លុយដុល្លារ'
     });
   }
 
@@ -59,39 +59,39 @@ export default function GiftQrSection({ event, locale }: GiftQrSectionProps) {
         <span className="inline-block w-8 h-[1px] bg-primary mt-2" />
       </div>
 
-      <div className={`grid ${khrImage && usdImage ? 'grid-cols-2 gap-3 sm:gap-6' : 'grid-cols-1 max-w-sm mx-auto'} w-full px-2 sm:px-4`}>
+      <div className={`grid ${khrImage && usdImage ? 'grid-cols-2 gap-2.5 sm:gap-6' : 'grid-cols-1 max-w-sm mx-auto'} w-full px-1 sm:px-4`}>
         
         {/* KHR Card */}
         {khrImage && (
-          <div className="bg-card/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-3 sm:p-6 shadow-xl border border-primary/20 flex-1 relative overflow-hidden flex flex-col items-center">
+          <div className="bg-card/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-2.5 sm:p-6 shadow-xl border border-primary/20 flex-1 relative overflow-hidden flex flex-col items-center">
             <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
             <div className="relative z-10 w-full flex flex-col items-center">
-              <h3 className="text-sm sm:text-base font-bold text-primary mb-3 sm:mb-6 uppercase tracking-wider">
+              <h3 className="text-xs sm:text-base font-bold text-primary mb-2 sm:mb-6 uppercase tracking-wider">
                 {isKm ? "លុយខ្មែរ" : "KHR"}
               </h3>
               <div 
-                className="bg-white p-2 sm:p-3 rounded-2xl shadow-sm mb-4 sm:mb-6 inline-block cursor-pointer hover:opacity-90 transition-opacity"
+                className="bg-white p-1.5 sm:p-3 rounded-xl sm:rounded-2xl shadow-sm mb-3 sm:mb-6 inline-block cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={() => openLightbox(khrIndex)}
               >
                 <img 
                   src={khrImage} 
                   alt="KHR QR Code" 
-                  className="w-32 h-32 sm:w-48 sm:h-48 object-contain rounded-xl"
+                  className="w-24 h-24 xs:w-28 xs:h-28 sm:w-44 sm:h-44 object-contain rounded-lg sm:rounded-xl"
                 />
               </div>
-              <div className="space-y-2 text-center w-full">
+              <div className="space-y-1.5 sm:space-y-2 text-center w-full min-w-0">
                 {(event.giftKhBankName || event.giftBankName) && (
-                  <p className="text-sm sm:text-base font-semibold text-foreground break-words">
+                  <p className="text-xs sm:text-base font-semibold text-foreground break-words px-1">
                     {event.giftKhBankName || event.giftBankName}
                   </p>
                 )}
                 {(event.giftKhAccountName || event.giftAccountName) && (
-                  <p className="text-xs sm:text-sm text-muted-foreground uppercase tracking-wide break-words">
+                  <p className="text-[10px] sm:text-sm text-muted-foreground uppercase tracking-wide break-words px-1">
                     {event.giftKhAccountName || event.giftAccountName}
                   </p>
                 )}
                 {(event.giftKhAccountNumber || event.giftAccountNumber) && (
-                  <p className="text-sm sm:text-base font-mono text-primary font-medium tracking-wider bg-primary/5 py-1 px-3 rounded-lg inline-block mt-1 break-words">
+                  <p className="text-xs sm:text-base font-mono text-primary font-medium tracking-wider bg-primary/5 py-1 px-2 sm:px-3 rounded-lg inline-block mt-0.5 break-all max-w-full">
                     {event.giftKhAccountNumber || event.giftAccountNumber}
                   </p>
                 )}
@@ -102,35 +102,35 @@ export default function GiftQrSection({ event, locale }: GiftQrSectionProps) {
 
         {/* USD Card */}
         {usdImage && (
-          <div className="bg-card/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-3 sm:p-6 shadow-xl border border-primary/20 flex-1 relative overflow-hidden flex flex-col items-center">
+          <div className="bg-card/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-2.5 sm:p-6 shadow-xl border border-primary/20 flex-1 relative overflow-hidden flex flex-col items-center">
             <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
             <div className="relative z-10 w-full flex flex-col items-center">
-              <h3 className="text-sm sm:text-base font-bold text-primary mb-3 sm:mb-6 uppercase tracking-wider">
+              <h3 className="text-xs sm:text-base font-bold text-primary mb-2 sm:mb-6 uppercase tracking-wider">
                 {isKm ? "លុយដុល្លារ" : "USD"}
               </h3>
               <div 
-                className="bg-white p-2 sm:p-3 rounded-2xl shadow-sm mb-4 sm:mb-6 inline-block cursor-pointer hover:opacity-90 transition-opacity"
+                className="bg-white p-1.5 sm:p-3 rounded-xl sm:rounded-2xl shadow-sm mb-3 sm:mb-6 inline-block cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={() => openLightbox(usdIndex)}
               >
                 <img 
                   src={usdImage} 
                   alt="USD QR Code" 
-                  className="w-32 h-32 sm:w-48 sm:h-48 object-contain rounded-xl"
+                  className="w-24 h-24 xs:w-28 xs:h-28 sm:w-44 sm:h-44 object-contain rounded-lg sm:rounded-xl"
                 />
               </div>
-              <div className="space-y-2 text-center w-full">
+              <div className="space-y-1.5 sm:space-y-2 text-center w-full min-w-0">
                 {event.giftUsdBankName && (
-                  <p className="text-sm sm:text-base font-semibold text-foreground break-words">
+                  <p className="text-xs sm:text-base font-semibold text-foreground break-words px-1">
                     {event.giftUsdBankName}
                   </p>
                 )}
                 {event.giftUsdAccountName && (
-                  <p className="text-xs sm:text-sm text-muted-foreground uppercase tracking-wide break-words">
+                  <p className="text-[10px] sm:text-sm text-muted-foreground uppercase tracking-wide break-words px-1">
                     {event.giftUsdAccountName}
                   </p>
                 )}
                 {event.giftUsdAccountNumber && (
-                  <p className="text-sm sm:text-base font-mono text-primary font-medium tracking-wider bg-primary/5 py-1 px-3 rounded-lg inline-block mt-1 break-words">
+                  <p className="text-xs sm:text-base font-mono text-primary font-medium tracking-wider bg-primary/5 py-1 px-2 sm:px-3 rounded-lg inline-block mt-0.5 break-all max-w-full">
                     {event.giftUsdAccountNumber}
                   </p>
                 )}

@@ -12,13 +12,12 @@ interface WeddingProgramProps {
 
 type AnimationPhase = 'movingDot' | 'retractingLine' | 'segmentHidden';
 
-function formatTime(timeStr: string, locale: string) {
+function formatTime(timeStr: string) {
   if (!timeStr) return '';
   const [hourStr, minuteStr] = timeStr.split(':');
   if (!hourStr || !minuteStr) return timeStr;
   
   let hour = parseInt(hourStr, 10);
-  const ampmEn = hour >= 12 ? 'PM' : 'AM';
   
   let khmerPeriod = 'ព្រឹក';
   if (hour >= 12 && hour < 17) khmerPeriod = 'រសៀល';
@@ -29,14 +28,10 @@ function formatTime(timeStr: string, locale: string) {
   let hour12 = hour % 12;
   if (hour12 === 0) hour12 = 12;
 
-  if (locale === 'km') {
-    const khmerNums = ['០','១','២','៣','៤','៥','៦','៧','៨','៩'];
-    const h = hour12.toString().split('').map(d => khmerNums[parseInt(d, 10)]).join('');
-    const m = minuteStr.split('').map(d => khmerNums[parseInt(d, 10)]).join('');
-    return `ម៉ោង ${h}:${m} ${khmerPeriod}`;
-  } else {
-    return `${hour12}:${minuteStr} ${ampmEn}`;
-  }
+  const khmerNums = ['០','១','២','៣','៤','៥','៦','៧','៨','៩'];
+  const h = hour12.toString().split('').map(d => khmerNums[parseInt(d, 10)]).join('');
+  const m = minuteStr.split('').map(d => khmerNums[parseInt(d, 10)]).join('');
+  return `ម៉ោង ${h}:${m} ${khmerPeriod}`;
 }
 
 interface SegmentCoord {
@@ -182,8 +177,8 @@ function ProgramDayCard({
 
   const items = day.items || [];
   const itemsCount = items.length;
-  const dayTitle = locale === 'km' ? day.titleKm || day.titleEn : day.titleEn || day.titleKm;
-  const formattedDayDate = day.date ? formatLocalizedDate(day.date, locale) : '';
+  const dayTitle = day.titleKm || day.titleEn;
+  const formattedDayDate = day.date ? formatLocalizedDate(day.date, 'km') : '';
 
   // Real measured card center coordinates
   const [segmentCoords, setSegmentCoords] = useState<SegmentCoord[]>([]);
@@ -333,8 +328,8 @@ function ProgramDayCard({
             const isCardActive = isDayActive && hasNext && index === activeSegmentIndex;
             const showArrow = isCardActive && animationPhase === 'movingDot';
 
-            const itemTitle = locale === 'km' ? item.titleKm || item.titleEn : item.titleEn || item.titleKm;
-            const itemDesc = locale === 'km' ? item.descriptionKm || item.descriptionEn : item.descriptionEn || item.descriptionKm;
+            const itemTitle = item.titleKm || item.titleEn;
+            const itemDesc = item.descriptionKm || item.descriptionEn;
 
             return (
               <div key={item.id || index} className="relative w-full">
@@ -345,7 +340,7 @@ function ProgramDayCard({
                     ref={(el) => {
                       cardRefs.current[index] = el;
                     }}
-                    className={`relative w-fit max-w-[50%] sm:max-w-[46%] h-auto bg-card/90 backdrop-blur-md rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-primary/20 shadow-sm hover:border-primary/40 transition-all text-left flex flex-col items-start z-10 ${
+                    className={`relative w-fit max-w-[48%] sm:max-w-[46%] h-auto bg-card/90 backdrop-blur-md rounded-xl sm:rounded-2xl p-2.5 sm:p-4 border border-primary/20 shadow-sm hover:border-primary/40 transition-all text-left flex flex-col items-start z-10 ${
                       isLeft ? 'mr-auto ml-0' : 'ml-auto mr-0'
                     }`}
                   >
@@ -353,7 +348,7 @@ function ProgramDayCard({
                     {item.time && (
                       <div className="text-[10px] sm:text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 sm:py-1 rounded-full inline-flex items-center gap-1 mb-1.5 shadow-sm border border-primary/20 font-sans">
                         <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-primary shrink-0" />
-                        <span>{formatTime(item.time, locale)}</span>
+                        <span>{formatTime(item.time)}</span>
                       </div>
                     )}
 

@@ -30,14 +30,21 @@ export default function Countdown({ date }: { date: string }) {
     return () => clearInterval(interval);
   }, [date]);
 
+  const unitLabels: Record<string, string> = {
+    days: 'ថ្ងៃ',
+    hours: 'ម៉ោង',
+    minutes: 'នាទី',
+    seconds: 'វិនាទី',
+  };
+
   return (
-    <div className="text-center my-8">
-      <h3 className="text-xl text-primary font-serif mb-4">{t('countdown')}</h3>
-      <div className="flex justify-center gap-4 text-center">
+    <div className="text-center my-6 sm:my-8 w-full">
+      <h3 className="text-lg sm:text-xl text-primary font-serif mb-3 sm:mb-4">{t('countdown') || 'រាប់ថយក្រោយ'}</h3>
+      <div className="grid grid-cols-4 gap-2 sm:gap-3 text-center max-w-sm mx-auto w-full px-1">
         {Object.entries(timeLeft).map(([unit, value]) => (
-          <div key={unit} className="flex flex-col items-center bg-card/80 backdrop-blur-sm shadow p-4 rounded-xl min-w-[80px] border border-primary/20">
-            <span className="text-3xl font-bold font-serif text-primary">{value}</span>
-            <span className="text-xs uppercase tracking-widest text-muted-foreground mt-1">{unit}</span>
+          <div key={unit} className="flex flex-col items-center justify-center bg-card/80 backdrop-blur-sm shadow-sm py-3 px-1 sm:p-4 rounded-xl sm:rounded-2xl border border-primary/20">
+            <span className="text-2xl sm:text-3xl font-bold font-serif text-primary leading-tight">{value}</span>
+            <span className="text-[10px] sm:text-xs tracking-wider text-muted-foreground mt-1 truncate max-w-full px-1">{unitLabels[unit] || unit}</span>
           </div>
         ))}
       </div>
