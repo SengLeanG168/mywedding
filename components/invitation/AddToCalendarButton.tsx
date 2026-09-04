@@ -384,15 +384,29 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                       </>
                     )
                   ) : (
-                    isKm
-                      ? 'បន្ទាប់ពីទាញយកឯកសារ Calendar រួច សូមចុចបើកឯកសារ .ics នោះ ហើយជ្រើសរើស “Save” ឬ “Add to Calendar” ដើម្បីរក្សាទុកថ្ងៃចូលរួម។'
-                      : 'After downloading the Calendar file, tap to open the .ics file and choose "Save" or "Add to Calendar" to save the wedding date.'
+                    isKm ? (
+                      <>
+                        ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ សូមចុច “<span className="font-semibold text-primary">ទាញយក&បើកឯកសារ Calendar</span>” បន្ទាប់មកឯកសារនឹងទាញយកដោយស្វ័យប្រវត្តិ រួចចុច <span className="font-semibold text-foreground">Open</span> ជ្រើសយក <span className="font-semibold text-foreground">Calendar</span> និងយក <span className="font-semibold text-foreground">Always</span> រួចចុច <span className="font-semibold text-foreground">Save to Calendar</span> ជាការស្រេច។ ដើម្បីអាចត្រឡប់ទៅកាន់ធៀបការវិញ សូមចុចសញ្ញា{' '}
+                        <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
+                          <ChevronLeft className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
+                        </span>{' '}
+                        នៅខាងលើ។
+                      </>
+                    ) : (
+                      <>
+                        To properly save the event to your calendar, tap “<span className="font-semibold text-primary">Download & Open Calendar</span>”. The file will download automatically, then tap <span className="font-semibold text-foreground">Open</span>, choose <span className="font-semibold text-foreground">Calendar</span> and select <span className="font-semibold text-foreground">Always</span>, then tap <span className="font-semibold text-foreground">Save to Calendar</span>. To return to the invitation, tap the{' '}
+                        <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
+                          <ChevronLeft className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
+                        </span>{' '}
+                        icon at the top.
+                      </>
+                    )
                   )}
                 </p>
               </div>
 
               {/* Note Card */}
-              {(isIosMessenger || isIosTelegram || isAndroidMessenger || isAndroidTelegram) && (
+              {(isIosMessenger || isIosTelegram || isAndroidMessenger || isAndroidTelegram || isCurrentAndroid) && (
                 <div className="bg-primary/10 border border-primary/25 rounded-2xl p-3.5 space-y-1.5">
                   <div
                     className="flex items-center gap-1.5 text-primary text-sm tracking-wide font-normal"
@@ -410,11 +424,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                       textAlignLast: 'left',
                     }}
                   >
-                    {isAndroidTelegram ? (
-                      isKm
-                        ? 'ដោយសារនៅក្នុង Telegram មិនអាចរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានដោយផ្ទាល់ទេ ដូច្នេះត្រូវទាញយកឯកសារជាមុនសិន ទើបអាចរក្សាទុកទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ។'
-                        : 'Because Telegram cannot save the event date to your calendar directly, you need to download the file first so you can properly save the date to your calendar.'
-                    ) : isAndroidMessenger ? (
+                    {isAndroidMessenger ? (
                       isKm
                         ? 'ដោយសារនៅក្នុង Messenger មិនអាចរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានដោយផ្ទាល់ទេ ដូច្នេះត្រូវទាញយកឯកសារជាមុនសិន ទើបអាចរក្សាទុកទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ។'
                         : 'Because Messenger cannot save the event date to your calendar directly, you need to download the file first so you can properly save the date to your calendar.'
@@ -422,10 +432,14 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                       isKm
                         ? 'ដោយសារតែនៅក្នុង Telegram មិនអាចរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានដោយផ្ទាល់បានទេ ដូច្នេះសូមបើកធៀបការនេះក្នុង Browser ខាងក្រៅជាមុនសិន ដើម្បីអាចចុចរក្សាទុកទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ។'
                         : 'Because Telegram cannot save the event date to your calendar directly, please open this invitation in an external browser first so you can properly save the date to your calendar.'
-                    ) : (
+                    ) : isIosMessenger ? (
                       isKm
                         ? 'ដោយសារតែនៅក្នុង Messenger មិនអាចរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានដោយផ្ទាល់ទេ ដូច្នេះសូមបើកធៀបការនេះក្នុង Browser ខាងក្រៅជាមុនសិន ដើម្បីអាចចុចរក្សាទុកទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ។'
                         : 'Because Messenger cannot save the event date to your calendar directly, please open this invitation in an external browser first so you can properly save the date to your calendar.'
+                    ) : (
+                      isKm
+                        ? 'ដោយសារនៅក្នុង Telegram មិនអាចរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានដោយផ្ទាល់ទេ ដូច្នេះត្រូវទាញយកឯកសារជាមុនសិន ទើបអាចរក្សាទុកទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ។'
+                        : 'Because Telegram cannot save the event date to your calendar directly, you need to download the file first so you can properly save the date to your calendar.'
                     )}
                   </p>
                 </div>

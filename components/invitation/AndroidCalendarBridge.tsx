@@ -73,8 +73,8 @@ export default function AndroidCalendarBridge({
           </div>
           <p className="text-xs sm:text-sm text-foreground/90 font-serif leading-relaxed">
             {isKm
-              ? 'បន្ទាប់ពីទាញយកឯកសារ Calendar រួច សូមចុចបើកឯកសារ .ics នោះ ហើយជ្រើសរើស “Save” ឬ “Add to Calendar” ដើម្បីរក្សាទុកថ្ងៃចូលរួម។'
-              : 'After downloading the Calendar file, tap to open the .ics file and choose "Save" or "Add to Calendar" to save the wedding date.'}
+              ? 'ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ សូមចុច “ទាញយក&បើកឯកសារ Calendar” បន្ទាប់មកឯកសារនឹងទាញយកដោយស្វ័យប្រវត្តិ រួចចុច Open ជ្រើសយក Calendar និងយក Always រួចចុច Save to Calendar ជាការស្រេច។ ដើម្បីអាចត្រឡប់ទៅកាន់ធៀបការវិញ សូមចុចសញ្ញា < នៅខាងលើ។'
+              : 'To properly save the event to your calendar, tap "Download & Open Calendar". The file will download automatically, then tap Open, choose Calendar and select Always, then tap Save to Calendar. To return to the invitation, tap the Back button at the top.'}
           </p>
         </div>
 
