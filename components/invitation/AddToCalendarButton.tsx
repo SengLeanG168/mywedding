@@ -83,48 +83,76 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
     };
   }, [isModalOpen]);
 
-  const isIosTelegram = isIOS && isTelegram;
-  const isIosMessenger = isIOS && isMessenger;
-  const isIosInApp = isIOS && (isTelegram || isMessenger || isInAppBrowser);
-  // Popup is used for iOS In-App Browsers (Messenger, Telegram, Facebook) and Android
-  const usePopup = mounted && (isIosInApp || isAndroid);
+  const isIosTelegram = isIOS && (isTelegram || (typeof window !== 'undefined' && (/Telegram|TGWeb/i.test(window.navigator.userAgent || '') || Boolean((window as any).Telegram))));
+  const isIosMessenger = isIOS && (isMessenger || (typeof window !== 'undefined' && /FBAN|FBAV|Messenger|Instagram|FB_IAB|FBSS|Facebook/i.test(window.navigator.userAgent || '')));
+  const isIosInApp = isIosTelegram || isIosMessenger || (isIOS && isInAppBrowser);
+
+  const handleButtonClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (typeof window !== 'undefined') {
+      const ua = window.navigator.userAgent || '';
+      const ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const android = /Android/i.test(ua);
+      const telegram = /Telegram|TGWeb/i.test(ua) || Boolean((window as any).Telegram);
+      const messenger = /FBAN|FBAV|Messenger|Instagram|FB_IAB|FBSS|Facebook/i.test(ua);
+      const inApp = telegram || messenger || !/Safari/i.test(ua) || /Line|Twitter|MicroMessenger/i.test(ua);
+
+      // 1. Check iOS Telegram FIRST -> open Telegram popup (NEVER download .ics)
+      if (ios && (telegram || isTelegram)) {
+        setIsIOS(true);
+        setIsTelegram(true);
+        setIsModalOpen(true);
+        return;
+      }
+
+      // 2. Check iOS Messenger/Facebook -> open Messenger popup
+      if (ios && (messenger || isMessenger)) {
+        setIsIOS(true);
+        setIsMessenger(true);
+        setIsModalOpen(true);
+        return;
+      }
+
+      // 3. Check general iOS In-App Browser -> open popup
+      if (ios && inApp) {
+        setIsIOS(true);
+        setIsInAppBrowser(true);
+        setIsModalOpen(true);
+        return;
+      }
+
+      // 4. Check Android -> open Android popup
+      if (android || isAndroid) {
+        setIsAndroid(true);
+        setIsModalOpen(true);
+        return;
+      }
+
+      // 5. iOS external browser Safari/Chrome/Brave or Desktop -> normal .ics flow
+      window.location.href = calendarIcsUrl;
+    }
+  };
 
   return (
     <div className="relative inline-block w-full text-center my-4">
-      {/* Primary Trigger Button: Single clean button */}
+      {/* Primary Trigger Button: Single clean button with Telegram-first routing */}
       <div className="flex flex-col items-center justify-center">
-        {usePopup ? (
-          /* iOS In-App & Android: open working top-down popup */
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setIsModalOpen(true);
-            }}
-            className="w-full max-w-xs mx-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3.5 px-6 rounded-full shadow-lg flex items-center justify-center gap-2.5 group transition-all active:scale-95 cursor-pointer border border-primary/30"
-          >
-            <CalendarIcon className="w-5 h-5 group-hover:scale-110 transition-transform shrink-0" />
-            <span className="text-sm sm:text-base font-serif tracking-wide">
-              {isKm ? 'សូមកត់ចំណាំថ្ងៃចូលរួម' : 'Add to Calendar'}
-            </span>
-          </button>
-        ) : (
-          /* iOS External Browser & Desktop: direct real anchor link to .ics URL */
-          <a
-            href={calendarIcsUrl}
-            className="w-full max-w-xs mx-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3.5 px-6 rounded-full shadow-lg flex items-center justify-center gap-2.5 group transition-all active:scale-95 cursor-pointer border border-primary/30"
-          >
-            <CalendarIcon className="w-5 h-5 group-hover:scale-110 transition-transform shrink-0" />
-            <span className="text-sm sm:text-base font-serif tracking-wide">
-              {isKm ? 'សូមកត់ចំណាំថ្ងៃចូលរួម' : 'Add to Calendar'}
-            </span>
-          </a>
-        )}
+        <button
+          type="button"
+          onClick={handleButtonClick}
+          className="w-full max-w-xs mx-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3.5 px-6 rounded-full shadow-lg flex items-center justify-center gap-2.5 group transition-all active:scale-95 cursor-pointer border border-primary/30"
+        >
+          <CalendarIcon className="w-5 h-5 group-hover:scale-110 transition-transform shrink-0" />
+          <span className="text-sm sm:text-base font-serif tracking-wide">
+            {isKm ? 'សូមកត់ចំណាំថ្ងៃចូលរួម' : 'Add to Calendar'}
+          </span>
+        </button>
       </div>
 
       {/* Top Down Popup Modal rendered via React Portal directly into document.body */}
-      {usePopup && isModalOpen && typeof document !== 'undefined' && createPortal(
+      {isModalOpen && typeof document !== 'undefined' && createPortal(
         <div className="fixed inset-0 z-[99999] pointer-events-auto">
           {/* Backdrop */}
           <div
