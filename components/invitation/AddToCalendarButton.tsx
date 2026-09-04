@@ -83,6 +83,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
     };
   }, [isModalOpen]);
 
+  const isIosMessenger = isIOS && isMessenger;
   const isIosInApp = isIOS && (isTelegram || isMessenger || isInAppBrowser);
   // Popup is used for iOS In-App Browsers (Messenger, Telegram, Facebook) and Android
   const usePopup = mounted && (isIosInApp || isAndroid);
@@ -152,12 +153,18 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
               </div>
 
               {/* Instruction Card */}
-              <div className="bg-primary/10 border border-primary/25 rounded-2xl p-3.5 text-center space-y-1.5">
-                <div className="flex items-center justify-center gap-1.5 text-primary text-xs font-serif font-semibold">
-                  <Sparkles className="w-3.5 h-3.5 shrink-0" />
+              <div className="bg-primary/10 border border-primary/25 rounded-2xl p-3.5 text-center space-y-2">
+                <div
+                  className="flex items-center justify-center gap-1.5 text-primary text-sm tracking-wide font-normal"
+                  style={{ fontFamily: 'var(--font-khmer-muol-light), "Khmer OS Muol Light", serif' }}
+                >
+                  <Sparkles className="w-4 h-4 shrink-0" />
                   <span>{isKm ? 'ការណែនាំ' : 'Instructions'}</span>
                 </div>
-                <p className="text-xs sm:text-sm text-foreground/90 font-serif leading-relaxed px-1 text-left">
+                <p
+                  className="text-xs sm:text-sm text-foreground/90 font-normal leading-[1.8] px-1 text-left"
+                  style={{ fontFamily: 'var(--font-khmer-siemreap), "Khmer OS Siemreap", "Noto Sans Khmer", sans-serif' }}
+                >
                   {isIosInApp ? (
                     isKm ? (
                       <>
@@ -199,6 +206,27 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                   )}
                 </p>
               </div>
+
+              {/* iOS Messenger Note Card */}
+              {isIosMessenger && (
+                <div className="bg-primary/10 border border-primary/25 rounded-2xl p-3.5 text-left space-y-1.5">
+                  <div
+                    className="flex items-center gap-1.5 text-primary text-sm tracking-wide font-normal"
+                    style={{ fontFamily: 'var(--font-khmer-muol-light), "Khmer OS Muol Light", serif' }}
+                  >
+                    <Sparkles className="w-4 h-4 shrink-0" />
+                    <span>{isKm ? 'ចំណាំ' : 'Note'}</span>
+                  </div>
+                  <p
+                    className="text-xs sm:text-[13px] text-foreground/90 font-normal leading-[1.8]"
+                    style={{ fontFamily: 'var(--font-khmer-siemreap), "Khmer OS Siemreap", "Noto Sans Khmer", sans-serif' }}
+                  >
+                    {isKm
+                      ? 'ដោយសារតែនៅក្នុង Messenger មិនអាចរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានដោយផ្ទាល់បានទេ ដូច្នេះសូមបើកធៀបការនេះក្នុង Browser ខាងក្រៅជាមុនសិន ដើម្បីអាចចុចរក្សាទុកទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ។'
+                      : 'Because Messenger cannot save the event date to your calendar directly, please open this invitation in an external browser first so you can properly save the date to your calendar.'}
+                  </p>
+                </div>
+              )}
 
               {/* Action Buttons Area */}
               <div className="space-y-2.5 pt-1">
