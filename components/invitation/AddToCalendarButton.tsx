@@ -28,6 +28,16 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
     ? `/api/invite/${slug}/guest/${guestId}/calendar.ics`
     : `/api/invite/${slug}/calendar.ics`;
 
+  const groomName = isKm 
+    ? (event?.groomNameKm || event?.groomNameEn || 'ហេង សេងលៀង') 
+    : (event?.groomNameEn || event?.groomNameKm || 'Heng Sengleang');
+  const brideName = isKm 
+    ? (event?.brideNameKm || event?.brideNameEn || 'ល័ក្ខ ចលនា') 
+    : (event?.brideNameEn || event?.brideNameKm || 'Leak Cholana');
+  const weddingSubtitle = isKm
+    ? `ពិធីមង្គលអាពាហ៍ពិពាហ៍របស់ ${groomName} និង ${brideName}`
+    : `Wedding Ceremony of ${groomName} and ${brideName}`;
+
   useEffect(() => {
     setMounted(true);
     if (typeof window !== 'undefined') {
@@ -74,8 +84,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
   }, [isModalOpen]);
 
   const isIosInApp = isIOS && (isTelegram || isMessenger || isInAppBrowser);
-  const isIosMessenger = isIOS && isMessenger;
-  // Popup is used for iOS In-App Browsers (Telegram, Messenger, Facebook) and Android
+  // Popup is used for iOS In-App Browsers (Messenger, Telegram, Facebook) and Android
   const usePopup = mounted && (isIosInApp || isAndroid);
 
   return (
@@ -126,22 +135,20 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
             
             {/* Scrollable Content Area inside Top Down Panel */}
             <div
-              id="messenger-instructions-area"
               className="overflow-y-auto max-h-[calc(85dvh-40px)] space-y-4 text-center pr-1"
               style={{ WebkitOverflowScrolling: 'touch' }}
             >
               {/* Header / Title */}
-              <div className="flex flex-col items-center space-y-1.5 pt-1">
+              <div className="flex flex-col items-center space-y-1 pt-1">
                 <div className="w-12 h-12 rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center text-primary shadow-inner mb-1">
                   <CalendarIcon className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="text-lg sm:text-xl font-serif font-bold text-foreground">
-                  {isIosMessenger
-                    ? (isKm ? 'សូមកត់ចំណាំថ្ងៃចូលរួម' : 'Add to Calendar')
-                    : isIosInApp
-                    ? (isKm ? 'សូមបើកក្នុង Browser' : 'Please Open in Browser')
-                    : (isKm ? 'កំណត់ចំណាំថ្ងៃចូលរួម' : 'Save Event to Calendar')}
+                  {isKm ? 'សូមកត់ចំណាំថ្ងៃចូលរួម' : 'Add to Calendar'}
                 </h3>
+                <p className="text-xs sm:text-sm font-serif text-muted-foreground/90 leading-snug px-2">
+                  {weddingSubtitle}
+                </p>
               </div>
 
               {/* Instruction Card */}
@@ -151,25 +158,18 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                   <span>{isKm ? 'ការណែនាំ' : 'Instructions'}</span>
                 </div>
                 <p className="text-xs sm:text-sm text-foreground/90 font-serif leading-relaxed px-1 text-left">
-                  {isIosMessenger ? (
+                  {isIosInApp ? (
                     isKm ? (
                       <>
                         ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ សូមចុចសញ្ញា{' '}
                         <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
                           <MoreHorizontal className="w-3.5 h-3.5 shrink-0" />
                         </span>{' '}
-                        នៅខាងលើ រួចបើក <span className="font-semibold text-foreground">Open in external browser</span> បន្ទាប់មកចុច{' '}
-                        <span className="font-semibold text-primary">សូមកត់ចំណាំថ្ងៃចូលរួម</span> ម្ដងទៀត រួចចុច{' '}
-                        <span className="font-semibold text-foreground">Continue</span> និងចុច{' '}
-                        <span className="font-semibold text-foreground">Add To Calendar</span> រួចចុចសញ្ញា{' '}
+                        នៅខាងលើ រួចជ្រើសយក <span className="font-semibold text-foreground">Open in external browser</span> បន្ទាប់មកធៀបការនឹងបើកសារជាថ្មី។ ក្រោយមកត្រូវចុច “<span className="font-semibold text-primary">សូមកត់ចំណាំថ្ងៃចូលរួម</span>” ម្ដងទៀត ហើយរើសយក <span className="font-semibold text-foreground">Continue</span> ប្រសិនបើប្រើប្រាស់ Chrome និងចុច <span className="font-semibold text-foreground">Add To Calendar</span> រួចចុចសញ្ញា{' '}
                         <span className="inline-flex items-center justify-center align-middle mx-1 w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 leading-none border border-emerald-500/40 font-bold">
                           <Check className="w-3 h-3 stroke-[3]" />
                         </span>{' '}
-                        នៅខាងលើជាការស្រេច។ ហើយដើម្បីត្រឡប់ទៅកាន់ធៀបវិញបន្ទាប់ពីចុចសញ្ញា{' '}
-                        <span className="inline-flex items-center justify-center align-middle mx-1 w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 leading-none border border-emerald-500/40 font-bold">
-                          <Check className="w-3 h-3 stroke-[3]" />
-                        </span>{' '}
-                        សូមចុចសញ្ញា{' '}
+                        នៅខាងលើជាការស្រេច។ ដើម្បីអាចត្រឡប់ទៅកាន់ធៀបការវិញ សូមចុចសញ្ញា{' '}
                         <span className="inline-flex items-center justify-center align-middle mx-1 w-4 h-4 rounded-full bg-destructive/20 text-destructive leading-none border border-destructive/40 font-bold">
                           <X className="w-3 h-3 stroke-[3]" />
                         </span>{' '}
@@ -181,24 +181,17 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                         <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
                           <MoreHorizontal className="w-3.5 h-3.5 shrink-0" />
                         </span>{' '}
-                        icon at the top and select <span className="font-semibold text-foreground">Open in external browser</span>. Then tap{' '}
-                        <span className="font-semibold text-primary">Add to Calendar</span> again, tap{' '}
-                        <span className="font-semibold text-foreground">Continue</span> and tap{' '}
-                        <span className="font-semibold text-foreground">Add To Calendar</span>, then tap the{' '}
+                        icon at the top and select <span className="font-semibold text-foreground">Open in external browser</span>. The invitation will open in your browser. Then tap “<span className="font-semibold text-primary">Add to Calendar</span>” again, choose <span className="font-semibold text-foreground">Continue</span> if using Chrome, and tap <span className="font-semibold text-foreground">Add To Calendar</span>, then tap the{' '}
                         <span className="inline-flex items-center justify-center align-middle mx-1 w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 leading-none border border-emerald-500/40 font-bold">
                           <Check className="w-3 h-3 stroke-[3]" />
                         </span>{' '}
-                        icon at the top to complete. To return to the invitation, tap the{' '}
+                        icon at the top. To return to the invitation, tap the{' '}
                         <span className="inline-flex items-center justify-center align-middle mx-1 w-4 h-4 rounded-full bg-destructive/20 text-destructive leading-none border border-destructive/40 font-bold">
                           <X className="w-3 h-3 stroke-[3]" />
                         </span>{' '}
                         icon at the top.
                       </>
                     )
-                  ) : isIosInApp ? (
-                    isKm
-                      ? 'ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅ Calendar បានត្រឹមត្រូវ សូមបើក Link នេះក្នុង Browser ខាងក្រៅជាមុនសិន។'
-                      : 'To save the event date to Calendar properly, please open this link in an external browser first.'
                   ) : (
                     isKm
                       ? 'បន្ទាប់ពីទាញយកឯកសារ Calendar រួច សូមចុចបើកឯកសារ .ics នោះ ហើយជ្រើសរើស “Save” ឬ “Add to Calendar” ដើម្បីរក្សាទុកថ្ងៃចូលរួម។'
@@ -207,62 +200,9 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                 </p>
               </div>
 
-              {/* iOS In-App Helper Guide (for Telegram or other non-Messenger in-app browsers) */}
-              {isIosInApp && !isIosMessenger && (
-                <div className="bg-primary/10 border border-primary/25 rounded-2xl p-3 text-left space-y-1.5">
-                  <p className="text-xs font-serif text-primary/90 font-semibold flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                    <span>
-                      {isTelegram
-                        ? (isKm ? 'របៀបបើកក្នុង Telegram' : 'How to open in Telegram')
-                        : (isKm ? 'របៀបបើកក្នុង Browser ខាងក្រៅ' : 'How to open in External Browser')}
-                    </span>
-                  </p>
-                  <p className="text-xs font-serif text-muted-foreground leading-relaxed">
-                    {isTelegram
-                      ? (isKm
-                          ? 'សូមចុចប៊ូតុង Share ឬ … ខាងលើ រួចជ្រើសរើស “Open in Browser” ឬ “Open in Safari/Chrome” ប្រសិនបើមាន។'
-                          : 'Tap the Share or … button above and choose "Open in Browser" or "Open in Safari/Chrome" if available.')
-                      : (isKm
-                          ? 'សូមចុចសញ្ញា … ឬ Share ខាងលើ រួចជ្រើសរើស “Open in Browser” ដើម្បីបើកក្នុង Browser ខាងក្រៅ។'
-                          : 'Tap … or Share above and choose "Open in Browser" to open in an external browser.')}
-                  </p>
-                </div>
-              )}
-
               {/* Action Buttons Area */}
               <div className="space-y-2.5 pt-1">
-                {isIosMessenger ? (
-                  /* iOS Messenger Action: របៀបបើកក្នុង Browser */
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const scrollContainer = document.getElementById('messenger-instructions-area');
-                      if (scrollContainer) {
-                        scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
-                      }
-                    }}
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 px-6 rounded-2xl shadow-md flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer font-serif text-sm sm:text-base border border-primary/30"
-                  >
-                    <Sparkles className="w-4 h-4 shrink-0" />
-                    <span>{isKm ? 'របៀបបើកក្នុង Browser' : 'How to Open in Browser'}</span>
-                  </button>
-                ) : isIosInApp ? (
-                  /* Other iOS In-App Action */
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const scrollContainer = document.getElementById('messenger-instructions-area');
-                      if (scrollContainer) {
-                        scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
-                      }
-                    }}
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 px-6 rounded-2xl shadow-md flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer font-serif text-sm sm:text-base border border-primary/30"
-                  >
-                    <Sparkles className="w-4 h-4 shrink-0" />
-                    <span>{isKm ? 'របៀបបើកក្នុង Browser' : 'How to Open in Browser'}</span>
-                  </button>
-                ) : (
+                {!isIosInApp && (
                   /* Android Download Action */
                   <a
                     href={calendarIcsUrl}
@@ -277,9 +217,13 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium py-3 px-6 rounded-2xl border border-primary/20 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer font-serif text-xs sm:text-sm"
+                  className={
+                    isIosInApp
+                      ? "w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 px-6 rounded-2xl shadow-md flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer font-serif text-sm sm:text-base border border-primary/30"
+                      : "w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium py-3 px-6 rounded-2xl border border-primary/20 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer font-serif text-xs sm:text-sm"
+                  }
                 >
-                  <X className="w-4 h-4 shrink-0 text-muted-foreground" />
+                  <X className="w-4 h-4 shrink-0" />
                   <span>{isKm ? 'បិទ' : 'Close'}</span>
                 </button>
               </div>
