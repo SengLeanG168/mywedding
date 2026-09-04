@@ -105,24 +105,6 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
   );
   const isIosInApp = isIosTelegram || isIosMessenger || (isIOS && isInAppBrowser);
 
-  const isAndroidTelegram = isAndroid && (
-    isTelegram ||
-    (typeof window !== 'undefined' && (
-      /Telegram|TGWeb|Telegram-iOS|TelegramBot|TG/i.test(window.navigator.userAgent || '') ||
-      (typeof document !== 'undefined' && /t\.me|telegram/i.test(document.referrer || '')) ||
-      Boolean((window as any).Telegram) ||
-      Boolean((window as any).TelegramWebview) ||
-      Boolean((window as any).TelegramWebviewProxy)
-    ))
-  );
-  const isAndroidMessenger = isAndroid && (
-    isMessenger ||
-    (typeof window !== 'undefined' && /FBAN|FBAV|Messenger|Instagram|FB_IAB|FBSS|Facebook/i.test(window.navigator.userAgent || ''))
-  );
-  const isAndroidInApp = isAndroidTelegram || isAndroidMessenger || (isAndroid && isInAppBrowser);
-
-  const isInAppModal = isIosInApp || isAndroidInApp;
-
   const handleButtonClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -164,47 +146,21 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
         return;
       }
 
-      // 4. Check Android Telegram -> open Android Telegram popup (NEVER download .ics)
-      if (android && telegram) {
-        setIsAndroid(true);
-        setIsTelegram(true);
-        setIsInAppBrowser(true);
-        setIsModalOpen(true);
-        return;
-      }
-
-      // 5. Check Android Messenger/Facebook -> open Android Messenger popup (NEVER download .ics)
-      if (android && messenger) {
-        setIsAndroid(true);
-        setIsMessenger(true);
-        setIsInAppBrowser(true);
-        setIsModalOpen(true);
-        return;
-      }
-
-      // 6. Check general Android In-App Browser -> open Android popup
-      if (android && inApp) {
-        setIsAndroid(true);
-        setIsInAppBrowser(true);
-        setIsModalOpen(true);
-        return;
-      }
-
-      // 7. Check Android External Browser (Chrome etc.) -> open Android download modal
+      // 4. Check Android -> open Android popup
       if (android || isAndroid) {
         setIsAndroid(true);
         setIsModalOpen(true);
         return;
       }
 
-      // 8. iOS external browser Safari/Chrome/Brave or Desktop -> normal .ics flow
+      // 5. iOS external browser Safari/Chrome/Brave or Desktop -> normal .ics flow
       window.location.href = calendarIcsUrl;
     }
   };
 
   return (
     <div className="relative inline-block w-full text-center my-4">
-      {/* Primary Trigger Button: Single clean button */}
+      {/* Primary Trigger Button: Single clean button with Telegram-first routing */}
       <div className="flex flex-col items-center justify-center">
         <button
           type="button"
@@ -334,42 +290,6 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                         icon at the top.
                       </>
                     )
-                  ) : isAndroidTelegram ? (
-                    isKm ? (
-                      <>
-                        ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ សូមចុចសញ្ញា{' '}
-                        <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
-                          <MoreHorizontal className="w-3.5 h-3.5 shrink-0" />
-                        </span>{' '}
-                        នៅខាងលើ រួចជ្រើសយក <span className="font-semibold text-foreground">Open in Chrome</span> ឬ <span className="font-semibold text-foreground">Open in Browser</span>។ បន្ទាប់មកធៀបការនឹងបើកសារជាថ្មី។ ក្រោយមកត្រូវចុច “<span className="font-semibold text-primary">សូមកត់ចំណាំថ្ងៃចូលរួម</span>” ម្ដងទៀត រួចបន្តតាមការណែនាំរបស់ Browser ដើម្បីរក្សាទុកទៅកាន់ប្រតិទិន។
-                      </>
-                    ) : (
-                      <>
-                        To properly save the event date to your calendar, tap the{' '}
-                        <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
-                          <MoreHorizontal className="w-3.5 h-3.5 shrink-0" />
-                        </span>{' '}
-                        icon at the top and select <span className="font-semibold text-foreground">Open in Chrome</span> or <span className="font-semibold text-foreground">Open in Browser</span>. The invitation will reopen. Then tap “<span className="font-semibold text-primary">Add to Calendar</span>” again and follow the browser instructions to save the event.
-                      </>
-                    )
-                  ) : isAndroidInApp ? (
-                    isKm ? (
-                      <>
-                        ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ សូមចុចសញ្ញា{' '}
-                        <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
-                          <MoreHorizontal className="w-3.5 h-3.5 shrink-0" />
-                        </span>{' '}
-                        នៅខាងលើ រួចជ្រើសយក <span className="font-semibold text-foreground">Open in external browser</span> ឬ <span className="font-semibold text-foreground">Open in Chrome</span>។ បន្ទាប់មកធៀបការនឹងបើកសារជាថ្មី។ ក្រោយមកត្រូវចុច “<span className="font-semibold text-primary">សូមកត់ចំណាំថ្ងៃចូលរួម</span>” ម្ដងទៀត រួចបន្តតាមការណែនាំរបស់ Browser ដើម្បីរក្សាទុកទៅកាន់ប្រតិទិន។
-                      </>
-                    ) : (
-                      <>
-                        To properly save the event date to your calendar, tap the{' '}
-                        <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
-                          <MoreHorizontal className="w-3.5 h-3.5 shrink-0" />
-                        </span>{' '}
-                        icon at the top and select <span className="font-semibold text-foreground">Open in external browser</span> or <span className="font-semibold text-foreground">Open in Chrome</span>. The invitation will reopen. Then tap “<span className="font-semibold text-primary">Add to Calendar</span>” again and follow the browser instructions to save the event.
-                      </>
-                    )
                   ) : (
                     isKm
                       ? 'បន្ទាប់ពីទាញយកឯកសារ Calendar រួច សូមចុចបើកឯកសារ .ics នោះ ហើយជ្រើសរើស “Save” ឬ “Add to Calendar” ដើម្បីរក្សាទុកថ្ងៃចូលរួម។'
@@ -378,8 +298,8 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                 </p>
               </div>
 
-              {/* iOS & Android In-App Note Card */}
-              {isInAppModal && (
+              {/* iOS Telegram & Messenger Note Card */}
+              {(isIosMessenger || isIosTelegram) && (
                 <div className="bg-primary/10 border border-primary/25 rounded-2xl p-3.5 space-y-1.5">
                   <div
                     className="flex items-center gap-1.5 text-primary text-sm tracking-wide font-normal"
@@ -397,7 +317,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                       textAlignLast: 'left',
                     }}
                   >
-                    {(isIosTelegram || isAndroidTelegram) ? (
+                    {isIosTelegram ? (
                       isKm
                         ? 'ដោយសារតែនៅក្នុង Telegram មិនអាចរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានដោយផ្ទាល់បានទេ ដូច្នេះសូមបើកធៀបការនេះក្នុង Browser ខាងក្រៅជាមុនសិន ដើម្បីអាចចុចរក្សាទុកទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ។'
                         : 'Because Telegram cannot save the event date to your calendar directly, please open this invitation in an external browser first so you can properly save the date to your calendar.'
@@ -412,8 +332,8 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
 
               {/* Action Buttons Area */}
               <div className="space-y-2.5 pt-1">
-                {!isInAppModal && (
-                  /* Android External Browser Download Action */
+                {!isIosInApp && (
+                  /* Android Download Action */
                   <a
                     href={calendarIcsUrl}
                     className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 px-6 rounded-2xl shadow-md flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer font-serif text-sm sm:text-base"
@@ -428,7 +348,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                   type="button"
                   onClick={() => setIsModalOpen(false)}
                   className={
-                    isInAppModal
+                    isIosInApp
                       ? "w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 px-6 rounded-2xl shadow-md flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer font-serif text-sm sm:text-base border border-primary/30"
                       : "w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium py-3 px-6 rounded-2xl border border-primary/20 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer font-serif text-xs sm:text-sm"
                   }
