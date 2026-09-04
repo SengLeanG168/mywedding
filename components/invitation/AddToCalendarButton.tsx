@@ -40,6 +40,10 @@ const isAndroidDevice = (ua: string) => {
   return /Android/i.test(ua);
 };
 
+const isAndroidWebView = (ua: string) => {
+  return /; wv\)|\bwv\b|Version\/\d+\.\d+.*Chrome/i.test(ua);
+};
+
 export default function AddToCalendarButton({ event, locale, guestId }: AddToCalendarButtonProps) {
   const [isIOS, setIsIOS] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
@@ -76,11 +80,13 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
       const android = isAndroidDevice(ua);
       const telegram = isTelegramUserAgent(ua, ref);
       const messenger = isMessengerUserAgent(ua);
-      const inApp = telegram || messenger || !/Safari/i.test(ua) || /Line|Twitter|MicroMessenger/i.test(ua);
+      const androidWebView = isAndroidWebView(ua);
+      const androidTelegramLike = android && (telegram || (androidWebView && !messenger));
+      const inApp = telegram || messenger || androidWebView || !/Safari/i.test(ua) || /Line|Twitter|MicroMessenger/i.test(ua);
       
       setIsIOS(ios);
       setIsAndroid(android);
-      setIsTelegram(telegram);
+      setIsTelegram(telegram || androidTelegramLike);
       setIsMessenger(messenger);
       setIsInAppBrowser(inApp);
     }
@@ -114,7 +120,15 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
   const isIosMessenger = isCurrentIOS && isCurrentMessenger;
   const isIosInApp = isIosTelegram || isIosMessenger || (isCurrentIOS && (isInAppBrowser || !/Safari/i.test(currentUa)));
 
-  const isAndroidTelegram = isCurrentAndroid && isCurrentTelegram;
+  const isAndroidTelegram =
+    isCurrentAndroid &&
+    (
+      isCurrentTelegram ||
+      (
+        isAndroidWebView(currentUa) &&
+        !isCurrentMessenger
+      )
+    );
   const isAndroidMessenger = isCurrentAndroid && isCurrentMessenger;
 
   let popupType = 'default';
@@ -144,6 +158,9 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
       const messenger = isMessengerUserAgent(ua);
       const inApp = isInAppBrowser || telegram || messenger || !/Safari/i.test(ua) || /Line|Twitter|MicroMessenger/i.test(ua);
 
+      const androidWebView = isAndroidWebView(ua);
+      const androidTelegramLike = android && (telegram || (androidWebView && !messenger));
+
       // Routing order:
       // 1. iOS Telegram -> open Telegram popup (NEVER download .ics directly)
       if (ios && telegram) {
@@ -162,9 +179,10 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
       }
 
       // 3. Android Telegram -> open Android Telegram popup
-      if (android && telegram) {
+      if (androidTelegramLike) {
         setIsAndroid(true);
         setIsTelegram(true);
+        setIsMessenger(false);
         setIsModalOpen(true);
         return;
       }
