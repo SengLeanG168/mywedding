@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Calendar as CalendarIcon, Download, X, Sparkles, RefreshCw } from 'lucide-react';
+import { Calendar as CalendarIcon, Download, X, Sparkles, Copy, Check, ExternalLink, Globe } from 'lucide-react';
 
 interface AddToCalendarButtonProps {
   event: any;
@@ -16,7 +16,9 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
   const [isAndroid, setIsAndroid] = useState(false);
   const [isTelegram, setIsTelegram] = useState(false);
   const [isMessenger, setIsMessenger] = useState(false);
+  const [isInAppBrowser, setIsInAppBrowser] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
   const isKm = locale === 'km';
 
@@ -35,11 +37,13 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
       const android = /Android/i.test(ua);
       const telegram = /Telegram/i.test(ua);
       const messenger = /FBAN|FBAV|Messenger|Instagram|FB_IAB|FBSS|Facebook/i.test(ua);
+      const inApp = telegram || messenger || /Line|Twitter|MicroMessenger/i.test(ua);
       
       setIsIOS(ios);
       setIsAndroid(android);
       setIsTelegram(telegram);
       setIsMessenger(messenger);
+      setIsInAppBrowser(inApp);
 
       if (process.env.NODE_ENV === 'development') {
         console.log('[AddToCalendarButton]', {
@@ -48,6 +52,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
           isAndroid: android,
           isTelegram: telegram,
           isMessenger: messenger,
+          isInAppBrowser: inApp,
           calendarIcsUrl,
         });
       }
@@ -69,16 +74,63 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
     };
   }, [isModalOpen]);
 
-  const isIosTelegram = isIOS && isTelegram;
-  // Mobile popup used strictly for iOS Messenger / Facebook and Android (not iOS Telegram)
-  const usePopup = mounted && ((isIOS && !isTelegram) || isAndroid);
+  const isIosInApp = isIOS && (isTelegram || isMessenger || isInAppBrowser);
+  // Popup is used for iOS In-App Browsers (Telegram, Messenger, Facebook) and Android
+  const usePopup = mounted && (isIosInApp || isAndroid);
+
+  const getInvitationUrl = () => {
+    if (typeof window !== 'undefined') {
+      return `${window.location.origin}${window.location.pathname}`;
+    }
+    const localePrefix = locale === 'km' ? '' : `/${locale}`;
+    return guestId
+      ? `${localePrefix}/invite/${slug}/guest/${guestId}`
+      : `${localePrefix}/invite/${slug}`;
+  };
+
+  const handleCopyLink = async () => {
+    const url = getInvitationUrl();
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch (err) {
+      console.error('Failed to copy link:', err);
+    }
+  };
+
+  const handleTryOpenBrowser = () => {
+    const url = getInvitationUrl();
+    try {
+      if (isIOS) {
+        const safariSchemeUrl = url.replace(/^https:\/\//i, 'x-safari-https://').replace(/^http:\/\//i, 'x-safari-http://');
+        window.location.href = safariSchemeUrl;
+      } else {
+        window.open(url, '_system');
+      }
+    } catch (e) {
+      console.error('Error opening external browser:', e);
+    }
+  };
 
   return (
     <div className="relative inline-block w-full text-center my-4">
       {/* Primary Trigger Button: Single clean button */}
       <div className="flex flex-col items-center justify-center">
         {usePopup ? (
-          /* iOS Messenger & Android: open working top-down popup */
+          /* iOS In-App & Android: open working top-down popup */
           <button
             type="button"
             onClick={(e) => {
@@ -94,7 +146,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
             </span>
           </button>
         ) : (
-          /* iOS Telegram & Desktop: direct real anchor link to .ics URL (same-tab, no popup, no download attr) */
+          /* iOS External Browser & Desktop: direct real anchor link to .ics URL */
           <a
             href={calendarIcsUrl}
             className="w-full max-w-xs mx-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3.5 px-6 rounded-full shadow-lg flex items-center justify-center gap-2.5 group transition-all active:scale-95 cursor-pointer border border-primary/30"
@@ -127,10 +179,16 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
               {/* Header / Title */}
               <div className="flex flex-col items-center space-y-1.5 pt-1">
                 <div className="w-12 h-12 rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center text-primary shadow-inner mb-1">
-                  <CalendarIcon className="w-6 h-6 text-primary" />
+                  {isIosInApp ? (
+                    <Globe className="w-6 h-6 text-primary" />
+                  ) : (
+                    <CalendarIcon className="w-6 h-6 text-primary" />
+                  )}
                 </div>
                 <h3 className="text-lg sm:text-xl font-serif font-bold text-foreground">
-                  {isKm ? 'កំណត់ចំណាំថ្ងៃចូលរួម' : 'Save Event to Calendar'}
+                  {isIosInApp
+                    ? (isKm ? 'សូមបើកក្នុង Browser' : 'Please Open in Browser')
+                    : (isKm ? 'កំណត់ចំណាំថ្ងៃចូលរួម' : 'Save Event to Calendar')}
                 </h3>
               </div>
 
@@ -141,54 +199,90 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                   <span>{isKm ? 'ការណែនាំ' : 'Instructions'}</span>
                 </div>
                 <p className="text-xs sm:text-sm text-foreground/90 font-serif leading-relaxed px-1">
-                  {isIOS
+                  {isIosInApp
                     ? (isKm
-                        ? 'សូមចុចប៊ូតុងខាងក្រោម ដើម្បីបើកឯកសារ Calendar។ បន្ទាប់មកជ្រើសរើស “Add to Calendar” ឬ “Save” ដើម្បីរក្សាទុកថ្ងៃចូលរួម។'
-                        : 'Tap the button below to open the Calendar file. Then choose "Add to Calendar" or "Save" to save the wedding date.')
+                        ? 'ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅ Calendar បានត្រឹមត្រូវ សូមបើក Link នេះក្នុង Browser ខាងក្រៅជាមុនសិន។'
+                        : 'To save the event date to Calendar properly, please open this link in an external browser first.')
                     : (isKm
                         ? 'បន្ទាប់ពីទាញយកឯកសារ Calendar រួច សូមចុចបើកឯកសារ .ics នោះ ហើយជ្រើសរើស “Save” ឬ “Add to Calendar” ដើម្បីរក្សាទុកថ្ងៃចូលរួម។'
                         : 'After downloading the Calendar file, tap to open the .ics file and choose "Save" or "Add to Calendar" to save the wedding date.')}
                 </p>
               </div>
 
-              {/* iOS Messenger In-App Note (shown inside popup only) */}
-              {isIOS && isMessenger && (
-                <div className="bg-primary/10 border border-primary/25 rounded-2xl p-3 text-left space-y-1">
+              {/* iOS In-App Helper Guide (Telegram vs Messenger) */}
+              {isIosInApp && (
+                <div className="bg-primary/10 border border-primary/25 rounded-2xl p-3 text-left space-y-1.5">
                   <p className="text-xs font-serif text-primary/90 font-semibold flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                    <span>{isKm ? 'ចំណាំសម្រាប់ Messenger' : 'Note for Messenger'}</span>
+                    <span>
+                      {isTelegram
+                        ? (isKm ? 'របៀបបើកក្នុង Telegram' : 'How to open in Telegram')
+                        : isMessenger
+                        ? (isKm ? 'របៀបបើកក្នុង Messenger' : 'How to open in Messenger')
+                        : (isKm ? 'របៀបបើកក្នុង Browser ខាងក្រៅ' : 'How to open in External Browser')}
+                    </span>
                   </p>
                   <p className="text-xs font-serif text-muted-foreground leading-relaxed">
-                    {isKm
-                      ? 'Messenger អាចរារាំងការបើក Calendar ដោយផ្ទាល់។ ប្រសិនបើមិនបើក សូមចុចបើកឯកសារ Calendar ម្តងទៀត ឬបើក Link ក្នុង Safari។'
-                      : 'Messenger may restrict opening Calendar directly. If it does not open, tap open Calendar again or open this link in Safari.'}
+                    {isTelegram
+                      ? (isKm
+                          ? 'សូមចុចប៊ូតុង Share ឬ … ខាងលើ រួចជ្រើសរើស “Open in Browser” ឬ “Open in Safari/Chrome” ប្រសិនបើមាន។'
+                          : 'Tap the Share or … button above and choose "Open in Browser" or "Open in Safari/Chrome" if available.')
+                      : isMessenger
+                      ? (isKm
+                          ? 'សូមចុច … ខាងលើ រួចជ្រើសរើស “Open in Browser” ឬ “Open in External Browser”។ បន្ទាប់មកចុចប៊ូតុង “សូមកត់ចំណាំថ្ងៃចូលរួម” ម្តងទៀត។'
+                          : 'Tap … above and choose "Open in Browser" or "Open in External Browser". Then tap "Add to Calendar" again.')
+                      : (isKm
+                          ? 'សូមចុចសញ្ញា … ឬ Share ខាងលើ រួចជ្រើសរើស “Open in Browser” ដើម្បីបើកក្នុង Browser ខាងក្រៅ។'
+                          : 'Tap … or Share above and choose "Open in Browser" to open in an external browser.')}
                   </p>
                 </div>
               )}
 
               {/* Action Buttons Area */}
               <div className="space-y-2.5 pt-1">
-                {/* Primary Download / Open Button (Real Anchor Link to direct .ics) */}
-                <a
-                  href={calendarIcsUrl}
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 px-6 rounded-2xl shadow-md flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer font-serif text-sm sm:text-base"
-                >
-                  <Download className="w-5 h-5 shrink-0" />
-                  <span>{isKm ? 'ទាញយក/បើកឯកសារ Calendar' : 'Download / Open Calendar'}</span>
-                </a>
+                {isIosInApp ? (
+                  <>
+                    {/* 1. Copy Link Button */}
+                    <button
+                      type="button"
+                      onClick={handleCopyLink}
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 px-6 rounded-2xl shadow-md flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer font-serif text-sm sm:text-base border border-primary/30"
+                    >
+                      {copied ? (
+                        <>
+                          <Check className="w-5 h-5 shrink-0 text-emerald-400" />
+                          <span>{isKm ? 'បានចម្លង Link រួចរាល់!' : 'Link Copied!'}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-5 h-5 shrink-0" />
+                          <span>{isKm ? 'ចម្លង Link' : 'Copy Link'}</span>
+                        </>
+                      )}
+                    </button>
 
-                {/* Optional Retry Button for iOS Messenger */}
-                {isIOS && isMessenger && (
+                    {/* 2. Try Open in Browser Button */}
+                    <button
+                      type="button"
+                      onClick={handleTryOpenBrowser}
+                      className="w-full bg-primary/15 hover:bg-primary/25 text-primary font-medium py-3 px-6 rounded-2xl border border-primary/30 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer font-serif text-xs sm:text-sm"
+                    >
+                      <ExternalLink className="w-4 h-4 shrink-0" />
+                      <span>{isKm ? 'សាកបើកក្នុង Browser' : 'Try Open in Browser'}</span>
+                    </button>
+                  </>
+                ) : (
+                  /* Android Download Action */
                   <a
                     href={calendarIcsUrl}
-                    className="w-full bg-primary/15 hover:bg-primary/25 text-primary font-medium py-3 px-6 rounded-2xl border border-primary/30 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer font-serif text-xs sm:text-sm"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 px-6 rounded-2xl shadow-md flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer font-serif text-sm sm:text-base"
                   >
-                    <RefreshCw className="w-4 h-4 shrink-0" />
-                    <span>{isKm ? 'បើកឯកសារ Calendar ម្តងទៀត' : 'Open Calendar Again'}</span>
+                    <Download className="w-5 h-5 shrink-0" />
+                    <span>{isKm ? 'ទាញយក/បើកឯកសារ Calendar' : 'Download / Open Calendar'}</span>
                   </a>
                 )}
 
-                {/* Secondary Close Button */}
+                {/* 3. Close Button */}
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
