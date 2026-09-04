@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Calendar as CalendarIcon, Download, X, Sparkles, Check, MoreHorizontal } from 'lucide-react';
+import { Calendar as CalendarIcon, Download, X, Sparkles, Check, MoreHorizontal, ChevronLeft } from 'lucide-react';
 
 interface AddToCalendarButtonProps {
   event: any;
@@ -105,6 +105,16 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
   );
   const isIosInApp = isIosTelegram || isIosMessenger || (isIOS && isInAppBrowser);
 
+  const isAndroidTelegram = isAndroid && (
+    isTelegram || 
+    (typeof window !== 'undefined' && (
+      /Telegram|TGWeb|Telegram-iOS|TelegramBot|TG/i.test(window.navigator.userAgent || '') ||
+      (typeof document !== 'undefined' && /t\.me|telegram/i.test(document.referrer || '')) ||
+      Boolean((window as any).Telegram) ||
+      Boolean((window as any).TelegramWebview) ||
+      Boolean((window as any).TelegramWebviewProxy)
+    ))
+  );
   const isAndroidMessenger = isAndroid && (
     isMessenger || 
     (typeof window !== 'undefined' && /FBAN|FBAV|Messenger|Instagram|FB_IAB|FBSS|Facebook/i.test(window.navigator.userAgent || ''))
@@ -151,14 +161,30 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
         return;
       }
 
-      // 4. Check Android -> open Android popup
+      // 4. Check Android Telegram -> open Android Telegram popup
+      if (android && telegram) {
+        setIsAndroid(true);
+        setIsTelegram(true);
+        setIsModalOpen(true);
+        return;
+      }
+
+      // 5. Check Android Messenger -> open Android Messenger popup
+      if (android && messenger) {
+        setIsAndroid(true);
+        setIsMessenger(true);
+        setIsModalOpen(true);
+        return;
+      }
+
+      // 6. Check Android -> open Android popup
       if (android || isAndroid) {
         setIsAndroid(true);
         setIsModalOpen(true);
         return;
       }
 
-      // 5. iOS external browser Safari/Chrome/Brave or Desktop -> normal .ics flow
+      // 7. iOS external browser Safari/Chrome/Brave or Desktop -> normal .ics flow
       window.location.href = calendarIcsUrl;
     }
   };
@@ -295,14 +321,40 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                         icon at the top.
                       </>
                     )
-                  ) : isAndroidMessenger ? (
+                  ) : isAndroidTelegram ? (
                     isKm ? (
                       <>
-                        ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ សូមចុច “<span className="font-semibold text-primary">ទាញយក&បើកឯកសារ Calendar</span>” រួចចុច <span className="font-semibold text-foreground">Continue</span>។ បន្ទាប់មកឯកសារនឹងទាញយកដោយស្វ័យប្រវត្តិ រួចចុច <span className="font-semibold text-foreground">Open</span> ជ្រើសយក <span className="font-semibold text-foreground">Calendar</span> និងយក <span className="font-semibold text-foreground">Always</span> រួចចុច <span className="font-semibold text-foreground">Save to Calendar</span> ជាការស្រេច។ ដើម្បីអាចត្រឡប់ទៅកាន់ធៀបការវិញ សូមចុចសញ្ញា ថយក្រោយ នៅខាងលើ។
+                        ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ សូមចុច “<span className="font-semibold text-primary">ទាញយក&បើកឯកសារ Calendar</span>” បន្ទាប់មកឯកសារនឹងទាញយកដោយស្វ័យប្រវត្តិ រួចចុច <span className="font-semibold text-foreground">Open</span> ជ្រើសយក <span className="font-semibold text-foreground">Calendar</span> និងយក <span className="font-semibold text-foreground">Always</span> រួចចុច <span className="font-semibold text-foreground">Save to Calendar</span> ជាការស្រេច។ ដើម្បីអាចត្រឡប់ទៅកាន់ធៀបការវិញ សូមចុចសញ្ញា{' '}
+                        <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
+                          <ChevronLeft className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
+                        </span>{' '}
+                        នៅខាងលើ។
                       </>
                     ) : (
                       <>
-                        To properly save the event to your calendar, tap “<span className="font-semibold text-primary">Download & Open Calendar</span>” and tap <span className="font-semibold text-foreground">Continue</span>. The file will download automatically, then tap <span className="font-semibold text-foreground">Open</span>, choose <span className="font-semibold text-foreground">Calendar</span> and select <span className="font-semibold text-foreground">Always</span>, then tap <span className="font-semibold text-foreground">Save to Calendar</span>. To return to the invitation, tap the Back button at the top.
+                        To properly save the event to your calendar, tap “<span className="font-semibold text-primary">Download & Open Calendar</span>”. The file will download automatically, then tap <span className="font-semibold text-foreground">Open</span>, choose <span className="font-semibold text-foreground">Calendar</span> and select <span className="font-semibold text-foreground">Always</span>, then tap <span className="font-semibold text-foreground">Save to Calendar</span>. To return to the invitation, tap the{' '}
+                        <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
+                          <ChevronLeft className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
+                        </span>{' '}
+                        icon at the top.
+                      </>
+                    )
+                  ) : isAndroidMessenger ? (
+                    isKm ? (
+                      <>
+                        ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ សូមចុច “<span className="font-semibold text-primary">ទាញយក&បើកឯកសារ Calendar</span>” រួចចុច <span className="font-semibold text-foreground">Continue</span>។ បន្ទាប់មកឯកសារនឹងទាញយកដោយស្វ័យប្រវត្តិ រួចចុច <span className="font-semibold text-foreground">Open</span> ជ្រើសយក <span className="font-semibold text-foreground">Calendar</span> និងយក <span className="font-semibold text-foreground">Always</span> រួចចុច <span className="font-semibold text-foreground">Save to Calendar</span> ជាការស្រេច។ ដើម្បីអាចត្រឡប់ទៅកាន់ធៀបការវិញ សូមចុចសញ្ញា{' '}
+                        <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
+                          <ChevronLeft className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
+                        </span>{' '}
+                        នៅខាងលើ។
+                      </>
+                    ) : (
+                      <>
+                        To properly save the event to your calendar, tap “<span className="font-semibold text-primary">Download & Open Calendar</span>” and tap <span className="font-semibold text-foreground">Continue</span>. The file will download automatically, then tap <span className="font-semibold text-foreground">Open</span>, choose <span className="font-semibold text-foreground">Calendar</span> and select <span className="font-semibold text-foreground">Always</span>, then tap <span className="font-semibold text-foreground">Save to Calendar</span>. To return to the invitation, tap the{' '}
+                        <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
+                          <ChevronLeft className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
+                        </span>{' '}
+                        icon at the top.
                       </>
                     )
                   ) : (
@@ -314,7 +366,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
               </div>
 
               {/* Note Card */}
-              {(isIosMessenger || isIosTelegram || isAndroidMessenger) && (
+              {(isIosMessenger || isIosTelegram || isAndroidMessenger || isAndroidTelegram) && (
                 <div className="bg-primary/10 border border-primary/25 rounded-2xl p-3.5 space-y-1.5">
                   <div
                     className="flex items-center gap-1.5 text-primary text-sm tracking-wide font-normal"
@@ -332,7 +384,11 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                       textAlignLast: 'left',
                     }}
                   >
-                    {isAndroidMessenger ? (
+                    {isAndroidTelegram ? (
+                      isKm
+                        ? 'ដោយសារនៅក្នុង Telegram មិនអាចរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានដោយផ្ទាល់ទេ ដូច្នេះត្រូវទាញយកឯកសារជាមុនសិន ទើបអាចរក្សាទុកទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ។'
+                        : 'Because Telegram cannot save the event date to your calendar directly, you need to download the file first so you can properly save the date to your calendar.'
+                    ) : isAndroidMessenger ? (
                       isKm
                         ? 'ដោយសារនៅក្នុង Messenger មិនអាចរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានដោយផ្ទាល់ទេ ដូច្នេះត្រូវទាញយកឯកសារជាមុនសិន ទើបអាចរក្សាទុកទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ។'
                         : 'Because Messenger cannot save the event date to your calendar directly, you need to download the file first so you can properly save the date to your calendar.'
