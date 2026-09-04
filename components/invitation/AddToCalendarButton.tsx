@@ -165,7 +165,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                         <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
                           <MoreHorizontal className="w-3.5 h-3.5 shrink-0" />
                         </span>{' '}
-                        នៅខាងលើ រួចជ្រើសយក <span className="font-semibold text-foreground">Open in external browser</span> បន្ទាប់មកធៀបការនឹងបើកសារជាថ្មី។ ក្រោយមកត្រូវចុច “<span className="font-semibold text-primary">សូមកត់ចំណាំថ្ងៃចូលរួម</span>” ម្ដងទៀត ហើយរើសយក <span className="font-semibold text-foreground">Continue</span> ប្រសិនបើប្រើប្រាស់ Chrome និងចុច <span className="font-semibold text-foreground">Add To Calendar</span> រួចចុចសញ្ញា{' '}
+                        នៅខាងលើ រួចជ្រើសយក <span className="font-semibold text-foreground">Open in external browser</span> បន្ទាប់មកធៀបការនឹងបើកសារជាថ្មី។ ក្រោយមកត្រូវចុច “<span className="font-semibold text-primary">សូមកត់ចំណាំថ្ងៃចូលរួម</span>” ម្ដងទៀត (ហើយរើសយក <span className="font-semibold text-foreground">Continue</span> ប្រសិនបើប្រើប្រាស់ Chrome) និងចុច <span className="font-semibold text-foreground">Add To Calendar</span> រួចចុចសញ្ញា{' '}
                         <span className="inline-flex items-center justify-center align-middle mx-1 w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 leading-none border border-emerald-500/40 font-bold">
                           <Check className="w-3 h-3 stroke-[3]" />
                         </span>{' '}
