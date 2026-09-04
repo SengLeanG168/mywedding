@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Calendar as CalendarIcon, Download, X, Sparkles, Check, ExternalLink, MoreHorizontal } from 'lucide-react';
+import { Calendar as CalendarIcon, Download, X, Sparkles, Check, MoreHorizontal } from 'lucide-react';
 
 interface AddToCalendarButtonProps {
   event: any;
@@ -78,30 +78,6 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
   // Popup is used for iOS In-App Browsers (Telegram, Messenger, Facebook) and Android
   const usePopup = mounted && (isIosInApp || isAndroid);
 
-  const getInvitationUrl = () => {
-    if (typeof window !== 'undefined') {
-      return `${window.location.origin}${window.location.pathname}`;
-    }
-    const localePrefix = locale === 'km' ? '' : `/${locale}`;
-    return guestId
-      ? `${localePrefix}/invite/${slug}/guest/${guestId}`
-      : `${localePrefix}/invite/${slug}`;
-  };
-
-  const handleTryOpenBrowser = () => {
-    const url = getInvitationUrl();
-    try {
-      if (isIOS) {
-        const safariSchemeUrl = url.replace(/^https:\/\//i, 'x-safari-https://').replace(/^http:\/\//i, 'x-safari-http://');
-        window.location.href = safariSchemeUrl;
-      } else {
-        window.open(url, '_system');
-      }
-    } catch (e) {
-      console.error('Error opening external browser:', e);
-    }
-  };
-
   return (
     <div className="relative inline-block w-full text-center my-4">
       {/* Primary Trigger Button: Single clean button */}
@@ -150,6 +126,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
             
             {/* Scrollable Content Area inside Top Down Panel */}
             <div
+              id="messenger-instructions-area"
               className="overflow-y-auto max-h-[calc(85dvh-40px)] space-y-4 text-center pr-1"
               style={{ WebkitOverflowScrolling: 'touch' }}
             >
@@ -255,15 +232,35 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
 
               {/* Action Buttons Area */}
               <div className="space-y-2.5 pt-1">
-                {isIosInApp ? (
-                  /* iOS In-App Action Button: សូមបើកក្នុង Browser */
+                {isIosMessenger ? (
+                  /* iOS Messenger Action: របៀបបើកក្នុង Browser */
                   <button
                     type="button"
-                    onClick={handleTryOpenBrowser}
+                    onClick={() => {
+                      const scrollContainer = document.getElementById('messenger-instructions-area');
+                      if (scrollContainer) {
+                        scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+                      }
+                    }}
                     className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 px-6 rounded-2xl shadow-md flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer font-serif text-sm sm:text-base border border-primary/30"
                   >
-                    <ExternalLink className="w-4 h-4 shrink-0" />
-                    <span>{isKm ? 'សូមបើកក្នុង Browser' : 'Open in Browser'}</span>
+                    <Sparkles className="w-4 h-4 shrink-0" />
+                    <span>{isKm ? 'របៀបបើកក្នុង Browser' : 'How to Open in Browser'}</span>
+                  </button>
+                ) : isIosInApp ? (
+                  /* Other iOS In-App Action */
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const scrollContainer = document.getElementById('messenger-instructions-area');
+                      if (scrollContainer) {
+                        scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+                      }
+                    }}
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 px-6 rounded-2xl shadow-md flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer font-serif text-sm sm:text-base border border-primary/30"
+                  >
+                    <Sparkles className="w-4 h-4 shrink-0" />
+                    <span>{isKm ? 'របៀបបើកក្នុង Browser' : 'How to Open in Browser'}</span>
                   </button>
                 ) : (
                   /* Android Download Action */
