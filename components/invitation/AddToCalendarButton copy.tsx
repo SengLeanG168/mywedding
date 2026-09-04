@@ -105,11 +105,6 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
   );
   const isIosInApp = isIosTelegram || isIosMessenger || (isIOS && isInAppBrowser);
 
-  const isAndroidMessenger = isAndroid && (
-    isMessenger || 
-    (typeof window !== 'undefined' && /FBAN|FBAV|Messenger|Instagram|FB_IAB|FBSS|Facebook/i.test(window.navigator.userAgent || ''))
-  );
-
   const handleButtonClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -295,16 +290,6 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                         icon at the top.
                       </>
                     )
-                  ) : isAndroidMessenger ? (
-                    isKm ? (
-                      <>
-                        ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ សូមចុច “<span className="font-semibold text-primary">ទាញយក&បើកឯកសារ Calendar</span>” រួចចុច <span className="font-semibold text-foreground">Continue</span>។ បន្ទាប់មកឯកសារនឹងទាញយកដោយស្វ័យប្រវត្តិ រួចចុច <span className="font-semibold text-foreground">Open</span> ជ្រើសយក <span className="font-semibold text-foreground">Calendar</span> និងយក <span className="font-semibold text-foreground">Always</span> រួចចុច <span className="font-semibold text-foreground">Save to Calendar</span> ជាការស្រេច។ ដើម្បីអាចត្រឡប់ទៅកាន់ធៀបការវិញ សូមចុចសញ្ញា ថយក្រោយ នៅខាងលើ។
-                      </>
-                    ) : (
-                      <>
-                        To properly save the event to your calendar, tap “<span className="font-semibold text-primary">Download & Open Calendar</span>” and tap <span className="font-semibold text-foreground">Continue</span>. The file will download automatically, then tap <span className="font-semibold text-foreground">Open</span>, choose <span className="font-semibold text-foreground">Calendar</span> and select <span className="font-semibold text-foreground">Always</span>, then tap <span className="font-semibold text-foreground">Save to Calendar</span>. To return to the invitation, tap the Back button at the top.
-                      </>
-                    )
                   ) : (
                     isKm
                       ? 'បន្ទាប់ពីទាញយកឯកសារ Calendar រួច សូមចុចបើកឯកសារ .ics នោះ ហើយជ្រើសរើស “Save” ឬ “Add to Calendar” ដើម្បីរក្សាទុកថ្ងៃចូលរួម។'
@@ -313,8 +298,8 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                 </p>
               </div>
 
-              {/* Note Card */}
-              {(isIosMessenger || isIosTelegram || isAndroidMessenger) && (
+              {/* iOS Telegram & Messenger Note Card */}
+              {(isIosMessenger || isIosTelegram) && (
                 <div className="bg-primary/10 border border-primary/25 rounded-2xl p-3.5 space-y-1.5">
                   <div
                     className="flex items-center gap-1.5 text-primary text-sm tracking-wide font-normal"
@@ -332,11 +317,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                       textAlignLast: 'left',
                     }}
                   >
-                    {isAndroidMessenger ? (
-                      isKm
-                        ? 'ដោយសារនៅក្នុង Messenger មិនអាចរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានដោយផ្ទាល់ទេ ដូច្នេះត្រូវទាញយកឯកសារជាមុនសិន ទើបអាចរក្សាទុកទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ។'
-                        : 'Because Messenger cannot save the event date to your calendar directly, you need to download the file first so you can properly save the date to your calendar.'
-                    ) : isIosTelegram ? (
+                    {isIosTelegram ? (
                       isKm
                         ? 'ដោយសារតែនៅក្នុង Telegram មិនអាចរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានដោយផ្ទាល់បានទេ ដូច្នេះសូមបើកធៀបការនេះក្នុង Browser ខាងក្រៅជាមុនសិន ដើម្បីអាចចុចរក្សាទុកទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ។'
                         : 'Because Telegram cannot save the event date to your calendar directly, please open this invitation in an external browser first so you can properly save the date to your calendar.'
@@ -358,7 +339,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                     className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 px-6 rounded-2xl shadow-md flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer font-serif text-sm sm:text-base"
                   >
                     <Download className="w-5 h-5 shrink-0" />
-                    <span>{isKm ? 'ទាញយក&បើកឯកសារ Calendar' : 'Download & Open Calendar'}</span>
+                    <span>{isKm ? 'ទាញយក/បើកឯកសារ Calendar' : 'Download / Open Calendar'}</span>
                   </a>
                 )}
 
