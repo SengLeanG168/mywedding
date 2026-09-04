@@ -83,6 +83,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
     };
   }, [isModalOpen]);
 
+  const isIosTelegram = isIOS && isTelegram;
   const isIosMessenger = isIOS && isMessenger;
   const isIosInApp = isIOS && (isTelegram || isMessenger || isInAppBrowser);
   // Popup is used for iOS In-App Browsers (Messenger, Telegram, Facebook) and Android
@@ -162,10 +163,49 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                   <span>{isKm ? 'ការណែនាំ' : 'Instructions'}</span>
                 </div>
                 <p
-                  className="text-xs sm:text-sm text-foreground/90 font-normal leading-[1.8] px-1 text-left"
-                  style={{ fontFamily: 'var(--font-khmer-siemreap), "Khmer OS Siemreap", "Noto Sans Khmer", sans-serif' }}
+                  className="w-full text-xs sm:text-sm text-foreground/90 font-normal leading-[1.8] px-0.5"
+                  style={{
+                    fontFamily: 'var(--font-khmer-siemreap), "Khmer OS Siemreap", "Noto Sans Khmer", sans-serif',
+                    textAlign: 'justify',
+                    textJustify: 'inter-word',
+                    textAlignLast: 'left',
+                  }}
                 >
-                  {isIosInApp ? (
+                  {isIosTelegram ? (
+                    isKm ? (
+                      <>
+                        ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ សូមចុចសញ្ញា{' '}
+                        <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
+                          <MoreHorizontal className="w-3.5 h-3.5 shrink-0" />
+                        </span>{' '}
+                        នៅខាងលើ រួចជ្រើសយក <span className="font-semibold text-foreground">Open in Chrome, Safari...</span> បន្ទាប់មកធៀបការនឹងបើកសារជាថ្មី។ ក្រោយមកត្រូវចុច “<span className="font-semibold text-primary">សូមកត់ចំណាំថ្ងៃចូលរួម</span>” ម្ដងទៀត ហើយរើសយក <span className="font-semibold text-foreground">Continue</span> ប្រសិនបើប្រើប្រាស់ Chrome និងចុច <span className="font-semibold text-foreground">Add To Calendar</span> រួចចុចសញ្ញា{' '}
+                        <span className="inline-flex items-center justify-center align-middle mx-1 w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 leading-none border border-emerald-500/40 font-bold">
+                          <Check className="w-3 h-3 stroke-[3]" />
+                        </span>{' '}
+                        នៅខាងលើជាការស្រេច។ ដើម្បីអាចត្រឡប់ទៅកាន់ធៀបការវិញ សូមចុចសញ្ញា{' '}
+                        <span className="inline-flex items-center justify-center align-middle mx-1 w-4 h-4 rounded-full bg-destructive/20 text-destructive leading-none border border-destructive/40 font-bold">
+                          <X className="w-3 h-3 stroke-[3]" />
+                        </span>{' '}
+                        នៅខាងលើ។
+                      </>
+                    ) : (
+                      <>
+                        To properly save the event date to your calendar, tap the{' '}
+                        <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
+                          <MoreHorizontal className="w-3.5 h-3.5 shrink-0" />
+                        </span>{' '}
+                        icon at the top and select <span className="font-semibold text-foreground">Open in Chrome, Safari...</span> The invitation will open in your browser. Then tap “<span className="font-semibold text-primary">Add to Calendar</span>” again, choose <span className="font-semibold text-foreground">Continue</span> if using Chrome, and tap <span className="font-semibold text-foreground">Add To Calendar</span>, then tap the{' '}
+                        <span className="inline-flex items-center justify-center align-middle mx-1 w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 leading-none border border-emerald-500/40 font-bold">
+                          <Check className="w-3 h-3 stroke-[3]" />
+                        </span>{' '}
+                        icon at the top. To return to the invitation, tap the{' '}
+                        <span className="inline-flex items-center justify-center align-middle mx-1 w-4 h-4 rounded-full bg-destructive/20 text-destructive leading-none border border-destructive/40 font-bold">
+                          <X className="w-3 h-3 stroke-[3]" />
+                        </span>{' '}
+                        icon at the top.
+                      </>
+                    )
+                  ) : isIosInApp ? (
                     isKm ? (
                       <>
                         ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ សូមចុចសញ្ញា{' '}
@@ -207,9 +247,9 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                 </p>
               </div>
 
-              {/* iOS Messenger Note Card */}
-              {isIosMessenger && (
-                <div className="bg-primary/10 border border-primary/25 rounded-2xl p-3.5 text-left space-y-1.5">
+              {/* iOS Telegram & Messenger Note Card */}
+              {(isIosMessenger || isIosTelegram) && (
+                <div className="bg-primary/10 border border-primary/25 rounded-2xl p-3.5 space-y-1.5">
                   <div
                     className="flex items-center gap-1.5 text-primary text-sm tracking-wide font-normal"
                     style={{ fontFamily: 'var(--font-khmer-muol-light), "Khmer OS Muol Light", serif' }}
@@ -218,12 +258,23 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                     <span>{isKm ? 'ចំណាំ' : 'Note'}</span>
                   </div>
                   <p
-                    className="text-xs sm:text-[13px] text-foreground/90 font-normal leading-[1.8]"
-                    style={{ fontFamily: 'var(--font-khmer-siemreap), "Khmer OS Siemreap", "Noto Sans Khmer", sans-serif' }}
+                    className="w-full text-xs sm:text-[13px] text-foreground/90 font-normal leading-[1.8] px-0.5"
+                    style={{
+                      fontFamily: 'var(--font-khmer-siemreap), "Khmer OS Siemreap", "Noto Sans Khmer", sans-serif',
+                      textAlign: 'justify',
+                      textJustify: 'inter-word',
+                      textAlignLast: 'left',
+                    }}
                   >
-                    {isKm
-                      ? 'ដោយសារតែនៅក្នុង Messenger មិនអាចរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានដោយផ្ទាល់បានទេ ដូច្នេះសូមបើកធៀបការនេះក្នុង Browser ខាងក្រៅជាមុនសិន ដើម្បីអាចចុចរក្សាទុកទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ។'
-                      : 'Because Messenger cannot save the event date to your calendar directly, please open this invitation in an external browser first so you can properly save the date to your calendar.'}
+                    {isIosTelegram ? (
+                      isKm
+                        ? 'ដោយសារតែនៅក្នុង Telegram មិនអាចរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានដោយផ្ទាល់បានទេ ដូច្នេះសូមបើកធៀបការនេះក្នុង Browser ខាងក្រៅជាមុនសិន ដើម្បីអាចចុចរក្សាទុកទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ។'
+                        : 'Because Telegram cannot save the event date to your calendar directly, please open this invitation in an external browser first so you can properly save the date to your calendar.'
+                    ) : (
+                      isKm
+                        ? 'ដោយសារតែនៅក្នុង Messenger មិនអាចរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានដោយផ្ទាល់ទេ ដូច្នេះសូមបើកធៀបការនេះក្នុង Browser ខាងក្រៅជាមុនសិន ដើម្បីអាចចុចរក្សាទុកទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ។'
+                        : 'Because Messenger cannot save the event date to your calendar directly, please open this invitation in an external browser first so you can properly save the date to your calendar.'
+                    )}
                   </p>
                 </div>
               )}
