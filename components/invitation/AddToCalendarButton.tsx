@@ -75,6 +75,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
   }, [isModalOpen]);
 
   const isIosInApp = isIOS && (isTelegram || isMessenger || isInAppBrowser);
+  const isIosMessenger = isIOS && isMessenger;
   // Popup is used for iOS In-App Browsers (Telegram, Messenger, Facebook) and Android
   const usePopup = mounted && (isIosInApp || isAndroid);
 
@@ -169,24 +170,22 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
           />
 
           {/* Top Down Popup Panel */}
-          <div className="fixed top-0 left-0 right-0 z-[9999] w-full max-w-[430px] mx-auto bg-card border-b border-x border-primary/40 rounded-b-3xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] overflow-hidden flex flex-col pt-[calc(18px+env(safe-area-inset-top,16px))] px-[18px] pb-5 max-h-[80dvh] animate-in slide-in-from-top duration-300">
+          <div className="fixed top-0 left-0 right-0 z-[9999] w-full max-w-[430px] mx-auto bg-card border-b border-x border-primary/40 rounded-b-3xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] overflow-hidden flex flex-col pt-[calc(18px+env(safe-area-inset-top,16px))] px-[18px] pb-5 max-h-[85dvh] animate-in slide-in-from-top duration-300">
             
             {/* Scrollable Content Area inside Top Down Panel */}
             <div
-              className="overflow-y-auto max-h-[calc(80dvh-40px)] space-y-4 text-center pr-1"
+              className="overflow-y-auto max-h-[calc(85dvh-40px)] space-y-4 text-center pr-1"
               style={{ WebkitOverflowScrolling: 'touch' }}
             >
               {/* Header / Title */}
               <div className="flex flex-col items-center space-y-1.5 pt-1">
                 <div className="w-12 h-12 rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center text-primary shadow-inner mb-1">
-                  {isIosInApp ? (
-                    <Globe className="w-6 h-6 text-primary" />
-                  ) : (
-                    <CalendarIcon className="w-6 h-6 text-primary" />
-                  )}
+                  <CalendarIcon className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="text-lg sm:text-xl font-serif font-bold text-foreground">
-                  {isIosInApp
+                  {isIosMessenger
+                    ? (isKm ? 'សូមកត់ចំណាំថ្ងៃចូលរួម' : 'Add to Calendar')
+                    : isIosInApp
                     ? (isKm ? 'សូមបើកក្នុង Browser' : 'Please Open in Browser')
                     : (isKm ? 'កំណត់ចំណាំថ្ងៃចូលរួម' : 'Save Event to Calendar')}
                 </h3>
@@ -198,8 +197,12 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                   <Sparkles className="w-3.5 h-3.5 shrink-0" />
                   <span>{isKm ? 'ការណែនាំ' : 'Instructions'}</span>
                 </div>
-                <p className="text-xs sm:text-sm text-foreground/90 font-serif leading-relaxed px-1">
-                  {isIosInApp
+                <p className="text-xs sm:text-sm text-foreground/90 font-serif leading-relaxed px-1 text-left sm:text-center">
+                  {isIosMessenger
+                    ? (isKm
+                        ? 'ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ សូមចុចសញ្ញា ... នៅខាងលើ រួចបើក Open in external browser បន្ទាប់មកចុច សូមកត់ចំណាំថ្ងៃចូលរួមម្ដងទៀត រួចចុច Continue និងចុច Add To Calendar រួចចុចសញ្ញា គ្រីស នៅខាងលើជាការស្រេច។ ហើយដើម្បីត្រឡប់ទៅកាន់ធៀបវិញបន្ទាប់ពីចុចសញ្ញាគ្រីស សូមចុចសញ្ញា ខ្វែងនៅខាងលើ។'
+                        : 'To properly save the event date to your calendar, tap the ... icon at the top and select Open in external browser. Then tap Add to Calendar again, tap Continue and Add To Calendar, then tap the Checkmark icon at the top to finish. To return to the invitation, tap the X icon at the top.')
+                    : isIosInApp
                     ? (isKm
                         ? 'ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅ Calendar បានត្រឹមត្រូវ សូមបើក Link នេះក្នុង Browser ខាងក្រៅជាមុនសិន។'
                         : 'To save the event date to Calendar properly, please open this link in an external browser first.')
@@ -209,16 +212,14 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                 </p>
               </div>
 
-              {/* iOS In-App Helper Guide (Telegram vs Messenger) */}
-              {isIosInApp && (
+              {/* iOS In-App Helper Guide (for Telegram or other in-app browsers, not Messenger) */}
+              {isIosInApp && !isIosMessenger && (
                 <div className="bg-primary/10 border border-primary/25 rounded-2xl p-3 text-left space-y-1.5">
                   <p className="text-xs font-serif text-primary/90 font-semibold flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 shrink-0" />
                     <span>
                       {isTelegram
                         ? (isKm ? 'របៀបបើកក្នុង Telegram' : 'How to open in Telegram')
-                        : isMessenger
-                        ? (isKm ? 'របៀបបើកក្នុង Messenger' : 'How to open in Messenger')
                         : (isKm ? 'របៀបបើកក្នុង Browser ខាងក្រៅ' : 'How to open in External Browser')}
                     </span>
                   </p>
@@ -227,10 +228,6 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                       ? (isKm
                           ? 'សូមចុចប៊ូតុង Share ឬ … ខាងលើ រួចជ្រើសរើស “Open in Browser” ឬ “Open in Safari/Chrome” ប្រសិនបើមាន។'
                           : 'Tap the Share or … button above and choose "Open in Browser" or "Open in Safari/Chrome" if available.')
-                      : isMessenger
-                      ? (isKm
-                          ? 'សូមចុច … ខាងលើ រួចជ្រើសរើស “Open in Browser” ឬ “Open in External Browser”។ បន្ទាប់មកចុចប៊ូតុង “សូមកត់ចំណាំថ្ងៃចូលរួម” ម្តងទៀត។'
-                          : 'Tap … above and choose "Open in Browser" or "Open in External Browser". Then tap "Add to Calendar" again.')
                       : (isKm
                           ? 'សូមចុចសញ្ញា … ឬ Share ខាងលើ រួចជ្រើសរើស “Open in Browser” ដើម្បីបើកក្នុង Browser ខាងក្រៅ។'
                           : 'Tap … or Share above and choose "Open in Browser" to open in an external browser.')}
