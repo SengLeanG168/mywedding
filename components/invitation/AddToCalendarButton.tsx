@@ -11,6 +11,35 @@ interface AddToCalendarButtonProps {
   guestName?: string;
 }
 
+// Robust platform & in-app browser detection helpers
+const isTelegramUserAgent = (ua: string, ref: string = '') => {
+  return (
+    /Telegram|Telegram-Android|TelegramAndroid|org\.telegram\.messenger|org\.telegram\.plus|TGWeb|Telegram-iOS|TelegramBot|\bTG\b/i.test(ua) ||
+    /t\.me|telegram|org\.telegram\.messenger|org\.telegram\.plus/i.test(ref) ||
+    (typeof window !== 'undefined' && (
+      Boolean((window as any).Telegram) ||
+      Boolean((window as any).TelegramWebview) ||
+      Boolean((window as any).TelegramWebviewProxy) ||
+      Boolean((window as any).TelegramGameProxy) ||
+      Boolean(new URLSearchParams(window.location.search).get('tgWebAppPlatform')) ||
+      Boolean(new URLSearchParams(window.location.search).get('tg')) ||
+      window.location.hash.includes('tgWebAppData')
+    ))
+  );
+};
+
+const isMessengerUserAgent = (ua: string) => {
+  return /FBAN|FBAV|Messenger|Instagram|FB_IAB|FBSS|Facebook/i.test(ua);
+};
+
+const isIOSDevice = (ua: string) => {
+  return /iPad|iPhone|iPod/.test(ua) || (typeof navigator !== 'undefined' && navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+};
+
+const isAndroidDevice = (ua: string) => {
+  return /Android/i.test(ua);
+};
+
 export default function AddToCalendarButton({ event, locale, guestId }: AddToCalendarButtonProps) {
   const [isIOS, setIsIOS] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
@@ -43,14 +72,10 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
     if (typeof window !== 'undefined') {
       const ua = window.navigator.userAgent || '';
       const ref = typeof document !== 'undefined' ? document.referrer || '' : '';
-      const ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      const android = /Android/i.test(ua);
-      const telegram = /Telegram|TGWeb|Telegram-iOS|TelegramBot|TG/i.test(ua) || 
-        /t\.me|telegram/i.test(ref) ||
-        Boolean((window as any).Telegram) ||
-        Boolean((window as any).TelegramWebview) ||
-        Boolean((window as any).TelegramWebviewProxy);
-      const messenger = /FBAN|FBAV|Messenger|Instagram|FB_IAB|FBSS|Facebook/i.test(ua);
+      const ios = isIOSDevice(ua);
+      const android = isAndroidDevice(ua);
+      const telegram = isTelegramUserAgent(ua, ref);
+      const messenger = isMessengerUserAgent(ua);
       const inApp = telegram || messenger || !/Safari/i.test(ua) || /Line|Twitter|MicroMessenger/i.test(ua);
       
       setIsIOS(ios);
@@ -58,19 +83,6 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
       setIsTelegram(telegram);
       setIsMessenger(messenger);
       setIsInAppBrowser(inApp);
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[AddToCalendarButton]', {
-          userAgent: ua,
-          referrer: ref,
-          isIOS: ios,
-          isAndroid: android,
-          isTelegram: telegram,
-          isMessenger: messenger,
-          isInAppBrowser: inApp,
-          calendarIcsUrl,
-        });
-      }
     }
   }, [calendarIcsUrl]);
 
@@ -89,36 +101,35 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
     };
   }, [isModalOpen]);
 
-  const isIosTelegram = isIOS && (
-    isTelegram || 
-    (typeof window !== 'undefined' && (
-      /Telegram|TGWeb|Telegram-iOS|TelegramBot|TG/i.test(window.navigator.userAgent || '') ||
-      (typeof document !== 'undefined' && /t\.me|telegram/i.test(document.referrer || '')) ||
-      Boolean((window as any).Telegram) ||
-      Boolean((window as any).TelegramWebview) ||
-      Boolean((window as any).TelegramWebviewProxy)
-    ))
-  );
-  const isIosMessenger = isIOS && (
-    isMessenger || 
-    (typeof window !== 'undefined' && /FBAN|FBAV|Messenger|Instagram|FB_IAB|FBSS|Facebook/i.test(window.navigator.userAgent || ''))
-  );
-  const isIosInApp = isIosTelegram || isIosMessenger || (isIOS && isInAppBrowser);
+  const currentUa = typeof window !== 'undefined' ? window.navigator.userAgent || '' : '';
+  const currentRef = typeof document !== 'undefined' ? document.referrer || '' : '';
 
-  const isAndroidTelegram = isAndroid && (
-    isTelegram || 
-    (typeof window !== 'undefined' && (
-      /Telegram|TGWeb|Telegram-iOS|TelegramBot|TG/i.test(window.navigator.userAgent || '') ||
-      (typeof document !== 'undefined' && /t\.me|telegram/i.test(document.referrer || '')) ||
-      Boolean((window as any).Telegram) ||
-      Boolean((window as any).TelegramWebview) ||
-      Boolean((window as any).TelegramWebviewProxy)
-    ))
-  );
-  const isAndroidMessenger = isAndroid && (
-    isMessenger || 
-    (typeof window !== 'undefined' && /FBAN|FBAV|Messenger|Instagram|FB_IAB|FBSS|Facebook/i.test(window.navigator.userAgent || ''))
-  );
+  const isCurrentTelegram = isTelegram || isTelegramUserAgent(currentUa, currentRef);
+  const isCurrentMessenger = isMessenger || isMessengerUserAgent(currentUa);
+  const isCurrentIOS = isIOS || isIOSDevice(currentUa);
+  const isCurrentAndroid = isAndroid || isAndroidDevice(currentUa);
+
+  // Platform and in-app browser routing states
+  const isIosTelegram = isCurrentIOS && isCurrentTelegram;
+  const isIosMessenger = isCurrentIOS && isCurrentMessenger;
+  const isIosInApp = isIosTelegram || isIosMessenger || (isCurrentIOS && (isInAppBrowser || !/Safari/i.test(currentUa)));
+
+  const isAndroidTelegram = isCurrentAndroid && isCurrentTelegram;
+  const isAndroidMessenger = isCurrentAndroid && isCurrentMessenger;
+
+  let popupType = 'default';
+  if (isIosTelegram) popupType = 'ios_telegram';
+  else if (isIosMessenger) popupType = 'ios_messenger';
+  else if (isIosInApp) popupType = 'ios_inapp';
+  else if (isAndroidTelegram) popupType = 'android_telegram';
+  else if (isAndroidMessenger) popupType = 'android_messenger';
+  else if (isCurrentAndroid) popupType = 'android_generic';
+
+  useEffect(() => {
+    if (isModalOpen && process.env.NODE_ENV === 'development') {
+      console.log("Calendar popup platform:", { isAndroid: isCurrentAndroid, isTelegram: isCurrentTelegram, popupType });
+    }
+  }, [isModalOpen, isCurrentAndroid, isCurrentTelegram, popupType]);
 
   const handleButtonClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -127,17 +138,14 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
     if (typeof window !== 'undefined') {
       const ua = window.navigator.userAgent || '';
       const ref = typeof document !== 'undefined' ? document.referrer || '' : '';
-      const ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      const android = /Android/i.test(ua);
-      const telegram = isTelegram || /Telegram|TGWeb|Telegram-iOS|TelegramBot|TG/i.test(ua) || 
-        /t\.me|telegram/i.test(ref) ||
-        Boolean((window as any).Telegram) ||
-        Boolean((window as any).TelegramWebview) ||
-        Boolean((window as any).TelegramWebviewProxy);
-      const messenger = isMessenger || /FBAN|FBAV|Messenger|Instagram|FB_IAB|FBSS|Facebook/i.test(ua);
+      const ios = isIOSDevice(ua);
+      const android = isAndroidDevice(ua);
+      const telegram = isTelegramUserAgent(ua, ref);
+      const messenger = isMessengerUserAgent(ua);
       const inApp = isInAppBrowser || telegram || messenger || !/Safari/i.test(ua) || /Line|Twitter|MicroMessenger/i.test(ua);
 
-      // 1. Check iOS Telegram FIRST -> open Telegram popup (NEVER download .ics)
+      // Routing order:
+      // 1. iOS Telegram -> open Telegram popup (NEVER download .ics directly)
       if (ios && telegram) {
         setIsIOS(true);
         setIsTelegram(true);
@@ -145,7 +153,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
         return;
       }
 
-      // 2. Check iOS Messenger/Facebook -> open Messenger popup
+      // 2. iOS Messenger/Facebook -> open Messenger popup
       if (ios && messenger) {
         setIsIOS(true);
         setIsMessenger(true);
@@ -153,15 +161,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
         return;
       }
 
-      // 3. Check general iOS In-App Browser -> open popup
-      if (ios && inApp) {
-        setIsIOS(true);
-        setIsInAppBrowser(true);
-        setIsModalOpen(true);
-        return;
-      }
-
-      // 4. Check Android Telegram -> open Android Telegram popup
+      // 3. Android Telegram -> open Android Telegram popup
       if (android && telegram) {
         setIsAndroid(true);
         setIsTelegram(true);
@@ -169,7 +169,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
         return;
       }
 
-      // 5. Check Android Messenger -> open Android Messenger popup
+      // 4. Android Messenger/Facebook -> open Android Messenger popup
       if (android && messenger) {
         setIsAndroid(true);
         setIsMessenger(true);
@@ -177,7 +177,15 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
         return;
       }
 
-      // 6. Check Android -> open Android popup
+      // 5. General iOS In-App Browser -> open popup
+      if (ios && inApp) {
+        setIsIOS(true);
+        setIsInAppBrowser(true);
+        setIsModalOpen(true);
+        return;
+      }
+
+      // 6. Android external browser -> open Android popup
       if (android || isAndroid) {
         setIsAndroid(true);
         setIsModalOpen(true);

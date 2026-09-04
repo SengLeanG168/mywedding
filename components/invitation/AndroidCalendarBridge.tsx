@@ -86,7 +86,7 @@ export default function AndroidCalendarBridge({
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3.5 px-6 rounded-2xl shadow-md flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer font-serif text-sm sm:text-base"
           >
             <Download className="w-5 h-5 shrink-0" />
-            <span>{isKm ? 'ទាញយក/បើកឯកសារ Calendar' : 'Download / Open Calendar'}</span>
+            <span>{isKm ? 'ទាញយក&បើកឯកសារ Calendar' : 'Download & Open Calendar'}</span>
           </a>
 
           {/* Button 2: Return directly to Main Invitation Content */}
