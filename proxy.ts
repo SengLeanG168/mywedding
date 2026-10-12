@@ -5,20 +5,17 @@ import { verifyToken } from './lib/auth';
 
 const intlMiddleware = createMiddleware(routing);
 
-export default async function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   
-  // If URL contains /en/invite, redirect to /invite (Khmer only public invitation)
-  if (pathname.startsWith('/en/invite')) {
+  // If URL contains /en prefix (e.g. /en, /en/..., /en/invite/..., /en/dashboard/...), redirect to Khmer route
+  if (pathname === '/en' || pathname.startsWith('/en/')) {
     const url = request.nextUrl.clone();
-    url.pathname = pathname.replace(/^\/en\/invite/, '/invite');
+    url.pathname = pathname.replace(/^\/en(\/|$)/, '/$1') || '/';
     return NextResponse.redirect(url);
   }
 
-  // Apply next-intl middleware first to get the response with locale
-  const response = intlMiddleware(request);
-
-  // Check if it's a protected route
+  // Check if it's a protected dashboard route
   const isDashboard = pathname.includes('/dashboard');
   if (isDashboard) {
     const token = request.cookies.get('session')?.value;
@@ -34,8 +31,11 @@ export default async function proxy(request: NextRequest) {
     }
   }
 
-  return response;
+  // Apply next-intl routing
+  return intlMiddleware(request);
 }
+
+export default proxy;
 
 export const config = {
   matcher: ['/', '/((?!api|_next|_vercel|.*\\..*).*)'],

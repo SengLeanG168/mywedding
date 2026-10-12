@@ -130,6 +130,66 @@ export async function optimizeAudioFile(file: File): Promise<File> {
   });
 }
 
+export function isLocalDevelopment(): boolean {
+  if (process.env.NODE_ENV === 'development') return true;
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    return host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
+  }
+  return false;
+}
+
+export function getUploadLimitBytes(
+  type: 'image' | 'video' | 'audio' | string,
+  isLocalDev: boolean,
+  blobEnabled: boolean
+): number {
+  if (isLocalDev) {
+    switch (type) {
+      case 'image':
+        return 50 * 1024 * 1024; // 50MB
+      case 'video':
+        return 500 * 1024 * 1024; // 500MB
+      case 'audio':
+        return 100 * 1024 * 1024; // 100MB
+      default:
+        return 50 * 1024 * 1024; // 50MB
+    }
+  }
+
+  if (blobEnabled) {
+    switch (type) {
+      case 'image':
+        return 25 * 1024 * 1024; // 25MB
+      case 'video':
+        return 250 * 1024 * 1024; // 250MB
+      case 'audio':
+        return 50 * 1024 * 1024; // 50MB
+      default:
+        return 25 * 1024 * 1024; // 25MB
+    }
+  }
+
+  // Production server/local fallback without Blob
+  return 8 * 1024 * 1024; // 8MB
+}
+
+export function formatSizeLimitErrorMessage(
+  fileSize: number,
+  limitBytes: number,
+  isLocalDev: boolean,
+  blobEnabled: boolean
+): string {
+  const sizeMB = (fileSize / (1024 * 1024)).toFixed(1).replace(/\.0$/, '');
+  const limitMB = Math.round(limitBytes / (1024 * 1024));
+
+  if (!isLocalDev && !blobEnabled) {
+    return `ទំហំឯកសារធំពេក។ ឯកសារនេះមានទំហំ ${sizeMB}MB ប៉ុន្តែអនុញ្ញាតត្រឹម ${limitMB}MB ប៉ុណ្ណោះ។ ឯកសារនេះធំពេកសម្រាប់ upload តាម Server។ សូមប្រើ Vercel Blob ឬ upload ទៅ Hostinger media subdomain រួចយក URL មកដាក់។`;
+  }
+
+  return `ទំហំឯកសារធំពេក។ ឯកសារនេះមានទំហំ ${sizeMB}MB ប៉ុន្តែអនុញ្ញាតត្រឹម ${limitMB}MB ប៉ុណ្ណោះ។`;
+}
+
 let blobStatusCache: { blobEnabled: boolean; isProduction: boolean } | null = null;
 let hasWarnedMissingToken = false;
 
@@ -138,11 +198,7 @@ async function getBlobStatus(): Promise<{ blobEnabled: boolean; isProduction: bo
     return blobStatusCache;
   }
 
-  const isLocalHost =
-    typeof window !== 'undefined' &&
-    (window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1' ||
-      window.location.hostname.endsWith('.local'));
+  const isLocalHost = isLocalDevelopment();
 
   try {
     const res = await fetch('/api/upload/blob', { method: 'GET' });
@@ -170,6 +226,15 @@ export async function uploadClientFile(
   type: 'image' | 'video' | 'audio',
   options?: { autoOptimizeSocialPreview?: boolean }
 ): Promise<string> {
+  const isLocalDev = isLocalDevelopment();
+  const { blobEnabled, isProduction } = await getBlobStatus();
+  const maxSizeBytes = getUploadLimitBytes(type, isLocalDev, blobEnabled);
+
+  // Validate initial file size before processing
+  if (file.size > maxSizeBytes) {
+    throw new Error(formatSizeLimitErrorMessage(file.size, maxSizeBytes, isLocalDev, blobEnabled));
+  }
+
   let fileToUpload = file;
 
   if (type === 'image') {
@@ -179,7 +244,7 @@ export async function uploadClientFile(
       } catch (err) {
         console.warn('Social preview optimization warning, using original file:', err);
       }
-    } else if (file.size > 3 * 1024 * 1024) {
+    } else if (file.size > 3 * 1024 * 1024 && !file.type.includes('svg')) {
       try {
         const imageCompression = (await import('browser-image-compression')).default;
         const compressedBlob = await imageCompression(file, {
@@ -201,21 +266,24 @@ export async function uploadClientFile(
     fileToUpload = await optimizeAudioFile(file);
   }
 
-  const { blobEnabled, isProduction } = await getBlobStatus();
+  // Validate post-compression file size
+  if (fileToUpload.size > maxSizeBytes) {
+    throw new Error(formatSizeLimitErrorMessage(fileToUpload.size, maxSizeBytes, isLocalDev, blobEnabled));
+  }
 
   // If BLOB_READ_WRITE_TOKEN is not configured:
   if (!blobEnabled) {
-    // In production, require BLOB_READ_WRITE_TOKEN to prevent loss of files
-    if (isProduction) {
+    // In production without Blob, disallow large files that exceed server limits
+    if (isProduction && !isLocalDev) {
       throw new Error(
-        'មិនទាន់បានកំណត់ BLOB_READ_WRITE_TOKEN ទេ។ សូមកំណត់ BLOB_READ_WRITE_TOKEN ក្នុង Environment Variables លើ Vercel សម្រាប់ Upload ឯកសារ។'
+        'មិនទាន់បានកំណត់ BLOB_READ_WRITE_TOKEN ទេ។ សូមកំណត់ BLOB_READ_WRITE_TOKEN ក្នុង Environment Variables លើ Vercel សម្រាប់ Upload ឯកសារ ឬ upload ទៅ Hostinger media subdomain រួចយក URL មកដាក់។'
       );
     }
 
     // In local development, bypass @vercel/blob completely and go straight to local server upload
     if (!hasWarnedMissingToken) {
       console.info(
-        'មិនទាន់បានកំណត់ BLOB_READ_WRITE_TOKEN ទេ។ Upload នឹងប្រើ local fallback សម្រាប់ development ប៉ុណ្ណោះ។'
+        'BLOB_READ_WRITE_TOKEN មិនត្រូវបានកំណត់។ Upload ដំណើរការតាម Local fallback សម្រាប់ localhost development។'
       );
       hasWarnedMissingToken = true;
     }
@@ -234,9 +302,9 @@ export async function uploadClientFile(
       return data.url || data.path;
     }
 
-    let errorMessage = data.error || 'File upload failed';
+    let errorMessage = data.error || 'ការបង្ហោះឯកសារបរាជ័យ';
     if (data.error === 'File is too large') {
-      errorMessage = 'ទំហំឯកសារធំពេក! សូមជ្រើសរើសរូបភាព/វីដេអូដែលមានទំហំតូចជាង (File is too large)';
+      errorMessage = formatSizeLimitErrorMessage(fileToUpload.size, maxSizeBytes, isLocalDev, blobEnabled);
     }
 
     throw new Error(errorMessage);
@@ -253,7 +321,7 @@ export async function uploadClientFile(
     }
   } catch (blobErr: any) {
     console.warn('Vercel Blob client upload fallback triggered:', blobErr);
-    if (isProduction && fileToUpload.size > 4.5 * 1024 * 1024) {
+    if (isProduction && !isLocalDev && fileToUpload.size > 4.5 * 1024 * 1024) {
       throw new Error(`Upload ទៅ Vercel Blob បរាជ័យ: ${blobErr?.message || blobErr}`);
     }
   }
@@ -273,9 +341,9 @@ export async function uploadClientFile(
     return data.url || data.path;
   }
 
-  let errorMessage = data.error || 'File upload failed';
+  let errorMessage = data.error || 'ការបង្ហោះឯកសារបរាជ័យ';
   if (data.error === 'File is too large') {
-    errorMessage = 'ទំហំឯកសារធំពេក! សូមជ្រើសរើសរូបភាព/វីដេអូដែលមានទំហំតូចជាង (File is too large)';
+    errorMessage = formatSizeLimitErrorMessage(fileToUpload.size, maxSizeBytes, isLocalDev, blobEnabled);
   }
 
   throw new Error(errorMessage);

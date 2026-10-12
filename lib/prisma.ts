@@ -11,7 +11,17 @@ declare const globalThis: {
 } & typeof global;
 
 // Ensure that whenever Prisma schema changes or hot-reloading happens, we always have a fresh valid PrismaClient
-const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
+let prismaInstance = globalThis.prismaGlobal;
+
+if (
+  prismaInstance &&
+  (!(prismaInstance as any)?.event?.fields?.thankYouFrameImageUrl ||
+   !(prismaInstance as any)?.event?.fields?.apologyFrameImageUrl)
+) {
+  prismaInstance = prismaClientSingleton();
+}
+
+const prisma = prismaInstance ?? prismaClientSingleton();
 
 export default prisma;
 

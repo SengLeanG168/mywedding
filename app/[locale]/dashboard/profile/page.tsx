@@ -66,12 +66,12 @@ export default function AdminProfilePage() {
     // Client-side Validation (jpg, jpeg, png, webp, max 5MB)
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
-      setProfileError('Unsupported file type. Please upload JPG, PNG, or WEBP.');
+      setProfileError('ប្រភេទឯកសារមិនត្រឹមត្រូវ។ សូមបង្ហោះជា JPG, PNG, ឬ WEBP។');
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      setProfileError('File is too large. Maximum size is 5MB.');
+      setProfileError('ទំហំឯកសារធំពេក។ ទំហំអតិបរមាគឺ 5MB។');
       return;
     }
 
@@ -79,10 +79,10 @@ export default function AdminProfilePage() {
       setUploadingImage(true);
       const url = await uploadClientFile(file, 'image');
       setAvatarUrl(url);
-      setProfileSuccess(t('profileSavedSuccessfully'));
+      setProfileSuccess(t('profileSavedSuccessfully') || 'បានរក្សាទុកព័ត៌មានដោយជោគជ័យ');
     } catch (err: any) {
       console.error(err);
-      setProfileError(err?.message || 'Image upload failed');
+      setProfileError(err?.message || 'បង្ហោះរូបភាពមិនបានជោគជ័យ');
     } finally {
       setUploadingImage(false);
     }
@@ -98,7 +98,7 @@ export default function AdminProfilePage() {
     setProfileSuccess('');
 
     if (!email.trim()) {
-      setProfileError(t('invalidEmail'));
+      setProfileError(t('invalidEmail') || 'សូមបញ្ចូលអ៊ីមែល');
       return;
     }
 
@@ -119,15 +119,15 @@ export default function AdminProfilePage() {
         setName(data.name);
         setEmail(data.email);
         setAvatarUrl(data.avatarUrl);
-        setProfileSuccess(t('profileSavedSuccessfully'));
+        setProfileSuccess(t('profileSavedSuccessfully') || 'បានរក្សាទុកព័ត៌មានដោយជោគជ័យ');
         // Reload layout window to refresh avatar header
         window.location.reload();
       } else {
-        setProfileError(data.error || 'Failed to save profile');
+        setProfileError(data.error || 'មិនអាចរក្សាទុកព័ត៌មានបានទេ');
       }
     } catch (err) {
       console.error(err);
-      setProfileError('Failed to save profile');
+      setProfileError('មិនអាចរក្សាទុកព័ត៌មានបានទេ');
     } finally {
       setSavingProfile(false);
     }
@@ -139,17 +139,17 @@ export default function AdminProfilePage() {
     setPasswordSuccess('');
 
     if (!currentPassword) {
-      setPasswordError(t('currentPasswordIncorrect'));
+      setPasswordError(t('currentPasswordIncorrect') || 'ពាក្យសម្ងាត់បច្ចុប្បន្នមិនត្រឹមត្រូវ');
       return;
     }
 
     if (newPassword.length < 8) {
-      setPasswordError('New password must be at least 8 characters');
+      setPasswordError('ពាក្យសម្ងាត់ថ្មីត្រូវមានយ៉ាងតិច ៨ តួអក្សរ');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setPasswordError(t('passwordsDoNotMatch'));
+      setPasswordError(t('passwordsDoNotMatch') || 'ពាក្យសម្ងាត់ថ្មីមិនដូចគ្នា');
       return;
     }
 
@@ -167,16 +167,16 @@ export default function AdminProfilePage() {
 
       const data = await res.json();
       if (res.ok) {
-        setPasswordSuccess(t('passwordChangedSuccessfully'));
+        setPasswordSuccess(t('passwordChangedSuccessfully') || 'បានប្ដូរពាក្យសម្ងាត់ដោយជោគជ័យ');
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
       } else {
-        setPasswordError(data.error || t('currentPasswordIncorrect'));
+        setPasswordError(data.error || t('currentPasswordIncorrect') || 'ពាក្យសម្ងាត់បច្ចុប្បន្នមិនត្រឹមត្រូវ');
       }
     } catch (err) {
       console.error(err);
-      setPasswordError('Failed to change password');
+      setPasswordError('មិនអាចប្ដូរពាក្យសម្ងាត់បានទេ');
     } finally {
       setSavingPassword(false);
     }
@@ -196,9 +196,9 @@ export default function AdminProfilePage() {
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in pb-12">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold font-serif text-primary">{t('title')}</h1>
+        <h1 className="text-3xl font-bold font-serif text-primary">{t('title') || 'ព័ត៌មានគណនី'}</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          {t('title')} - Manage your admin account details, avatar, and password
+          គ្រប់គ្រងព័ត៌មានគណនី Admin រូបតំណាង និងពាក្យសម្ងាត់សុវត្ថិភាព
         </p>
       </div>
 
@@ -209,10 +209,10 @@ export default function AdminProfilePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl font-serif text-primary">
                 <User className="w-5 h-5" />
-                {t('title')}
+                {t('title') || 'ព័ត៌មានគណនី'}
               </CardTitle>
               <CardDescription>
-                Update your avatar image, display name, and login email address.
+                កែប្រែរូបភាពគណនី ឈ្មោះបង្ហាញ និងអាសយដ្ឋានអ៊ីមែល
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -233,9 +233,9 @@ export default function AdminProfilePage() {
                   </div>
 
                   <div className="space-y-2 text-center sm:text-left flex-1">
-                    <h4 className="text-sm font-semibold text-foreground">{t('profileImage')}</h4>
+                    <h4 className="text-sm font-semibold text-foreground">{t('profileImage') || 'រូបភាពគណនី'}</h4>
                     <p className="text-xs text-muted-foreground">
-                      JPG, PNG or WEBP (Max 5MB)
+                      JPG, PNG ឬ WEBP (ទំហំអតិបរមា 5MB)
                     </p>
 
                     <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
@@ -249,7 +249,7 @@ export default function AdminProfilePage() {
                         />
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors shadow-sm cursor-pointer">
                           <Upload className="w-3.5 h-3.5" />
-                          {t('changeImage')}
+                          {t('changeImage') || 'ប្ដូររូបភាព'}
                         </span>
                       </label>
 
@@ -262,7 +262,7 @@ export default function AdminProfilePage() {
                           className="text-xs text-destructive hover:bg-destructive/10 border-destructive/30"
                         >
                           <Trash2 className="w-3.5 h-3.5 mr-1" />
-                          {t('removeImage')}
+                          {t('removeImage') || 'លុបរូបភាព'}
                         </Button>
                       )}
                     </div>
@@ -288,13 +288,13 @@ export default function AdminProfilePage() {
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                       <User className="w-3.5 h-3.5" />
-                      {t('name')}
+                      {t('name') || 'ឈ្មោះ'}
                     </label>
                     <Input
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="Admin Name"
+                      placeholder="ឈ្មោះ Admin"
                       required
                       className="bg-card"
                     />
@@ -303,7 +303,7 @@ export default function AdminProfilePage() {
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                       <Mail className="w-3.5 h-3.5" />
-                      {t('email')}
+                      {t('email') || 'អ៊ីមែល'}
                     </label>
                     <Input
                       type="email"
@@ -321,10 +321,10 @@ export default function AdminProfilePage() {
                   {savingProfile ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      {t('saving')}
+                      {t('saving') || 'កំពុងរក្សាទុក...'}
                     </>
                   ) : (
-                    t('saveProfile')
+                    t('saveProfile') || 'រក្សាទុកព័ត៌មាន'
                   )}
                 </Button>
               </form>
@@ -338,10 +338,10 @@ export default function AdminProfilePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl font-serif text-primary">
                 <ShieldCheck className="w-5 h-5" />
-                {t('changePassword')}
+                {t('changePassword') || 'ប្ដូរពាក្យសម្ងាត់'}
               </CardTitle>
               <CardDescription>
-                Ensure your account is using a strong password.
+                កំណត់ពាក្យសម្ងាត់ថ្មីដែលមានសុវត្ថិភាពខ្ពស់
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -363,7 +363,7 @@ export default function AdminProfilePage() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                     <Lock className="w-3.5 h-3.5" />
-                    {t('currentPassword')}
+                    {t('currentPassword') || 'ពាក្យសម្ងាត់បច្ចុប្បន្ន'}
                   </label>
                   <Input
                     type="password"
@@ -377,7 +377,7 @@ export default function AdminProfilePage() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                     <Lock className="w-3.5 h-3.5" />
-                    {t('newPassword')}
+                    {t('newPassword') || 'ពាក្យសម្ងាត់ថ្មី'}
                   </label>
                   <Input
                     type="password"
@@ -387,13 +387,13 @@ export default function AdminProfilePage() {
                     minLength={8}
                     className="bg-card"
                   />
-                  <p className="text-[11px] text-muted-foreground">At least 8 characters long</p>
+                  <p className="text-[11px] text-muted-foreground">យ៉ាងតិច ៨ តួអក្សរ</p>
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                     <Lock className="w-3.5 h-3.5" />
-                    {t('confirmNewPassword')}
+                    {t('confirmNewPassword') || 'បញ្ជាក់ពាក្យសម្ងាត់ថ្មី'}
                   </label>
                   <Input
                     type="password"
@@ -409,10 +409,10 @@ export default function AdminProfilePage() {
                   {savingPassword ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      {t('saving')}
+                      {t('saving') || 'កំពុងរក្សាទុក...'}
                     </>
                   ) : (
-                    t('savePassword')
+                    t('savePassword') || 'រក្សាទុកពាក្យសម្ងាត់'
                   )}
                 </Button>
               </form>

@@ -21,10 +21,15 @@ model User {
 model Event {
   id                  String   @id @default(cuid())
   slug                String   @unique
-  brideNameKm         String
-  brideNameEn         String
-  groomNameKm         String
-  groomNameEn         String
+  eventType           String   @default("wedding")
+  eventTitle          String?
+  eventSubtitle       String?
+  hostName            String?
+  celebrantName       String?
+  brideNameKm         String?
+  brideNameEn         String?
+  groomNameKm         String?
+  groomNameEn         String?
   eventDate           DateTime
   eventTime           String
   locationNameKm      String
@@ -33,8 +38,8 @@ model Event {
   locationAddressEn   String
   googleMapUrl        String?
   coverImage          String?
-  invitationMessageKm String   @db.Text
-  invitationMessageEn String   @db.Text
+  invitationMessageKm String?  @db.Text
+  invitationMessageEn String?  @db.Text
   theme               String   @default("Classic Khmer Wedding")
   musicUrl            String?
   optimizedMusicUrl   String?
@@ -104,12 +109,14 @@ model Event {
   thankYouTitleEn     String?
   thankYouTextKm      String?  @db.Text
   thankYouTextEn      String?  @db.Text
+  thankYouFrameImageUrl String?
 
   showApologyLetter   Boolean  @default(true)
   apologyTitleKm      String?
   apologyTitleEn      String?
   apologyTextKm       String?  @db.Text
   apologyTextEn       String?  @db.Text
+  apologyFrameImageUrl String?
 
   guests              Guest[]
   rsvps               RSVP[]
@@ -121,21 +128,27 @@ model Event {
 
 
 model Guest {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   eventId        String
-  event          Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event          Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
   name           String
   phone          String?
   email          String?
-  side           String   @default("groom")
-  invitedCount   Int      @default(1)
-  notes          String?  @db.Text
+  side           String    @default("groom")
+  invitedCount   Int       @default(1)
+  notes          String?   @db.Text
   customSlug     String?
   
+  giftReceived   Boolean   @default(false)
+  giftAmountKhr  Int?
+  giftAmountUsd  Decimal?  @db.Decimal(10,2)
+  giftNote       String?   @db.Text
+  giftReceivedAt DateTime?
+
   rsvps          RSVP[]
   
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
 model RSVP {
@@ -176,6 +189,8 @@ model ProgramItem {
   titleEn       String
   descriptionKm String?    @db.Text
   descriptionEn String?    @db.Text
+  iconType      String?
+  iconImageUrl  String?
   order         Int        @default(0)
   
   createdAt     DateTime   @default(now())

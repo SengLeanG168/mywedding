@@ -3,6 +3,10 @@ import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
 import prisma from '@/lib/prisma';
 import InvitationContent from '@/components/invitation/InvitationContent';
+import { getEventTitle, getEventSubtitle, getEventMainName, isWeddingEvent } from '@/lib/event-helpers';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 async function getBaseUrl(): Promise<string> {
   if (process.env.NEXT_PUBLIC_APP_URL) {
@@ -41,14 +45,16 @@ export async function generateMetadata({
   const { slug, locale, guestId } = await params;
   const baseUrl = await getBaseUrl();
 
-  const event = await prisma.event.findUnique({
-    where: { slug },
+  const event = await prisma.event.findFirst({
+    where: {
+      OR: [
+        { slug },
+        { id: slug },
+      ],
+    },
   });
 
   if (!event) return {};
-
-  const brideName = event.brideNameKm || event.brideNameEn || '';
-  const groomName = event.groomNameKm || event.groomNameEn || '';
 
   let guestData = null;
   if (guestId) {
@@ -59,16 +65,22 @@ export async function generateMetadata({
 
   const showGuestName = event.showGuestNameInSharePreview !== false;
   const effectiveGuestName = guestData?.name || 'ភ្ញៀវកិត្តិយស';
+  const isWedding = isWeddingEvent(event);
 
   const title = showGuestName
     ? `សូមគោរពអញ្ជើញ ${effectiveGuestName}`
-    : `សិរីមង្គលអាពាហ៍ពិពាហ៍ ${groomName} និង ${brideName}`;
+    : getEventTitle(event, true);
 
+  const defaultEventSubtitle = getEventSubtitle(event, true);
   const description = showGuestName
-    ? `សូមអញ្ជើញចូលរួមពិធីមង្គលអាពាហ៍ពិពាហ៍របស់ ${groomName} និង ${brideName}`
-    : 'សូមគោរពអញ្ជើញចូលរួមពិធីមង្គលអាពាហ៍ពិពាហ៍';
+    ? (isWedding 
+        ? `សូមអញ្ជើញចូលរួម${defaultEventSubtitle}` 
+        : `សូមអញ្ជើញចូលរួម${defaultEventSubtitle ? ` ${defaultEventSubtitle}` : 'កម្មវិធី'}`)
+    : (defaultEventSubtitle || 'សូមគោរពអញ្ជើញចូលរួមកម្មវិធី');
 
-  const pageUrl = `${baseUrl}/invite/${slug}/guest/${guestId}`;
+  const siteName = getEventMainName(event, true);
+
+  const pageUrl = `${baseUrl}/invite/${event.slug || slug}/guest/${guestId}`;
   
   // Image priority: 1. socialPreviewImageUrl, 2. openingImageUrl, 3. coverImage, 4. couplePhotoUrl, 5. default
   const rawImagePath =
@@ -101,7 +113,7 @@ export async function generateMetadata({
       title,
       description,
       url: pageUrl,
-      siteName: `${groomName} & ${brideName} Wedding`,
+      siteName,
       locale: 'km_KH',
       type: 'website',
       images: [
@@ -130,8 +142,13 @@ export default async function GuestInvitationPage({
 }) {
   const { slug, locale, guestId } = await params;
 
-  const event = await prisma.event.findUnique({
-    where: { slug },
+  const event = await prisma.event.findFirst({
+    where: {
+      OR: [
+        { slug },
+        { id: slug },
+      ],
+    },
     include: {
       programDays: {
         include: {

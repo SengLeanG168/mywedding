@@ -153,7 +153,7 @@ export default function TraditionalInvitationSection({ event }: TraditionalInvit
   }
 
   // Fallbacks for texts
-  const blessingTitle = event.blessingTitleKm || event.blessingTitleEn || 'សិរីសួស្ដីជ័យមង្គលអាពាហ៍ពិពាហ៍';
+  const blessingTitle = event.eventTitle?.trim() || event.blessingTitleKm?.trim() || event.blessingTitleEn?.trim() || 'សិរីសួស្ដីជ័យមង្គលអាពាហ៍ពិពាហ៍';
 
   const defaultIntroKm = 'មានកិត្តិយសសូមគោរពអញ្ជើញ';
   const defaultBodyKm = 'ឯកឧត្តម លោកឧកញ៉ា លោកជំទាវ លោក លោកស្រី អ្នកនាង កញ្ញា និងប្រិយមិត្តអញ្ជើញចូលរួមជាអធិបតី និងជាភ្ញៀវកិត្តិយសដើម្បីប្រសិទ្ធពរជ័យសិរីមង្គលក្នុងពិធីរៀបអាពាហ៍ពិពាហ៍ កូនប្រុស កូនស្រី របស់យើងខ្ញុំ ។';

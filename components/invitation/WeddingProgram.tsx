@@ -4,10 +4,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { formatLocalizedDate } from '@/lib/date';
 import { Calendar, Clock, Sparkles } from 'lucide-react';
+import { isWeddingEvent } from '@/lib/event-helpers';
+import { getProgramIconSrc } from '@/lib/program-icon';
+import ProgramIcon from '@/components/program/ProgramIcon';
 
 interface WeddingProgramProps {
   programDays: any[];
   locale: string;
+  event?: any;
 }
 
 type AnimationPhase = 'movingDot' | 'retractingLine' | 'segmentHidden';
@@ -330,6 +334,7 @@ function ProgramDayCard({
 
             const itemTitle = item.titleKm || item.titleEn;
             const itemDesc = item.descriptionKm || item.descriptionEn;
+            const iconSrc = getProgramIconSrc(itemTitle, item.iconType, item.iconImageUrl);
 
             return (
               <div key={item.id || index} className="relative w-full">
@@ -340,26 +345,38 @@ function ProgramDayCard({
                     ref={(el) => {
                       cardRefs.current[index] = el;
                     }}
-                    className={`relative w-fit max-w-[48%] sm:max-w-[46%] h-auto bg-card/90 backdrop-blur-md rounded-xl sm:rounded-2xl p-2.5 sm:p-4 border border-primary/20 shadow-sm hover:border-primary/40 transition-all text-left flex flex-col items-start z-10 ${
+                    className={`relative w-fit max-w-[50%] sm:max-w-[48%] md:max-w-[280px] h-auto bg-card/90 backdrop-blur-md rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 border border-primary/20 shadow-sm hover:border-primary/40 transition-all text-left flex flex-col items-start z-10 ${
                       isLeft ? 'mr-auto ml-0' : 'ml-auto mr-0'
                     }`}
                   >
-                    {/* Time Badge */}
-                    {item.time && (
-                      <div className="text-[10px] sm:text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 sm:py-1 rounded-full inline-flex items-center gap-1 mb-1.5 shadow-sm border border-primary/20 font-sans">
-                        <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-primary shrink-0" />
-                        <span>{formatTime(item.time)}</span>
+                    {/* Top Row: Traditional Khmer Ceremony Icon & Time Badge */}
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary/10 border border-primary/30 p-1 flex items-center justify-center shrink-0 shadow-xs backdrop-blur-xs">
+                        <ProgramIcon
+                          title={itemTitle}
+                          iconType={item.iconType}
+                          iconImageUrl={item.iconImageUrl}
+                          className="w-full h-full"
+                          forceGold={true}
+                        />
                       </div>
-                    )}
 
-                    {/* Title */}
-                    <h4 className="text-xs sm:text-sm md:text-base font-bold font-serif text-foreground break-words w-full">
+                      {item.time && (
+                        <div className="text-[10px] sm:text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 sm:py-1 rounded-full inline-flex items-center gap-1 shadow-xs border border-primary/20 font-sans whitespace-nowrap">
+                          <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-primary shrink-0" />
+                          <span>{formatTime(item.time)}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Title (Natural wrap, no truncation/ellipsis, generous line height) */}
+                    <h4 className="text-[12px] sm:text-[13px] md:text-sm font-bold font-serif text-foreground whitespace-normal break-words leading-[1.6] py-0.5 w-full">
                       {itemTitle}
                     </h4>
 
                     {/* Description */}
                     {itemDesc && (
-                      <p className="text-muted-foreground text-[10px] sm:text-xs leading-relaxed break-words font-sans mt-1 w-full">
+                      <p className="text-muted-foreground text-[10px] sm:text-xs leading-[1.6] break-words font-sans mt-0.5 w-full">
                         {itemDesc}
                       </p>
                     )}
@@ -368,8 +385,8 @@ function ProgramDayCard({
                     {showArrow && (
                       <span
                         className={`absolute top-1/2 -translate-y-1/2 ${
-                          isLeft ? '-right-5 sm:-right-6' : '-left-5 sm:-left-6'
-                        } text-primary font-bold text-sm sm:text-base select-none pointer-events-none drop-shadow-[0_0_4px_rgba(212,175,55,0.8)]`}
+                          isLeft ? '-right-4 sm:-right-5' : '-left-4 sm:-left-5'
+                        } text-primary font-bold text-xs sm:text-sm select-none pointer-events-none drop-shadow-[0_0_4px_rgba(212,175,55,0.8)]`}
                       >
                         {isLeft ? '→' : '←'}
                       </span>
@@ -388,8 +405,9 @@ function ProgramDayCard({
   );
 }
 
-export default function WeddingProgram({ programDays, locale }: WeddingProgramProps) {
+export default function WeddingProgram({ programDays, locale, event }: WeddingProgramProps) {
   const t = useTranslations('Program');
+  const isWedding = isWeddingEvent(event);
 
   // Track intersection ratio of each day to select the single active visible day
   const [dayRatios, setDayRatios] = useState<{ [index: number]: number }>({});
@@ -554,13 +572,53 @@ export default function WeddingProgram({ programDays, locale }: WeddingProgramPr
             visibility: visible !important;
           }
         }
+
+        .program-uploaded-icon-gold-wrap,
+        .program-custom-icon-gold-wrap {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          width: 100%;
+          height: 100%;
+          border-radius: inherit;
+        }
+
+        .program-uploaded-icon-gold-wrap::after,
+        .program-custom-icon-gold-wrap::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: rgba(214, 183, 90, 0.25);
+          mix-blend-mode: color;
+          pointer-events: none;
+          border-radius: inherit;
+        }
+
+        .program-uploaded-icon-gold,
+        .program-custom-icon-gold {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          opacity: 0.96;
+          filter:
+            invert(72%)
+            sepia(1)
+            saturate(3)
+            hue-rotate(350deg)
+            brightness(1.08)
+            contrast(1.02)
+            drop-shadow(0 0 3px rgba(214, 183, 90, 0.35));
+          transition: filter 0.25s ease, opacity 0.25s ease;
+        }
       `}</style>
 
       {/* Header */}
       <div className="text-center mb-10 sm:mb-12">
         <h2 className="text-[clamp(1.25rem,4vw,1.5rem)] font-serif font-bold text-primary flex items-center justify-center gap-2">
           <Sparkles className="w-5 h-5 text-primary animate-pulse" />
-          {t('weddingProgram')}
+          {isWedding ? (t('weddingProgram') || 'កម្មវិធីមង្គលការ') : (event?.eventTitle?.trim() || t('programSchedule') || 'កម្មវិធី')}
           <Sparkles className="w-5 h-5 text-primary animate-pulse" />
         </h2>
         <span className="inline-block w-10 h-[1.5px] bg-primary mt-3" />

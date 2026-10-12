@@ -25,7 +25,7 @@ export default function WishMarquee({ eventId, newWishes = [], refreshTrigger = 
   const fetchWishes = useCallback(async () => {
     if (!eventId) return;
     try {
-      const res = await fetch(`/api/events/${eventId}/wishes`);
+      const res = await fetch(`/api/events/${eventId}/wishes`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data.wishes)) {

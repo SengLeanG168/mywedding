@@ -1,10 +1,15 @@
 export function sanitizeEventData(data: Record<string, any>) {
   return {
     slug: data.slug ? String(data.slug).trim() : undefined,
-    brideNameKm: data.brideNameKm ? String(data.brideNameKm) : undefined,
-    brideNameEn: data.brideNameEn ? String(data.brideNameEn) : undefined,
-    groomNameKm: data.groomNameKm ? String(data.groomNameKm) : undefined,
-    groomNameEn: data.groomNameEn ? String(data.groomNameEn) : undefined,
+    eventType: data.eventType ? String(data.eventType).trim() : 'wedding',
+    eventTitle: data.eventTitle && String(data.eventTitle).trim() ? String(data.eventTitle).trim() : null,
+    eventSubtitle: data.eventSubtitle && String(data.eventSubtitle).trim() ? String(data.eventSubtitle).trim() : null,
+    hostName: data.hostName && String(data.hostName).trim() ? String(data.hostName).trim() : null,
+    celebrantName: data.celebrantName && String(data.celebrantName).trim() ? String(data.celebrantName).trim() : null,
+    brideNameKm: data.brideNameKm ? String(data.brideNameKm) : null,
+    brideNameEn: data.brideNameEn ? String(data.brideNameEn) : null,
+    groomNameKm: data.groomNameKm ? String(data.groomNameKm) : null,
+    groomNameEn: data.groomNameEn ? String(data.groomNameEn) : null,
     eventDate: data.eventDate ? new Date(data.eventDate) : undefined,
     eventTime: data.eventTime ? String(data.eventTime) : undefined,
     locationNameKm: data.locationNameKm ? String(data.locationNameKm) : undefined,
@@ -84,11 +89,13 @@ export function sanitizeEventData(data: Record<string, any>) {
     thankYouTitleEn: data.thankYouTitleEn && String(data.thankYouTitleEn).trim() ? String(data.thankYouTitleEn).trim() : null,
     thankYouTextKm: data.thankYouTextKm !== undefined && String(data.thankYouTextKm).trim() ? String(data.thankYouTextKm) : null,
     thankYouTextEn: data.thankYouTextEn !== undefined && String(data.thankYouTextEn).trim() ? String(data.thankYouTextEn) : null,
+    thankYouFrameImageUrl: data.thankYouFrameImageUrl && String(data.thankYouFrameImageUrl).trim() ? String(data.thankYouFrameImageUrl).trim() : null,
 
     showApologyLetter: data.showApologyLetter !== undefined ? Boolean(data.showApologyLetter) : true,
     apologyTitleKm: data.apologyTitleKm && String(data.apologyTitleKm).trim() ? String(data.apologyTitleKm).trim() : null,
     apologyTitleEn: data.apologyTitleEn && String(data.apologyTitleEn).trim() ? String(data.apologyTitleEn).trim() : null,
     apologyTextKm: data.apologyTextKm !== undefined && String(data.apologyTextKm).trim() ? String(data.apologyTextKm) : null,
     apologyTextEn: data.apologyTextEn !== undefined && String(data.apologyTextEn).trim() ? String(data.apologyTextEn) : null,
+    apologyFrameImageUrl: data.apologyFrameImageUrl && String(data.apologyFrameImageUrl).trim() ? String(data.apologyFrameImageUrl).trim() : null,
   };
 }

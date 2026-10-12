@@ -1,7 +1,10 @@
 import { ImageResponse } from 'next/og';
 import prisma from '@/lib/prisma';
+import { getEventTitle, getEventMainName, isWeddingEvent } from '@/lib/event-helpers';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET(
   request: Request,
@@ -10,20 +13,33 @@ export async function GET(
   let groomName = 'កូនកម្លោះ';
   let brideName = 'កូនក្រមុំ';
   let guestName = 'ភ្ញៀវកិត្តិយស';
-  let mainTitle = 'ពិធីមង្គលអាពាហ៍ពិពាហ៍';
+  let mainTitle = 'សិរីមង្គលអាពាហ៍ពិពាហ៍';
+  let middleText = 'កូនកម្លោះ និង កូនក្រមុំ';
+  let isWedding = true;
 
   try {
     const { slug, guestId } = await params;
 
     if (slug) {
       try {
-        const event = await prisma.event.findUnique({
-          where: { slug },
+        const event = await prisma.event.findFirst({
+          where: {
+            OR: [
+              { slug },
+              { id: slug },
+            ],
+          },
         });
 
         if (event) {
-          groomName = event.groomNameKm || event.groomNameEn || groomName;
-          brideName = event.brideNameKm || event.brideNameEn || brideName;
+          mainTitle = getEventTitle(event, true);
+          isWedding = isWeddingEvent(event);
+          if (isWedding) {
+            groomName = event.groomNameKm || event.groomNameEn || groomName;
+            brideName = event.brideNameKm || event.brideNameEn || brideName;
+          } else {
+            middleText = getEventMainName(event, true);
+          }
 
           if (guestId && event.showGuestNameInSharePreview !== false) {
             try {
@@ -88,21 +104,37 @@ export async function GET(
             >
               ❖ {mainTitle} ❖
             </div>
-            <div
-              style={{
-                fontSize: '52px',
-                fontWeight: 'bold',
-                color: '#FFFFFF',
-                marginBottom: '24px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '15px',
-              }}
-            >
-              <span>{groomName}</span>
-              <span style={{ color: '#D4AF37' }}>និង</span>
-              <span>{brideName}</span>
-            </div>
+            {isWedding ? (
+              <div
+                style={{
+                  fontSize: '52px',
+                  fontWeight: 'bold',
+                  color: '#FFFFFF',
+                  marginBottom: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '15px',
+                }}
+              >
+                <span>{groomName}</span>
+                <span style={{ color: '#D4AF37' }}>និង</span>
+                <span>{brideName}</span>
+              </div>
+            ) : (
+              <div
+                style={{
+                  fontSize: '52px',
+                  fontWeight: 'bold',
+                  color: '#FFFFFF',
+                  marginBottom: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <span>{middleText}</span>
+              </div>
+            )}
             <div
               style={{
                 background: 'linear-gradient(90deg, rgba(212,175,55,0.2) 0%, rgba(212,175,55,0.5) 50%, rgba(212,175,55,0.2) 100%)',

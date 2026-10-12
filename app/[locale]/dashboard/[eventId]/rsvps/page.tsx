@@ -86,8 +86,8 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
   const fetchData = async () => {
     try {
       const [eventRes, rsvpRes] = await Promise.all([
-        fetch(`/api/events/${eventId}`),
-        fetch(`/api/events/${eventId}/rsvps`),
+        fetch(`/api/events/${eventId}`, { cache: 'no-store' }),
+        fetch(`/api/events/${eventId}/rsvps`, { cache: 'no-store' }),
       ]);
 
       if (eventRes.ok) {
@@ -249,17 +249,17 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
         <Link href="/dashboard/rsvps">
           <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground -ml-2">
             <ArrowLeft className="w-4 h-4" />
-            <span>{t('backToEvent') || 'Back'}</span>
+            <span>{t('backToEvent') || 'ត្រឡប់ទៅបញ្ជី RSVP'}</span>
           </Button>
         </Link>
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold font-serif text-primary">
-              {t('rsvpResponses')}: {event?.brideNameEn} & {event?.groomNameEn}
+              {t('rsvpResponses') || 'ការឆ្លើយតប RSVP'}៖ {event?.brideNameKm || event?.brideNameEn} & {event?.groomNameKm || event?.groomNameEn}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              View, edit, and manage guest RSVP confirmations separated by Groom Side & Bride Side.
+              ពិនិត្យ កែប្រែ និងគ្រប់គ្រងការឆ្លើយតប RSVP របស់ភ្ញៀវខាងប្រុស និងខាងស្រី
             </p>
           </div>
         </div>
@@ -269,23 +269,23 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card className="border border-primary/20 bg-card">
           <CardContent className="p-4 text-center">
-            <div className="text-xs text-muted-foreground font-medium">{t('totalRsvpsLabel')}</div>
+            <div className="text-xs text-muted-foreground font-medium">{t('totalRsvpsLabel') || 'ចំនួន RSVP សរុប'}</div>
             <div className="text-2xl font-bold font-serif text-primary mt-1">{rsvps.length}</div>
           </CardContent>
         </Card>
 
         <Card className="border border-emerald-500/20 bg-emerald-500/5">
           <CardContent className="p-4 text-center">
-            <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">{t('attending')}</div>
+            <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">{t('attending') || 'ចូលរួម'}</div>
             <div className="text-2xl font-bold font-serif text-emerald-600 dark:text-emerald-400 mt-1">
-              {attendingCount} <span className="text-xs font-normal">({totalPax} pax)</span>
+              {attendingCount} <span className="text-xs font-normal">({totalPax} នាក់)</span>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border border-rose-500/20 bg-rose-500/5">
           <CardContent className="p-4 text-center">
-            <div className="text-xs text-rose-600 dark:text-rose-400 font-medium">{t('notAttending')}</div>
+            <div className="text-xs text-rose-600 dark:text-rose-400 font-medium">{t('notAttending') || 'មិនចូលរួម'}</div>
             <div className="text-2xl font-bold font-serif text-rose-600 dark:text-rose-400 mt-1">
               {notAttendingCount}
             </div>
@@ -294,7 +294,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
 
         <Card className="border border-amber-500/20 bg-amber-500/5">
           <CardContent className="p-4 text-center">
-            <div className="text-xs text-amber-600 dark:text-amber-400 font-medium">{t('unsure')}</div>
+            <div className="text-xs text-amber-600 dark:text-amber-400 font-medium">{t('unsure') || 'មិនទាន់ច្បាស់'}</div>
             <div className="text-2xl font-bold font-serif text-amber-600 dark:text-amber-400 mt-1">
               {unsureCount}
             </div>
@@ -315,7 +315,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
                 onClick={() => setSideFilter('ALL')}
                 className="text-xs font-medium rounded-lg h-7 px-2.5"
               >
-                {t('all')}
+                {t('all') || 'ទាំងអស់'}
               </Button>
               <Button
                 variant={sideFilter === 'groom' ? 'default' : 'ghost'}
@@ -325,7 +325,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
                   sideFilter === 'groom' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'text-blue-600 dark:text-blue-400'
                 }`}
               >
-                {t('groomSide')}
+                {t('groomSide') || 'ខាងប្រុស'}
               </Button>
               <Button
                 variant={sideFilter === 'bride' ? 'default' : 'ghost'}
@@ -335,7 +335,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
                   sideFilter === 'bride' ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'text-rose-600 dark:text-rose-400'
                 }`}
               >
-                {t('brideSide')}
+                {t('brideSide') || 'ខាងស្រី'}
               </Button>
             </div>
 
@@ -347,7 +347,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
                 onClick={() => setStatusFilter('ALL')}
                 className="text-xs font-medium rounded-lg h-7 px-2.5"
               >
-                {t('all')}
+                {t('all') || 'ទាំងអស់'}
               </Button>
               <Button
                 variant={statusFilter === 'ATTENDING' ? 'default' : 'ghost'}
@@ -357,7 +357,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
                   statusFilter === 'ATTENDING' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'text-emerald-600 dark:text-emerald-400'
                 }`}
               >
-                {t('attending')} ({rsvps.filter((r) => r.status === 'ATTENDING').length})
+                {t('attending') || 'ចូលរួម'} ({rsvps.filter((r) => r.status === 'ATTENDING').length})
               </Button>
               <Button
                 variant={statusFilter === 'NOT_ATTENDING' ? 'default' : 'ghost'}
@@ -367,7 +367,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
                   statusFilter === 'NOT_ATTENDING' ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'text-rose-600 dark:text-rose-400'
                 }`}
               >
-                {t('notAttending')} ({rsvps.filter((r) => r.status === 'NOT_ATTENDING').length})
+                {t('notAttending') || 'មិនចូលរួម'} ({rsvps.filter((r) => r.status === 'NOT_ATTENDING').length})
               </Button>
               <Button
                 variant={statusFilter === 'UNSURE' ? 'default' : 'ghost'}
@@ -377,7 +377,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
                   statusFilter === 'UNSURE' ? 'bg-amber-600 hover:bg-amber-700 text-white' : 'text-amber-600 dark:text-amber-400'
                 }`}
               >
-                {t('unsure')} ({rsvps.filter((r) => r.status === 'UNSURE').length})
+                {t('unsure') || 'មិនទាន់ច្បាស់'} ({rsvps.filter((r) => r.status === 'UNSURE').length})
               </Button>
             </div>
           </div>
@@ -387,7 +387,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               type="text"
-              placeholder={t('searchRsvps') || 'Search RSVPs...'}
+              placeholder={t('searchRsvps') || 'ស្វែងរក RSVP...'}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 bg-background text-xs"
@@ -424,7 +424,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
                           : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
                       }`}
                     >
-                      {isGroomSide ? t('groomSide') : t('brideSide')}
+                      {isGroomSide ? (t('groomSide') || 'ខាងប្រុស') : (t('brideSide') || 'ខាងស្រី')}
                     </span>
 
                     {/* Attendance Status Badge */}
@@ -440,7 +440,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
                       {rsvp.status === 'ATTENDING' && <CheckCircle2 className="w-3.5 h-3.5" />}
                       {rsvp.status === 'NOT_ATTENDING' && <XCircle className="w-3.5 h-3.5" />}
                       {rsvp.status === 'UNSURE' && <HelpCircle className="w-3.5 h-3.5" />}
-                      <span>{rsvp.status}</span>
+                      <span>{rsvp.status === 'ATTENDING' ? 'ចូលរួម' : rsvp.status === 'NOT_ATTENDING' ? 'មិនចូលរួម' : 'មិនទាន់ច្បាស់'}</span>
                     </span>
                   </div>
 
@@ -452,7 +452,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
 
                     {rsvp.status === 'ATTENDING' && (
                       <span className="font-semibold text-primary">
-                        Pax: {rsvp.attendingCount || 1}
+                        ចំនួនចូលរួម: {rsvp.attendingCount || 1} នាក់
                       </span>
                     )}
 
@@ -482,7 +482,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
                     className="h-8 px-3 gap-1.5 text-xs text-primary border-primary/30 hover:bg-primary/10 hover:text-primary rounded-xl"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
-                    <span>{t('edit')}</span>
+                    <span>{t('edit') || 'កែប្រែ'}</span>
                   </Button>
 
                   <Button
@@ -492,7 +492,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
                     className="h-8 px-3 gap-1.5 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive rounded-xl"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                    <span>{t('delete')}</span>
+                    <span>{t('delete') || 'លុប'}</span>
                   </Button>
                 </div>
               </CardContent>
@@ -503,7 +503,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
         {filteredRsvps.length === 0 && (
           <div className="text-center py-16 text-muted-foreground bg-card rounded-2xl border border-dashed p-8">
             <ClipboardList className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
-            <p className="font-medium text-base">{t('noRsvpsYet')}</p>
+            <p className="font-medium text-base">{t('noRsvpsYet') || 'មិនទាន់មានការឆ្លើយតប RSVP នៅឡើយទេ'}</p>
           </div>
         )}
       </div>
@@ -521,18 +521,18 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
 
             <h2 className="text-xl font-bold font-serif text-primary mb-4 flex items-center gap-2">
               <Edit2 className="w-5 h-5" />
-              {t('editRsvp')}
+              {t('editRsvp') || 'កែប្រែ RSVP'}
             </h2>
 
             <form onSubmit={handleSaveEdit} className="space-y-4">
               {/* Guest Name */}
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-muted-foreground">{t('guestName') || 'Guest Name'}</label>
+                <label className="text-xs font-semibold text-muted-foreground">{t('guestName') || 'ឈ្មោះភ្ញៀវ'}</label>
                 <Input
                   required
                   value={editGuestName}
                   onChange={(e) => setEditGuestName(e.target.value)}
-                  placeholder="Enter guest name"
+                  placeholder="បញ្ចូលឈ្មោះភ្ញៀវ"
                   className="bg-background text-sm"
                 />
               </div>
@@ -540,19 +540,19 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
               {/* Phone Number (Optional) */}
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-muted-foreground">
-                  {t('phone')} (Optional)
+                  {t('phone') || 'លេខទូរស័ព្ទ'} (មិនបង្ខំ)
                 </label>
                 <Input
                   value={editPhone}
                   onChange={(e) => setEditPhone(e.target.value)}
-                  placeholder="Enter phone number"
+                  placeholder="បញ្ចូលលេខទូរស័ព្ទ"
                   className="bg-background text-sm"
                 />
               </div>
 
               {/* Side Selector */}
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-muted-foreground">{t('guestSide') || 'Side'}</label>
+                <label className="text-xs font-semibold text-muted-foreground">{t('guestSide') || 'ខាងភ្ញៀវ'}</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
@@ -563,7 +563,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
                         : 'bg-muted/40 text-muted-foreground border-transparent hover:bg-muted'
                     }`}
                   >
-                    {t('groomSide')}
+                    {t('groomSide') || 'ខាងប្រុស'}
                   </button>
                   <button
                     type="button"
@@ -574,7 +574,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
                         : 'bg-muted/40 text-muted-foreground border-transparent hover:bg-muted'
                     }`}
                   >
-                    {t('brideSide')}
+                    {t('brideSide') || 'ខាងស្រី'}
                   </button>
                 </div>
               </div>
@@ -582,21 +582,21 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
               {/* Attendance Status & Attendees Count */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-muted-foreground">{t('attendanceStatus') || 'Status'}</label>
+                  <label className="text-xs font-semibold text-muted-foreground">{t('attendanceStatus') || 'ស្ថានភាពចូលរួម'}</label>
                   <select
                     value={editStatus}
                     onChange={(e) => setEditStatus(e.target.value as any)}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                   >
-                    <option value="ATTENDING">{t('attending')}</option>
-                    <option value="NOT_ATTENDING">{t('notAttending')}</option>
-                    <option value="UNSURE">{t('unsure')}</option>
+                    <option value="ATTENDING">{t('attending') || 'ចូលរួម'}</option>
+                    <option value="NOT_ATTENDING">{t('notAttending') || 'មិនចូលរួម'}</option>
+                    <option value="UNSURE">{t('unsure') || 'មិនទាន់ច្បាស់'}</option>
                   </select>
                 </div>
 
                 {editStatus === 'ATTENDING' && (
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-muted-foreground">{t('attendingCount') || 'Pax'}</label>
+                    <label className="text-xs font-semibold text-muted-foreground">{t('attendingCount') || 'ចំនួនអ្នកចូលរួម'}</label>
                     <Input
                       type="number"
                       min={1}
@@ -611,11 +611,11 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
 
               {/* Wish / Message */}
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-muted-foreground">{t('blessingMessage') || 'Blessing / Wish'}</label>
+                <label className="text-xs font-semibold text-muted-foreground">{t('blessingMessage') || 'សារជូនពរ'}</label>
                 <textarea
                   value={editMessage}
                   onChange={(e) => setEditMessage(e.target.value)}
-                  placeholder="Enter blessing or wish message..."
+                  placeholder="បញ្ចូលសារជូនពរ..."
                   rows={3}
                   className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                 />
@@ -630,7 +630,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
                   disabled={isSaving}
                   className="rounded-xl text-xs"
                 >
-                  {t('cancel')}
+                  {t('cancel') || 'បោះបង់'}
                 </Button>
                 <Button
                   type="submit"
@@ -638,7 +638,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
                   className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl text-xs gap-1.5"
                 >
                   {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-                  <span>{t('save')}</span>
+                  <span>{t('save') || 'រក្សាទុក'}</span>
                 </Button>
               </div>
             </form>
@@ -651,10 +651,10 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-card border border-primary/20 rounded-2xl w-full max-w-sm shadow-2xl p-6 relative">
             <h3 className="text-lg font-bold font-serif text-foreground mb-2">
-              {t('deleteRsvp')}
+              {t('deleteRsvp') || 'លុប RSVP'}
             </h3>
             <p className="text-sm text-muted-foreground mb-6">
-              {t('deleteRsvpConfirm')}
+              {t('deleteRsvpConfirm') || 'តើអ្នកពិតជាចង់លុបការឆ្លើយតប RSVP នេះមែនទេ?'}
             </p>
 
             <div className="flex items-center justify-end gap-3">
@@ -665,7 +665,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
                 disabled={isDeleting}
                 className="rounded-xl text-xs"
               >
-                {t('cancel')}
+                {t('cancel') || 'បោះបង់'}
               </Button>
               <Button
                 type="button"
@@ -675,7 +675,7 @@ export default function EventRsvpsDetailPage({ params }: { params: Promise<{ eve
                 className="rounded-xl text-xs gap-1.5"
               >
                 {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                <span>{t('delete')}</span>
+                <span>{t('delete') || 'លុប'}</span>
               </Button>
             </div>
           </div>

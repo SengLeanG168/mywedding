@@ -16,7 +16,8 @@ export default function GiftQrSection({ event, locale }: GiftQrSectionProps) {
   if (!event.showGiftQrCode || (!khrImage && !usdImage)) return null;
 
   const isKm = true;
-  const title = event.giftQrTitleKm || event.giftQrTitleEn || "ចងដៃតាម QR Code";
+  const rawTitle = event.giftQrTitleKm || event.giftQrTitleEn;
+  const title = (!rawTitle || rawTitle === "ចងដៃតាម QR Code" || rawTitle === "Wedding Gift QR Code") ? "KHQR" : rawTitle;
   const note = event.giftQrNoteKm || event.giftQrNoteEn;
 
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -31,7 +32,7 @@ export default function GiftQrSection({ event, locale }: GiftQrSectionProps) {
     qrItems.push({
       src: khrImage,
       type: 'qr',
-      title: 'QR Code លុយខ្មែរ'
+      title: 'KHQR ប្រាក់រៀល'
     });
   }
 
@@ -40,7 +41,7 @@ export default function GiftQrSection({ event, locale }: GiftQrSectionProps) {
     qrItems.push({
       src: usdImage,
       type: 'qr',
-      title: 'QR Code លុយដុល្លារ'
+      title: 'KHQR ប្រាក់ដុល្លារ'
     });
   }
 
@@ -54,7 +55,7 @@ export default function GiftQrSection({ event, locale }: GiftQrSectionProps) {
       <div className="mb-8">
         <h2 className="text-[clamp(1.25rem,4vw,1.5rem)] font-serif font-bold text-primary flex items-center justify-center gap-3">
           <Gift className="w-6 h-6 sm:w-8 sm:h-8" />
-          {title || (isKm ? "ចងដៃតាម QR Code" : "Wedding Gift QR Code")}
+          {title || "KHQR"}
         </h2>
         <span className="inline-block w-8 h-[1px] bg-primary mt-2" />
       </div>
@@ -67,7 +68,7 @@ export default function GiftQrSection({ event, locale }: GiftQrSectionProps) {
             <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
             <div className="relative z-10 w-full flex flex-col items-center">
               <h3 className="text-xs sm:text-base font-bold text-primary mb-2 sm:mb-6 uppercase tracking-wider">
-                {isKm ? "លុយខ្មែរ" : "KHR"}
+                {isKm ? "ប្រាក់រៀល" : "KHR"}
               </h3>
               <div 
                 className="bg-white p-1.5 sm:p-3 rounded-xl sm:rounded-2xl shadow-sm mb-3 sm:mb-6 inline-block cursor-pointer hover:opacity-90 transition-opacity"
@@ -75,7 +76,7 @@ export default function GiftQrSection({ event, locale }: GiftQrSectionProps) {
               >
                 <img 
                   src={khrImage} 
-                  alt="KHR QR Code" 
+                  alt="KHQR ប្រាក់រៀល" 
                   className="w-24 h-24 xs:w-28 xs:h-28 sm:w-44 sm:h-44 object-contain rounded-lg sm:rounded-xl"
                 />
               </div>
@@ -106,7 +107,7 @@ export default function GiftQrSection({ event, locale }: GiftQrSectionProps) {
             <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
             <div className="relative z-10 w-full flex flex-col items-center">
               <h3 className="text-xs sm:text-base font-bold text-primary mb-2 sm:mb-6 uppercase tracking-wider">
-                {isKm ? "លុយដុល្លារ" : "USD"}
+                {isKm ? "ប្រាក់ដុល្លារ" : "USD"}
               </h3>
               <div 
                 className="bg-white p-1.5 sm:p-3 rounded-xl sm:rounded-2xl shadow-sm mb-3 sm:mb-6 inline-block cursor-pointer hover:opacity-90 transition-opacity"
@@ -114,7 +115,7 @@ export default function GiftQrSection({ event, locale }: GiftQrSectionProps) {
               >
                 <img 
                   src={usdImage} 
-                  alt="USD QR Code" 
+                  alt="KHQR ប្រាក់ដុល្លារ" 
                   className="w-24 h-24 xs:w-28 xs:h-28 sm:w-44 sm:h-44 object-contain rounded-lg sm:rounded-xl"
                 />
               </div>

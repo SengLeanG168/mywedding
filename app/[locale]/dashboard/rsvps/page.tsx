@@ -21,7 +21,7 @@ export default function RsvpsOverviewPage() {
 
   const fetchEvents = async () => {
     try {
-      const res = await fetch('/api/events');
+      const res = await fetch('/api/events', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setEvents(data);
@@ -69,7 +69,7 @@ export default function RsvpsOverviewPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder={t('searchEvent') || 'Search events...'}
+            placeholder={t('searchEvent') || 'ស្វែងរកកម្មវិធី...'}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9 bg-card"
@@ -82,6 +82,8 @@ export default function RsvpsOverviewPage() {
         {filteredEvents.map((ev) => {
           const totalRsvps = ev._count?.rsvps ?? 0;
           const rsvpsList = Array.isArray(ev.rsvps) ? ev.rsvps : [];
+          const brideName = ev.brideNameKm || ev.brideNameEn || '';
+          const groomName = ev.groomNameKm || ev.groomNameEn || '';
 
           const attendingCount = rsvpsList
             .filter((r: any) => r.status === 'ATTENDING')
@@ -94,7 +96,7 @@ export default function RsvpsOverviewPage() {
             <Card key={ev.id} className="border border-primary/20 hover:border-primary/40 transition-all shadow-sm hover:shadow-md flex flex-col justify-between">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg font-serif text-primary">
-                  {ev.brideNameEn} & {ev.groomNameEn}
+                  {brideName} & {groomName}
                 </CardTitle>
                 <CardDescription className="text-xs flex items-center gap-1.5 mt-1">
                   <Calendar className="w-3.5 h-3.5 shrink-0" />
@@ -108,21 +110,21 @@ export default function RsvpsOverviewPage() {
                 {/* RSVP Stats Breakdown */}
                 <div className="space-y-2 p-3 rounded-xl bg-muted/30 border border-primary/10 text-xs">
                   <div className="flex justify-between items-center font-semibold text-foreground pb-1 border-b border-border/50">
-                    <span>{t('totalRsvpsLabel')}</span>
+                    <span>{t('totalRsvpsLabel') || 'ចំនួន RSVP សរុប'}</span>
                     <span className="text-primary font-bold text-sm">{totalRsvps}</span>
                   </div>
 
                   <div className="grid grid-cols-3 gap-1 pt-1 text-center">
                     <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                      <div className="text-[10px] uppercase font-bold">{t('attending')}</div>
-                      <div className="font-bold text-sm mt-0.5">{attendingCount} pax</div>
+                      <div className="text-[10px] uppercase font-bold">{t('attending') || 'ចូលរួម'}</div>
+                      <div className="font-bold text-sm mt-0.5">{attendingCount} នាក់</div>
                     </div>
                     <div className="p-1.5 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400">
-                      <div className="text-[10px] uppercase font-bold">{t('notAttending')}</div>
+                      <div className="text-[10px] uppercase font-bold">{t('notAttending') || 'មិនចូលរួម'}</div>
                       <div className="font-bold text-sm mt-0.5">{notAttendingCount}</div>
                     </div>
                     <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                      <div className="text-[10px] uppercase font-bold">{t('unsure')}</div>
+                      <div className="text-[10px] uppercase font-bold">{t('unsure') || 'មិនទាន់ច្បាស់'}</div>
                       <div className="font-bold text-sm mt-0.5">{unsureCount}</div>
                     </div>
                   </div>
@@ -130,7 +132,7 @@ export default function RsvpsOverviewPage() {
 
                 <Link href={`/dashboard/${ev.id}/rsvps`} className="block">
                   <Button className="w-full justify-between group font-semibold" variant="outline">
-                    <span>{t('viewRsvps')}</span>
+                    <span>{t('viewRsvps') || 'មើលបញ្ជី RSVP'}</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
@@ -142,7 +144,7 @@ export default function RsvpsOverviewPage() {
         {filteredEvents.length === 0 && (
           <div className="col-span-full text-center py-16 text-muted-foreground bg-muted/20 rounded-2xl border border-dashed p-8">
             <ClipboardList className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
-            <p className="font-medium text-base">{t('noEventsYet')}</p>
+            <p className="font-medium text-base">{t('noEventsYet') || 'មិនទាន់មានកម្មវិធី'}</p>
           </div>
         )}
       </div>

@@ -4,6 +4,9 @@ import ProgramManagement from '@/components/dashboard/ProgramManagement';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function ProgramManagementPage({
   params,
 }: {
@@ -17,15 +20,15 @@ export default async function ProgramManagementPage({
 
   if (!event) notFound();
 
-  const brideName = locale === 'km' ? event.brideNameKm : event.brideNameEn;
-  const groomName = locale === 'km' ? event.groomNameKm : event.groomNameEn;
+  const brideName = event.brideNameKm || event.brideNameEn || '';
+  const groomName = event.groomNameKm || event.groomNameEn || '';
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl space-y-6">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-serif font-bold text-primary mb-2">
-            {locale === 'km' ? 'ការគ្រប់គ្រងកម្មវិធី' : 'Program Management'}
+            ការគ្រប់គ្រងកម្មវិធី
           </h1>
           <p className="text-muted-foreground">
             {brideName} & {groomName}
@@ -33,10 +36,10 @@ export default async function ProgramManagementPage({
         </div>
         <Link 
           href={`/dashboard/${eventId}`}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-muted text-foreground hover:bg-muted/80 rounded-md transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-muted text-foreground hover:bg-muted/80 rounded-md transition-colors text-sm font-medium"
         >
           <ArrowLeft className="w-4 h-4" />
-          {locale === 'km' ? 'ត្រឡប់ទៅកម្មវិធី' : 'Back to Event'}
+          ត្រឡប់ទៅកម្មវិធី
         </Link>
       </div>
 

@@ -98,7 +98,7 @@ export function generateGoogleCalendarUrl(
     ? `ពិធីមង្គលអាពាហ៍ពិពាហ៍ ${groomName} និង ${brideName}`
     : `Wedding Ceremony of ${groomName} and ${brideName}`;
 
-  const invitationUrl = baseUrl || (event.slug ? `/invite/${event.slug}` : '');
+  const invitationUrl = baseUrl || (event.slug || event.id ? `/invite/${event.slug || event.id}` : '');
   const mapUrl = event.googleMapUrl || '';
 
   const descriptionLines = [

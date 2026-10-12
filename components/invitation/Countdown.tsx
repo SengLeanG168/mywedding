@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { isWeddingEvent } from '@/lib/event-helpers';
 
-export default function Countdown({ date }: { date: string }) {
+export default function Countdown({ date, event }: { date: string; event?: any }) {
   const t = useTranslations('Event');
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const isWedding = isWeddingEvent(event);
+  const countdownTitle = isWedding ? 'រាប់ថយក្រោយដល់ថ្ងៃរៀបការ' : 'រាប់ថយក្រោយដល់ថ្ងៃកម្មវិធី';
 
   useEffect(() => {
     const target = new Date(date).getTime();
@@ -39,7 +42,7 @@ export default function Countdown({ date }: { date: string }) {
 
   return (
     <div className="text-center my-6 sm:my-8 w-full">
-      <h3 className="text-lg sm:text-xl text-primary font-serif mb-3 sm:mb-4">{t('countdown') || 'រាប់ថយក្រោយ'}</h3>
+      <h3 className="text-lg sm:text-xl text-primary font-serif mb-3 sm:mb-4">{countdownTitle}</h3>
       <div className="grid grid-cols-4 gap-2 sm:gap-3 text-center max-w-sm mx-auto w-full px-1">
         {Object.entries(timeLeft).map(([unit, value]) => (
           <div key={unit} className="flex flex-col items-center justify-center bg-card/80 backdrop-blur-sm shadow-sm py-3 px-1 sm:p-4 rounded-xl sm:rounded-2xl border border-primary/20">

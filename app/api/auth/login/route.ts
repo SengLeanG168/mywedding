@@ -6,7 +6,9 @@ import { cookies } from 'next/headers';
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
+    const body = await request.json();
+    const email = body.email ? String(body.email).trim() : '';
+    const password = body.password !== undefined ? String(body.password) : '';
     
     if (!email || !password) {
       return NextResponse.json({ error: 'Missing email or password' }, { status: 400 });

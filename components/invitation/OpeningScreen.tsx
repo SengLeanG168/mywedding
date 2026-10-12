@@ -13,6 +13,7 @@ import {
 import { CornerFloral, PetalScatters } from './FloralDecoration';
 import GuestNameFrame from './GuestNameFrame';
 import CardUtilityButtons from './CardUtilityButtons';
+import { isWeddingEvent, getEventTitle, getEventMainName } from '@/lib/event-helpers';
 
 interface OpeningScreenProps {
   brideName: string;
@@ -31,6 +32,14 @@ export default function OpeningScreen({
 }: OpeningScreenProps) {
   const t = useTranslations('Event');
   const [isExiting, setIsExiting] = useState(false);
+
+  const isWedding = isWeddingEvent(event);
+  const topTitle = event?.eventTitle?.trim() || event?.openingTitleKm?.trim() || getEventTitle(event, true);
+  const mainName = getEventMainName(event, true);
+
+  const isWeddingTitle = topTitle.includes('អាពាហ៍ពិពាហ៍') || topTitle === 'សិរីមង្គលអាពាហ៍ពិពាហ៍' || (isWedding && (!topTitle || topTitle === 'ពិធីមង្គលការ'));
+  const titleSmall = topTitle.includes('អាពាហ៍ពិពាហ៍') ? (topTitle.replace('អាពាហ៍ពិពាហ៍', '').trim() || 'សិរីមង្គល') : 'សិរីមង្គល';
+  const titleLarge = 'អាពាហ៍ពិពាហ៍';
 
   const guestName = guest && guest.name && guest.name.trim() ? guest.name.trim() : 'ភ្ញៀវកិត្តិយស';
   const hasMusic   = !!event?.musicUrl;
@@ -120,19 +129,48 @@ export default function OpeningScreen({
         }}
       >
 
-        {/* 1. TOP — Arch + Wedding Title + Heart */}
+        {/* 1. TOP — Arch + Event Title + Heart */}
         <div className="flex flex-col items-center w-full mt-1 shrink-0">
           <KhmerArch className="w-full max-w-[160px] sm:max-w-[180px] h-7 sm:h-8 text-primary opacity-90 mb-2.5 sm:mb-4 drop-shadow-lg" />
-          <h1
-            className="text-[clamp(1.4rem,5.5vw,1.9rem)] text-primary font-serif font-bold text-center leading-tight px-2"
-            style={{ textShadow: '0 2px 12px rgba(0,0,0,0.7)' }}
-          >
-            {t('weddingCeremony')}
-          </h1>
+          {isWeddingTitle ? (
+            <div className="opening-wedding-title flex flex-col items-center text-center w-full px-2 overflow-visible gap-[0.45rem]">
+              <div
+                className="opening-wedding-title-small font-serif font-bold text-primary text-center overflow-visible mb-[0.15rem]"
+                style={{
+                  fontSize: 'clamp(1.3rem, 5vw, 1.75rem)',
+                  lineHeight: '1.35',
+                  paddingTop: '2px',
+                  paddingBottom: '2px',
+                  textShadow: '0 2px 12px rgba(0,0,0,0.7)',
+                }}
+              >
+                {titleSmall}
+              </div>
+              <div
+                className="opening-wedding-title-large font-serif font-bold text-primary text-center overflow-visible"
+                style={{
+                  fontSize: 'clamp(1.9rem, 7.5vw, 2.6rem)',
+                  lineHeight: '1.25',
+                  paddingTop: '2px',
+                  paddingBottom: '4px',
+                  textShadow: '0 2px 12px rgba(0,0,0,0.7)',
+                }}
+              >
+                {titleLarge}
+              </div>
+            </div>
+          ) : (
+            <h1
+              className="text-[clamp(1.4rem,5.5vw,1.9rem)] text-primary font-serif font-bold text-center leading-tight px-2"
+              style={{ textShadow: '0 2px 12px rgba(0,0,0,0.7)' }}
+            >
+              {topTitle}
+            </h1>
+          )}
           <KhmerHeart className="w-4 h-4 sm:w-5 sm:h-5 text-primary mt-2 sm:mt-3 opacity-90 animate-pulse drop-shadow-lg" />
         </div>
 
-        {/* 2. MIDDLE — Couple Names Image (Designed Ornament Image) */}
+        {/* 2. MIDDLE — Couple Names Image or Dynamic Text */}
         {coupleNamesImg ? (
           <div className="flex flex-col items-center justify-center w-full my-auto py-2 px-2 select-none z-20 shrink min-h-0">
             <div className="w-full max-w-[92%] sm:max-w-[440px] flex items-center justify-center">
@@ -143,8 +181,41 @@ export default function OpeningScreen({
               />
             </div>
           </div>
+        ) : isWedding ? (
+          <div className="flex flex-col items-center justify-center w-full my-auto py-4 px-2 select-none z-20 text-center">
+            <div
+              className="text-[clamp(1.5rem,6vw,2.2rem)] font-serif font-bold text-primary leading-snug"
+              style={{ textShadow: '0 2px 14px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.8)' }}
+            >
+              {groomName || 'កូនកម្លោះ'}
+            </div>
+            <div className="text-sm sm:text-base font-serif text-[#d4af37]/90 my-1 font-semibold">
+              និង
+            </div>
+            <div
+              className="text-[clamp(1.5rem,6vw,2.2rem)] font-serif font-bold text-primary leading-snug"
+              style={{ textShadow: '0 2px 14px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.8)' }}
+            >
+              {brideName || 'កូនក្រមុំ'}
+            </div>
+          </div>
         ) : (
-          <div className="my-auto" />
+          <div className="flex flex-col items-center justify-center w-full my-auto py-4 px-2 select-none z-20 text-center">
+            <div
+              className="text-[clamp(1.5rem,6vw,2.2rem)] font-serif font-bold text-primary leading-snug"
+              style={{ textShadow: '0 2px 14px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.8)' }}
+            >
+              {mainName}
+            </div>
+            {event.eventSubtitle && (
+              <p
+                className="text-xs sm:text-sm font-serif text-[#d4af37]/90 mt-2 max-w-xs mx-auto leading-relaxed"
+                style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}
+              >
+                {event.eventSubtitle}
+              </p>
+            )}
+          </div>
         )}
 
         {/* 3. BOTTOM — Invitation text + Uploaded Guest Decorative Frame with Name + Play Button */}

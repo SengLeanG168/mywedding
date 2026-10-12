@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter, Link, usePathname } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { Button } from '@/components/ui/button';
 import { LogOut, User as UserIcon, Calendar, Users, Clock, ClipboardList } from 'lucide-react';
 
@@ -44,31 +43,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const navItems = [
     {
       href: '/dashboard',
-      label: tDash('events') || 'Events',
+      label: tDash('events') || 'កម្មវិធីការ',
       icon: Calendar,
       exact: true,
     },
     {
       href: '/dashboard/guests',
-      label: tDash('manageGuestsNav') || 'Manage Guests',
+      label: tDash('manageGuestsNav') || 'គ្រប់គ្រងភ្ញៀវ',
       icon: Users,
       exact: false,
     },
     {
       href: '/dashboard/program',
-      label: tDash('manageProgramNav') || 'Manage Program',
+      label: tDash('manageProgramNav') || 'គ្រប់គ្រងកម្មវិធី',
       icon: Clock,
       exact: false,
     },
     {
       href: '/dashboard/rsvps',
-      label: tDash('rsvpListNav') || 'RSVPs',
+      label: tDash('rsvpListNav') || 'បញ្ជី RSVP',
       icon: ClipboardList,
       exact: false,
     },
     {
       href: '/dashboard/profile',
-      label: tProfile('title') || 'Profile',
+      label: tProfile('title') || 'ព័ត៌មានគណនី',
       icon: UserIcon,
       exact: false,
     },
@@ -81,7 +80,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/dashboard" className="text-xl font-bold font-serif text-primary flex items-center gap-2">
-              <span>E-Invitation Admin</span>
+              <span>ផ្ទាំងគ្រប់គ្រង E-Invitation</span>
             </Link>
 
             {/* Desktop Navigation Links */}
@@ -115,7 +114,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Link
               href="/dashboard/profile"
               className="flex items-center gap-2.5 p-1 rounded-full hover:bg-muted/50 transition-colors group cursor-pointer"
-              title={tProfile('title')}
+              title={tProfile('title') || 'ព័ត៌មានគណនី'}
             >
               <div className="w-9 h-9 rounded-full overflow-hidden bg-primary/10 border border-primary/30 flex items-center justify-center shrink-0 shadow-sm group-hover:border-primary transition-colors">
                 {profile?.avatarUrl ? (
@@ -137,7 +136,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             <ThemeToggle />
 
-            <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout" className="text-muted-foreground hover:text-destructive">
+            <Button variant="ghost" size="icon" onClick={handleLogout} title="ចាកចេញ" className="text-muted-foreground hover:text-destructive">
               <LogOut className="h-5 w-5" />
             </Button>
           </div>

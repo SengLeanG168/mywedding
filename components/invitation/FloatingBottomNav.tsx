@@ -46,7 +46,7 @@ export default function FloatingBottomNav({ visible = true }: FloatingBottomNavP
     },
     {
       id: 'gift-qr-section',
-      label: 'QR',
+      label: 'KHQR',
       icon: QrCode,
     },
     {

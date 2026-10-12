@@ -15,13 +15,14 @@ import MapQrCode from '@/components/invitation/MapQrCode';
 import GiftQrSection from '@/components/invitation/GiftQrSection';
 import WeddingLetterSection from '@/components/invitation/WeddingLetterSection';
 import AddToCalendarButton from '@/components/invitation/AddToCalendarButton';
-import { MapPin, Calendar, Clock, Map } from 'lucide-react';
+import { MapPin, Calendar, Clock, Map, Sparkles } from 'lucide-react';
 import MediaLightbox, { MediaItem } from '@/components/invitation/MediaLightbox';
 import { formatLocalizedDate } from '@/lib/date';
 import ScrollReveal from '@/components/invitation/ScrollReveal';
 import MemoryGallery from '@/components/invitation/MemoryGallery';
 import FloatingBottomNav from '@/components/invitation/FloatingBottomNav';
 import WishMarquee, { WishItem } from '@/components/invitation/WishMarquee';
+import { isWeddingEvent, getEventTitle, getEventSubtitle, getEventMainName } from '@/lib/event-helpers';
 
 interface InvitationContentProps {
   event: any;
@@ -191,12 +192,56 @@ export default function InvitationContent({ event, locale, guest, programDays }:
               style={{ paddingBottom: 'calc(84px + env(safe-area-inset-bottom, 0px))' }}
             >
               
-              {/* 1. Traditional Invitation Section */}
-              <ScrollReveal direction="up" delay={50}>
-                <div className="w-full">
-                  <TraditionalInvitationSection event={event} locale="km" />
-                </div>
-              </ScrollReveal>
+              {/* 1. Header Section: Traditional Invitation Section for wedding, or dynamic event card for other events */}
+              {isWeddingEvent(event) ? (
+                <ScrollReveal direction="up" delay={50}>
+                  <div className="w-full">
+                    <TraditionalInvitationSection event={event} locale="km" />
+                  </div>
+                </ScrollReveal>
+              ) : (
+                <ScrollReveal direction="up" delay={50}>
+                  <section className="w-full relative py-8 sm:py-10 px-4 mb-4 sm:mb-6 overflow-hidden flex flex-col items-center text-center bg-card rounded-2xl sm:rounded-3xl shadow-2xl border border-primary/20">
+                    <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+                    <div className="w-full relative z-10 space-y-3 sm:space-y-4">
+                      <div className="flex items-center justify-center gap-1.5 text-primary text-xs tracking-wider uppercase">
+                        <Sparkles className="w-4 h-4" />
+                        <span>សូមគោរពអញ្ជើញ</span>
+                        <Sparkles className="w-4 h-4" />
+                      </div>
+
+                      <h2 className="text-[clamp(1.25rem,4.5vw,1.65rem)] font-serif text-primary font-bold leading-tight px-2">
+                        {getEventTitle(event, true)}
+                      </h2>
+
+                      {/* Ornament */}
+                      <div className="flex items-center justify-center gap-2 my-2 w-full max-w-[160px] mx-auto">
+                        <div className="h-[1.5px] w-full bg-gradient-to-r from-transparent to-primary" />
+                        <div className="w-1.5 h-1.5 rotate-45 bg-primary shrink-0" />
+                        <div className="h-[1.5px] w-full bg-gradient-to-l from-transparent to-primary" />
+                      </div>
+
+                      {event.eventSubtitle && (
+                        <p className="text-sm sm:text-base font-serif text-foreground/90 leading-relaxed max-w-md mx-auto px-2">
+                          {event.eventSubtitle}
+                        </p>
+                      )}
+
+                      {(event.celebrantName || event.hostName) && (
+                        <div className="pt-1 text-primary font-serif font-bold text-base sm:text-lg">
+                          {event.celebrantName ? `ម្ចាស់កម្មវិធី៖ ${event.celebrantName}` : `រៀបចំដោយ៖ ${event.hostName}`}
+                        </div>
+                      )}
+
+                      {(event.invitationMessageKm || event.invitationMessageEn) && (
+                        <p className="text-xs sm:text-sm text-muted-foreground/90 max-w-md mx-auto px-4 leading-relaxed pt-2">
+                          {event.invitationMessageKm || event.invitationMessageEn}
+                        </p>
+                      )}
+                    </div>
+                  </section>
+                </ScrollReveal>
+              )}
 
               {/* Cover Image (optional) */}
               {event.coverImage && (
@@ -207,10 +252,10 @@ export default function InvitationContent({ event, locale, guest, programDays }:
                 </ScrollReveal>
               )}
 
-              {/* 2. Countdown to Wedding Day */}
+              {/* 2. Countdown */}
               <ScrollReveal direction="zoom">
                 <div id="calendar-section" className="scroll-mt-8 sm:scroll-mt-10">
-                  <Countdown date={eventDateTime.toISOString()} />
+                  <Countdown date={eventDateTime.toISOString()} event={event} />
                 </div>
               </ScrollReveal>
 
@@ -264,9 +309,9 @@ export default function InvitationContent({ event, locale, guest, programDays }:
                 </section>
               </ScrollReveal>
 
-              {/* 5. Wedding Program Section */}
+              {/* 5. Program Section */}
               <ScrollReveal direction="up">
-                <WeddingProgram programDays={programDays || []} locale="km" />
+                <WeddingProgram programDays={programDays || []} locale="km" event={event} />
               </ScrollReveal>
 
               {/* 6. Gallery Section (Memory Gallery) */}

@@ -3,6 +3,10 @@ import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
 import prisma from '@/lib/prisma';
 import InvitationContent from '@/components/invitation/InvitationContent';
+import { getEventTitle, getEventSubtitle, getEventMainName } from '@/lib/event-helpers';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 async function getBaseUrl(): Promise<string> {
   if (process.env.NEXT_PUBLIC_APP_URL) {
@@ -41,19 +45,22 @@ export async function generateMetadata({
   const { slug, locale } = await params;
   const baseUrl = await getBaseUrl();
 
-  const event = await prisma.event.findUnique({
-    where: { slug },
+  const event = await prisma.event.findFirst({
+    where: {
+      OR: [
+        { slug },
+        { id: slug },
+      ],
+    },
   });
 
   if (!event) return {};
 
-  const brideName = event.brideNameKm || event.brideNameEn || '';
-  const groomName = event.groomNameKm || event.groomNameEn || '';
+  const title = getEventTitle(event, true);
+  const description = getEventSubtitle(event, true) || 'សូមគោរពអញ្ជើញចូលរួមកម្មវិធី';
+  const siteName = getEventMainName(event, true);
 
-  const title = `សិរីមង្គលអាពាហ៍ពិពាហ៍ ${groomName} និង ${brideName}`;
-  const description = 'សូមគោរពអញ្ជើញចូលរួមពិធីមង្គលអាពាហ៍ពិពាហ៍';
-
-  const pageUrl = `${baseUrl}/invite/${slug}`;
+  const pageUrl = `${baseUrl}/invite/${event.slug || slug}`;
   
   // Image priority: 1. socialPreviewImageUrl, 2. openingImageUrl, 3. coverImage, 4. couplePhotoUrl, 5. default
   const rawImagePath =
@@ -86,7 +93,7 @@ export async function generateMetadata({
       title,
       description,
       url: pageUrl,
-      siteName: `${groomName} & ${brideName} Wedding`,
+      siteName,
       locale: 'km_KH',
       type: 'website',
       images: [
@@ -115,8 +122,13 @@ export default async function InvitationPage({
 }) {
   const { slug, locale } = await params;
 
-  const event = await prisma.event.findUnique({
-    where: { slug },
+  const event = await prisma.event.findFirst({
+    where: {
+      OR: [
+        { slug },
+        { id: slug },
+      ],
+    },
     include: {
       programDays: {
         include: {

@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { generateEventICS } from '@/lib/calendar-ics';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string; guestId: string }> }
@@ -35,7 +38,7 @@ export async function GET(
 
     const host = request.headers.get('host') || 'localhost:3000';
     const protocol = request.headers.get('x-forwarded-proto') || 'https';
-    const baseUrl = `${protocol}://${host}/invite/${event.slug}/guest/${guestId}`;
+    const baseUrl = `${protocol}://${host}/invite/${event.slug || event.id}/guest/${guestId}`;
 
     const icsContent = generateEventICS(event, 'km', baseUrl);
 

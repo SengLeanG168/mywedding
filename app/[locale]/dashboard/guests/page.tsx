@@ -21,7 +21,7 @@ export default function ManageGuestsOverviewPage() {
 
   const fetchEvents = async () => {
     try {
-      const res = await fetch('/api/events');
+      const res = await fetch('/api/events', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setEvents(data);
@@ -69,7 +69,7 @@ export default function ManageGuestsOverviewPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder={t('searchEvent') || 'Search events...'}
+            placeholder={t('searchEvent') || 'ស្វែងរកកម្មវិធី...'}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9 bg-card"
@@ -81,11 +81,14 @@ export default function ManageGuestsOverviewPage() {
       <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
         {filteredEvents.map((ev) => {
           const guestCount = ev._count?.guests ?? 0;
+          const brideName = ev.brideNameKm || ev.brideNameEn || '';
+          const groomName = ev.groomNameKm || ev.groomNameEn || '';
+
           return (
             <Card key={ev.id} className="border border-primary/20 hover:border-primary/40 transition-all shadow-sm hover:shadow-md flex flex-col justify-between">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg font-serif text-primary">
-                  {ev.brideNameEn} & {ev.groomNameEn}
+                  {brideName} & {groomName}
                 </CardTitle>
                 <CardDescription className="text-xs flex items-center gap-1.5 mt-1">
                   <Calendar className="w-3.5 h-3.5 shrink-0" />
@@ -96,13 +99,13 @@ export default function ManageGuestsOverviewPage() {
               </CardHeader>
               <CardContent className="space-y-4 pt-0">
                 <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-primary/10 text-sm">
-                  <span className="text-muted-foreground">{t('totalGuestsLabel')}</span>
+                  <span className="text-muted-foreground">{t('totalGuestsLabel') || 'ចំនួនភ្ញៀវសរុប'}</span>
                   <span className="font-bold text-primary text-base">{guestCount}</span>
                 </div>
 
                 <Link href={`/dashboard/${ev.id}/guests`} className="block">
                   <Button className="w-full justify-between group font-semibold" variant="outline">
-                    <span>{t('goToGuestManagement')}</span>
+                    <span>{t('goToGuestManagement') || 'ចូលទៅគ្រប់គ្រងភ្ញៀវ'}</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
@@ -114,7 +117,7 @@ export default function ManageGuestsOverviewPage() {
         {filteredEvents.length === 0 && (
           <div className="col-span-full text-center py-16 text-muted-foreground bg-muted/20 rounded-2xl border border-dashed p-8">
             <Users className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
-            <p className="font-medium text-base">{t('noEventsYet')}</p>
+            <p className="font-medium text-base">{t('noEventsYet') || 'មិនទាន់មានកម្មវិធី'}</p>
           </div>
         )}
       </div>

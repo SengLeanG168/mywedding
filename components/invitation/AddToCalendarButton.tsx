@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Calendar as CalendarIcon, Download, X, Sparkles, Check, MoreHorizontal, ChevronLeft } from 'lucide-react';
+import { getCalendarSubtitle, isWeddingEvent } from '@/lib/event-helpers';
 
 interface AddToCalendarButtonProps {
   event: any;
@@ -61,9 +62,9 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
     ? `/api/invite/${slug}/guest/${guestId}/calendar.ics`
     : `/api/invite/${slug}/calendar.ics`;
 
-  const groomName = event?.groomNameKm || event?.groomNameEn || 'ហេង សេងលៀង';
-  const brideName = event?.brideNameKm || event?.brideNameEn || 'ល័ក្ខ ចលនា';
-  const weddingSubtitle = `ពិធីមង្គលអាពាហ៍ពិពាហ៍របស់ ${groomName} និង ${brideName}`;
+  const calendarSubtitle = getCalendarSubtitle(event);
+  const isWedding = isWeddingEvent(event);
+  const inviteWordingKm = isWedding ? 'ធៀបការ' : 'ទំព័រធៀប';
 
   useEffect(() => {
     setMounted(true);
@@ -251,7 +252,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                   {isKm ? 'សូមកត់ចំណាំថ្ងៃចូលរួម' : 'Add to Calendar'}
                 </h3>
                 <p className="text-xs sm:text-sm font-serif text-muted-foreground/90 leading-snug px-2">
-                  {weddingSubtitle}
+                  {calendarSubtitle}
                 </p>
               </div>
 
@@ -280,11 +281,11 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                         <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
                           <MoreHorizontal className="w-3.5 h-3.5 shrink-0" />
                         </span>{' '}
-                        នៅខាងលើ រួចជ្រើសយក <span className="font-semibold text-foreground">Open in Chrome, Safari...</span> បន្ទាប់មកធៀបការនឹងបើកសារជាថ្មី។ ក្រោយមកត្រូវចុច “<span className="font-semibold text-primary">សូមកត់ចំណាំថ្ងៃចូលរួម</span>” ម្ដងទៀត (ហើយរើសយក <span className="font-semibold text-foreground">Continue</span> ប្រសិនបើប្រើប្រាស់ Chrome) និងចុច <span className="font-semibold text-foreground">Add To Calendar</span> រួចចុចសញ្ញា{' '}
+                        នៅខាងលើ រួចជ្រើសយក <span className="font-semibold text-foreground">Open in Chrome, Safari...</span> បន្ទាប់មក{inviteWordingKm}នឹងបើកសារជាថ្មី។ ក្រោយមកត្រូវចុច “<span className="font-semibold text-primary">សូមកត់ចំណាំថ្ងៃចូលរួម</span>” ម្ដងទៀត (ហើយរើសយក <span className="font-semibold text-foreground">Continue</span> ប្រសិនបើប្រើប្រាស់ Chrome) និងចុច <span className="font-semibold text-foreground">Add To Calendar</span> រួចចុចសញ្ញា{' '}
                         <span className="inline-flex items-center justify-center align-middle mx-1 w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 leading-none border border-emerald-500/40 font-bold">
                           <Check className="w-3 h-3 stroke-[3]" />
                         </span>{' '}
-                        នៅខាងលើជាការស្រេច។ ដើម្បីអាចត្រឡប់ទៅកាន់ធៀបការវិញ សូមចុចសញ្ញា{' '}
+                        នៅខាងលើជាការស្រេច។ ដើម្បីអាចត្រឡប់ទៅកាន់{inviteWordingKm}វិញ សូមចុចសញ្ញា{' '}
                         <span className="inline-flex items-center justify-center align-middle mx-1 w-4 h-4 rounded-full bg-destructive/20 text-destructive leading-none border border-destructive/40 font-bold">
                           <X className="w-3 h-3 stroke-[3]" />
                         </span>{' '}
@@ -314,11 +315,11 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                         <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
                           <MoreHorizontal className="w-3.5 h-3.5 shrink-0" />
                         </span>{' '}
-                        នៅខាងលើ រួចជ្រើសយក <span className="font-semibold text-foreground">Open in external browser</span> បន្ទាប់មកធៀបការនឹងបើកសារជាថ្មី។ ក្រោយមកត្រូវចុច “<span className="font-semibold text-primary">សូមកត់ចំណាំថ្ងៃចូលរួម</span>” ម្ដងទៀត (ហើយរើសយក <span className="font-semibold text-foreground">Continue</span> ប្រសិនបើប្រើប្រាស់ Chrome) និងចុច <span className="font-semibold text-foreground">Add To Calendar</span> រួចចុចសញ្ញា{' '}
+                        នៅខាងលើ រួចជ្រើសយក <span className="font-semibold text-foreground">Open in external browser</span> បន្ទាប់មក{inviteWordingKm}នឹងបើកសារជាថ្មី។ ក្រោយមកត្រូវចុច “<span className="font-semibold text-primary">សូមកត់ចំណាំថ្ងៃចូលរួម</span>” ម្ដងទៀត (ហើយរើសយក <span className="font-semibold text-foreground">Continue</span> ប្រសិនបើប្រើប្រាស់ Chrome) និងចុច <span className="font-semibold text-foreground">Add To Calendar</span> រួចចុចសញ្ញា{' '}
                         <span className="inline-flex items-center justify-center align-middle mx-1 w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 leading-none border border-emerald-500/40 font-bold">
                           <Check className="w-3 h-3 stroke-[3]" />
                         </span>{' '}
-                        នៅខាងលើជាការស្រេច។ ដើម្បីអាចត្រឡប់ទៅកាន់ធៀបការវិញ សូមចុចសញ្ញា{' '}
+                        នៅខាងលើជាការស្រេច។ ដើម្បីអាចត្រឡប់ទៅកាន់{inviteWordingKm}វិញ សូមចុចសញ្ញា{' '}
                         <span className="inline-flex items-center justify-center align-middle mx-1 w-4 h-4 rounded-full bg-destructive/20 text-destructive leading-none border border-destructive/40 font-bold">
                           <X className="w-3 h-3 stroke-[3]" />
                         </span>{' '}
@@ -344,7 +345,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                   ) : isAndroidTelegram ? (
                     isKm ? (
                       <>
-                        ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ សូមចុច “<span className="font-semibold text-primary">ទាញយក&បើកឯកសារ Calendar</span>” បន្ទាប់មកឯកសារនឹងទាញយកដោយស្វ័យប្រវត្តិ រួចចុច <span className="font-semibold text-foreground">Open</span> ជ្រើសយក <span className="font-semibold text-foreground">Calendar</span> និងយក <span className="font-semibold text-foreground">Always</span> រួចចុច <span className="font-semibold text-foreground">Save to Calendar</span> ជាការស្រេច។ ដើម្បីអាចត្រឡប់ទៅកាន់ធៀបការវិញ សូមចុចសញ្ញា{' '}
+                        ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ សូមចុច “<span className="font-semibold text-primary">ទាញយក&បើកឯកសារ Calendar</span>” បន្ទាប់មកឯកសារនឹងទាញយកដោយស្វ័យប្រវត្តិ រួចចុច <span className="font-semibold text-foreground">Open</span> ជ្រើសយក <span className="font-semibold text-foreground">Calendar</span> និងយក <span className="font-semibold text-foreground">Always</span> រួចចុច <span className="font-semibold text-foreground">Save to Calendar</span> ជាការស្រេច។ ដើម្បីអាចត្រឡប់ទៅកាន់{inviteWordingKm}វិញ សូមចុចសញ្ញា{' '}
                         <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
                           <ChevronLeft className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
                         </span>{' '}
@@ -362,7 +363,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                   ) : isAndroidMessenger ? (
                     isKm ? (
                       <>
-                        ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ សូមចុច “<span className="font-semibold text-primary">ទាញយក&បើកឯកសារ Calendar</span>” រួចចុច <span className="font-semibold text-foreground">Continue</span>។ បន្ទាប់មកឯកសារនឹងទាញយកដោយស្វ័យប្រវត្តិ រួចចុច <span className="font-semibold text-foreground">Open</span> ជ្រើសយក <span className="font-semibold text-foreground">Calendar</span> និងយក <span className="font-semibold text-foreground">Always</span> រួចចុច <span className="font-semibold text-foreground">Save to Calendar</span> ជាការស្រេច។ ដើម្បីអាចត្រឡប់ទៅកាន់ធៀបការវិញ សូមចុចសញ្ញា{' '}
+                        ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ សូមចុច “<span className="font-semibold text-primary">ទាញយក&បើកឯកសារ Calendar</span>” រួចចុច <span className="font-semibold text-foreground">Continue</span>។ បន្ទាប់មកឯកសារនឹងទាញយកដោយស្វ័យប្រវត្តិ រួចចុច <span className="font-semibold text-foreground">Open</span> ជ្រើសយក <span className="font-semibold text-foreground">Calendar</span> និងយក <span className="font-semibold text-foreground">Always</span> រួចចុច <span className="font-semibold text-foreground">Save to Calendar</span> ជាការស្រេច។ ដើម្បីអាចត្រឡប់ទៅកាន់{inviteWordingKm}វិញ សូមចុចសញ្ញា{' '}
                         <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
                           <ChevronLeft className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
                         </span>{' '}
@@ -380,7 +381,7 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                   ) : (
                     isKm ? (
                       <>
-                        ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ សូមចុច “<span className="font-semibold text-primary">ទាញយក&បើកឯកសារ Calendar</span>” បន្ទាប់មកឯកសារនឹងទាញយកដោយស្វ័យប្រវត្តិ រួចចុច <span className="font-semibold text-foreground">Open</span> ជ្រើសយក <span className="font-semibold text-foreground">Calendar</span> និងយក <span className="font-semibold text-foreground">Always</span> រួចចុច <span className="font-semibold text-foreground">Save to Calendar</span> ជាការស្រេច។ ដើម្បីអាចត្រឡប់ទៅកាន់ធៀបការវិញ សូមចុចសញ្ញា{' '}
+                        ដើម្បីរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ សូមចុច “<span className="font-semibold text-primary">ទាញយក&បើកឯកសារ Calendar</span>” បន្ទាប់មកឯកសារនឹងទាញយកដោយស្វ័យប្រវត្តិ រួចចុច <span className="font-semibold text-foreground">Open</span> ជ្រើសយក <span className="font-semibold text-foreground">Calendar</span> និងយក <span className="font-semibold text-foreground">Always</span> រួចចុច <span className="font-semibold text-foreground">Save to Calendar</span> ជាការស្រេច។ ដើម្បីអាចត្រឡប់ទៅកាន់{inviteWordingKm}វិញ សូមចុចសញ្ញា{' '}
                         <span className="inline-flex items-center justify-center align-middle mx-1 px-1.5 py-0.5 rounded-md bg-primary/20 text-primary leading-none border border-primary/30">
                           <ChevronLeft className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
                         </span>{' '}
@@ -424,11 +425,11 @@ export default function AddToCalendarButton({ event, locale, guestId }: AddToCal
                         : 'Because Messenger cannot save the event date to your calendar directly, you need to download the file first so you can properly save the date to your calendar.'
                     ) : isIosTelegram ? (
                       isKm
-                        ? 'ដោយសារតែនៅក្នុង Telegram មិនអាចរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានដោយផ្ទាល់ទេ ដូច្នេះសូមបើកធៀបការនេះក្នុង Browser ខាងក្រៅជាមុនសិន ដើម្បីអាចចុចរក្សាទុកទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ។'
+                        ? `ដោយសារតែនៅក្នុង Telegram មិនអាចរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានដោយផ្ទាល់ទេ ដូច្នេះសូមបើក${inviteWordingKm}នេះក្នុង Browser ខាងក្រៅជាមុនសិន ដើម្បីអាចចុចរក្សាទុកទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ។`
                         : 'Because Telegram cannot save the event date to your calendar directly, please open this invitation in an external browser first so you can properly save the date to your calendar.'
                     ) : isIosMessenger ? (
                       isKm
-                        ? 'ដោយសារតែនៅក្នុង Messenger មិនអាចរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានដោយផ្ទាល់ទេ ដូច្នេះសូមបើកធៀបការនេះក្នុង Browser ខាងក្រៅជាមុនសិន ដើម្បីអាចចុចរក្សាទុកទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ។'
+                        ? `ដោយសារតែនៅក្នុង Messenger មិនអាចរក្សាទុកថ្ងៃចូលរួមទៅកាន់ប្រតិទិនបានដោយផ្ទាល់ទេ ដូច្នេះសូមបើក${inviteWordingKm}នេះក្នុង Browser ខាងក្រៅជាមុនសិន ដើម្បីអាចចុចរក្សាទុកទៅកាន់ប្រតិទិនបានត្រឹមត្រូវ។`
                         : 'Because Messenger cannot save the event date to your calendar directly, please open this invitation in an external browser first so you can properly save the date to your calendar.'
                     ) : (
                       isKm

@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useRef } from 'react';
-import { useTranslations } from 'next-intl';
-import { Upload, X, Film, Music as MusicIcon, Image as ImageIcon, Loader2, ExternalLink } from 'lucide-react';
+import { Upload, X, Film, Music as MusicIcon, Image as ImageIcon, Loader2, ExternalLink, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 import { uploadClientFile } from '@/lib/client-upload';
@@ -28,7 +27,6 @@ export default function MediaUpload({
   viewButtonText,
   removeButtonText,
 }: MediaUploadProps) {
-  const t = useTranslations('Event');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -62,8 +60,8 @@ export default function MediaUpload({
       const url = await uploadClientFile(file, type, { autoOptimizeSocialPreview });
       onChange(url);
     } catch (err: any) {
-      console.error(err);
-      setError(err?.message || t('uploadFailed'));
+      console.error('Media upload error:', err);
+      setError(err?.message || 'បង្ហោះឯកសារមិនបានជោគជ័យ');
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
@@ -81,7 +79,12 @@ export default function MediaUpload({
     <div className="space-y-2 border border-dashed border-border rounded-xl p-4 bg-muted/30">
       {label && <div className="text-sm font-medium text-muted-foreground">{label}</div>}
 
-      {error && <div className="text-xs text-destructive font-medium">{error}</div>}
+      {error && (
+        <div className="flex items-start gap-2 p-2.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs leading-relaxed font-medium">
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span className="flex-1">{error}</span>
+        </div>
+      )}
 
       {value ? (
         <div className="space-y-3">
@@ -103,7 +106,7 @@ export default function MediaUpload({
               <div className="w-full py-4 px-3 bg-muted rounded-md flex flex-col items-center space-y-2.5">
                 <div className="flex items-center space-x-2 text-primary">
                   <MusicIcon className="w-5 h-5" />
-                  <span className="text-xs font-semibold uppercase tracking-wider">{t('preview')}</span>
+                  <span className="text-xs font-semibold uppercase tracking-wider">មើលជាមុន</span>
                 </div>
                 <audio src={value} controls preload="metadata" className="w-full" />
               </div>
@@ -120,7 +123,7 @@ export default function MediaUpload({
                 className="inline-flex items-center justify-center rounded-md text-xs font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 shrink-0"
               >
                 <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-                {viewButtonText || (type === 'video' ? 'មើលវីដេអូ' : t('preview'))}
+                {viewButtonText || (type === 'video' ? 'មើលវីដេអូ' : 'មើលជាមុន')}
               </a>
             )}
             <Button
@@ -130,7 +133,7 @@ export default function MediaUpload({
               onClick={handleButtonClick}
               disabled={uploading}
             >
-              {uploadButtonText || t('replaceFile')}
+              {uploadButtonText || 'ប្តូរឯកសារ'}
             </Button>
             <Button
               type="button"
@@ -140,7 +143,7 @@ export default function MediaUpload({
               disabled={uploading}
             >
               <X className="w-4 h-4 mr-1" />
-              {removeButtonText || (type === 'image' ? t('removeImage') : type === 'video' ? t('removeVideo') : t('removeMusic'))}
+              {removeButtonText || (type === 'image' ? 'លុបរូបភាព' : type === 'video' ? 'លុបវីដេអូ' : 'លុបតន្ត្រី')}
             </Button>
           </div>
         </div>
@@ -157,7 +160,7 @@ export default function MediaUpload({
           {uploading ? (
             <div className="flex flex-col items-center space-y-2">
               <Loader2 className="w-8 h-8 text-primary animate-spin" />
-              <span className="text-sm text-muted-foreground font-medium">{t('uploading')}</span>
+              <span className="text-sm text-muted-foreground font-medium">កំពុងបង្ហោះ...</span>
             </div>
           ) : (
             <div className="flex flex-col items-center space-y-3 text-center">
@@ -174,7 +177,7 @@ export default function MediaUpload({
                   onClick={handleButtonClick}
                 >
                   <Upload className="w-4 h-4 mr-2" />
-                  {uploadButtonText || (type === 'image' ? t('uploadImage') : type === 'video' ? t('uploadVideo') : t('uploadAudio'))}
+                  {uploadButtonText || (type === 'image' ? 'បង្ហោះរូបភាព' : type === 'video' ? 'បង្ហោះវីដេអូ' : 'បង្ហោះតន្ត្រី')}
                 </Button>
               </div>
             </div>

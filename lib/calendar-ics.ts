@@ -1,5 +1,7 @@
+import { getEventTitle, getEventType } from '@/lib/event-helpers';
+
 /**
- * RFC 5545 compliant iCalendar (.ics) generator for Wedding Invitations
+ * RFC 5545 compliant iCalendar (.ics) generator for Events & Invitations
  * Tailored for iOS Apple Calendar, Google Calendar, Android, and Desktop
  */
 
@@ -104,12 +106,10 @@ export function generateEventICS(event: any, locale = 'km', baseUrl = ''): strin
   const dtEndStr = `${padZero(endYear, 4)}${padZero(endMonth)}${padZero(endDay)}T${padZero(endHours)}${padZero(endMinutes)}00`;
 
   // Event Title
-  const eventTitle = isKm
-    ? `ពិធីមង្គលអាពាហ៍ពិពាហ៍ ${groomName} និង ${brideName}`
-    : `Wedding Ceremony of ${groomName} and ${brideName}`;
+  const eventTitle = getEventTitle(event, isKm);
 
   // Description & Details
-  const invitationUrl = baseUrl || (event.slug ? `/invite/${event.slug}` : '');
+  const invitationUrl = baseUrl || (event.slug || event.id ? `/invite/${event.slug || event.id}` : '');
   const mapUrl = event.googleMapUrl || '';
 
   const descriptionLines = [
@@ -125,13 +125,14 @@ export function generateEventICS(event: any, locale = 'km', baseUrl = ''): strin
   const reminder1Day = `${eventTitle} - ${isKm ? 'ការរំលឹក ១ ថ្ងៃមុន' : 'Reminder 1 day before'}`;
   const reminder1Hour = `${eventTitle} - ${isKm ? 'ការរំលឹក ១ ម៉ោងមុន' : 'Reminder 1 hour before'}`;
 
-  const uid = `wedding-${event.id || event.slug || 'invite'}@mywedding.com`;
+  const eventType = getEventType(event);
+  const uid = `${eventType}-${event.id || event.slug || 'invite'}@mywedding.com`;
   const dtstamp = formatUtcIso(new Date());
 
   const icsLines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//MyWedding//Wedding Invitation//KM',
+    `PRODID:-//MyWedding//${eventType.toUpperCase()} Invitation//KM`,
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VTIMEZONE',
