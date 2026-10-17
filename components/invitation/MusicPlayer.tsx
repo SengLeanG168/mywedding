@@ -154,23 +154,24 @@ export default function MusicPlayer({ url, title, showControl = true, className 
         className="hidden"
       />
 
-      {/* 2. Mute/Unmute UI Control (Fixed positioning permanently visible while scrolling) */}
+      {/* 2. Mute/Unmute UI Control */}
       {showControl && (
-        <div className={cn("fixed top-4 right-16 sm:right-[68px] z-50 pointer-events-auto transition-all duration-300", className)}>
-          <button
-            type="button"
-            onClick={handleMuteToggle}
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-background/80 dark:bg-card/80 backdrop-blur-md shadow-md border border-primary/30 flex items-center justify-center text-primary hover:bg-background transition-all active:scale-95 cursor-pointer"
-            aria-label={isMuted ? t('unmute') : t('mute')}
-            title={isMuted ? t('unmute') : t('mute')}
-          >
-            {(!isPlaying || isMuted) ? (
-              <VolumeX className="w-5 h-5 text-muted-foreground" />
-            ) : (
-              <Volume2 className="w-5 h-5 text-primary animate-pulse" />
-            )}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleMuteToggle}
+          className={cn(
+            "w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-background/80 dark:bg-card/80 backdrop-blur-md shadow-md border border-primary/30 flex items-center justify-center text-primary hover:bg-background transition-all active:scale-95 cursor-pointer",
+            className
+          )}
+          aria-label={isMuted ? t('unmute') : t('mute')}
+          title={isMuted ? t('unmute') : t('mute')}
+        >
+          {(!isPlaying || isMuted) ? (
+            <VolumeX className="w-5 h-5 text-muted-foreground" />
+          ) : (
+            <Volume2 className="w-5 h-5 text-primary animate-pulse" />
+          )}
+        </button>
       )}
     </>
   );

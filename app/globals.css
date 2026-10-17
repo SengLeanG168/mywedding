@@ -342,3 +342,9 @@
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
 }
 
+/* Hide Next.js dev indicator portal so it does not obscure bottom-left UI controls */
+nextjs-portal {
+  display: none !important;
+}
+
+

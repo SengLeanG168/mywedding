@@ -317,9 +317,24 @@ function ProgramDayCard({
       </div>
 
       {/* Timeline Container (Responsive mobile-first to multi-column tablet/desktop) */}
-      <div ref={timelineRef} className="relative w-full max-w-xl mx-auto py-2 sm:py-4">
+      <div ref={timelineRef} className="relative w-full max-w-xl mx-auto py-3 sm:py-6">
         {/* Full-width/height SVG overlay for real measured connector lines */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible">
+          {/* Continuous dashed timeline track connecting all events */}
+          {segmentCoords.map((coord, idx) => (
+            <path
+              key={`track-${dayIndex}-${idx}`}
+              d={coord.pathD}
+              fill="none"
+              stroke="rgba(212, 175, 55, 0.45)"
+              strokeWidth="2"
+              strokeDasharray="6 6"
+              strokeLinecap="round"
+              className="dark:stroke-primary/40"
+            />
+          ))}
+
+          {/* Glowing animated line and orb on the active event segment */}
           {showConnector && activeCoord && (
             <ActiveTimelineConnector
               key={`connector-${dayIndex}-${activeSegmentIndex}-${animationCycle}`}
@@ -333,8 +348,8 @@ function ProgramDayCard({
           )}
         </svg>
 
-        {/* Program Cards (Mobile: full-width stacked; Tablet/Desktop: alternating 2-column) */}
-        <div className="space-y-4 sm:space-y-8 md:space-y-10 relative z-10">
+        {/* Program Cards (Mobile: generous vertical breathing room; Tablet/Desktop: alternating 2-column) */}
+        <div className="space-y-11 sm:space-y-14 md:space-y-16 relative z-10">
           {items.map((item: any, index: number) => {
             const isLeft = index % 2 === 0;
             const hasNext = index < itemsCount - 1;

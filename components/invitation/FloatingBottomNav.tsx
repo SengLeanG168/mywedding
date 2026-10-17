@@ -58,7 +58,7 @@ export default function FloatingBottomNav({ visible = true }: FloatingBottomNavP
 
   return (
     <div 
-      className="fixed left-1/2 -translate-x-1/2 z-40 pointer-events-auto max-w-[390px] w-[95%] sm:w-auto"
+      className="fixed left-1/2 -translate-x-1/2 z-40 pointer-events-auto w-auto"
       style={{
         bottom: 'calc(10px + env(safe-area-inset-bottom, 0px))',
       }}

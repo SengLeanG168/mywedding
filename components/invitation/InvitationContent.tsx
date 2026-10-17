@@ -113,15 +113,6 @@ export default function InvitationContent({ event, locale, guest, programDays }:
 
   return (
     <>
-      {/* Background Music */}
-      {event.musicUrl && (
-        <MusicPlayer 
-          url={event.musicUrl} 
-          title={event.musicTitle} 
-          className={mainContentVisible ? "fixed top-4 left-16 sm:right-[68px] z-50" : "fixed top-4 right-4 z-50"}
-        />
-      )}
-
       {/* 1. Curtain Intro overlay (Only rendered if actual curtain media exists) */}
       {!curtainDone && shouldShowCurtain && (
         <CurtainIntro
@@ -374,12 +365,15 @@ export default function InvitationContent({ event, locale, guest, programDays }:
         </div>
       )}
 
-      {/* Floating Theme Toggle (Light / Dark Mode) */}
-      {mainContentVisible && (
-        <div className="fixed top-4 right-4 z-50 pointer-events-auto animate-fade-in">
+      {/* Floating Controls: Theme Toggle & Sound Icon stacked vertically on the right */}
+      <div className="fixed top-4 right-4 z-50 flex flex-col gap-3 pointer-events-auto animate-fade-in">
+        {mainContentVisible && (
           <ThemeToggle className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-background/80 dark:bg-card/80 backdrop-blur-md shadow-md border border-primary/30 flex items-center justify-center text-primary hover:bg-background transition-all active:scale-95" />
-        </div>
-      )}
+        )}
+        {event.musicUrl && (
+          <MusicPlayer url={event.musicUrl} title={event.musicTitle} />
+        )}
+      </div>
 
       {/* Floating Bottom Shortcut Navigation Bar */}
       <FloatingBottomNav visible={mainContentVisible} />
