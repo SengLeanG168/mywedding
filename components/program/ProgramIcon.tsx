@@ -19,74 +19,33 @@ export default function ProgramIcon({
   iconImageUrl,
   className = "w-full h-full",
   forceGold = true,
-  useMaskFallback = false,
   alt = ""
 }: ProgramIconProps) {
   const customUrl = iconImageUrl?.trim();
+  const iconSrc = customUrl || getProgramIconSrc(title, iconType, null);
 
-  // 1. Custom uploaded or URL icon
-  if (customUrl) {
-    // Optional fallback only if explicitly requested to use CSS mask for simple monochrome SVGs
-    if (useMaskFallback && forceGold) {
-      return (
-        <div
-          className={`program-custom-icon-mask ${className}`}
-          style={{
-            WebkitMaskImage: `url("${customUrl}")`,
-            maskImage: `url("${customUrl}")`,
-            WebkitMaskRepeat: 'no-repeat',
-            maskRepeat: 'no-repeat',
-            WebkitMaskPosition: 'center',
-            maskPosition: 'center',
-            WebkitMaskSize: 'contain',
-            maskSize: 'contain',
-            backgroundColor: '#d6b75a'
-          }}
-          role="img"
-          aria-label={alt || (title || 'Program Icon')}
-        />
-      );
-    }
-
-    // Default primary rendering:
-    // Render the original icon image inside a gold blend overlay wrapper
-    // with stronger gold filter. Preserves icon details, lines, shadows, and recognizable shape.
-    if (forceGold) {
-      return (
-        <span className={`program-uploaded-icon-gold-wrap ${className}`}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={customUrl}
-            alt={alt || (title || 'Program Icon')}
-            className="w-full h-full object-contain program-uploaded-icon-gold"
-            loading="lazy"
-          />
-        </span>
-      );
-    }
-
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={customUrl}
-        alt={alt || (title || 'Program Icon')}
-        className={`${className} object-contain`}
-        loading="lazy"
-      />
-    );
-  }
-
-  // 2. Preset or auto-mapped built-in SVG icon
-  const iconSrc = getProgramIconSrc(title, iconType, null);
+  if (!iconSrc) return null;
 
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={iconSrc}
-      alt={alt || (title || 'Program Icon')}
-      className={`${className} object-contain filter drop-shadow-[0_0_2px_rgba(212,175,55,0.45)]`}
-      loading="lazy"
-    />
+    <span
+      className={`program-icon-wrapper relative inline-flex items-center justify-center shrink-0 w-full h-full rounded-[inherit] text-[#8C6F3D] fill-[#8C6F3D] stroke-[#8C6F3D] border-[#8C6F3D] dark:text-primary dark:fill-primary dark:stroke-primary dark:border-primary/30 ${className}`}
+    >
+      <span
+        className="program-icon-glyph w-full h-full inline-block transition-colors duration-200 text-[#8C6F3D] fill-[#8C6F3D] stroke-[#8C6F3D] dark:text-primary dark:fill-primary dark:stroke-primary"
+        style={{
+          maskImage: `url("${iconSrc}")`,
+          WebkitMaskImage: `url("${iconSrc}")`,
+          maskSize: 'contain',
+          WebkitMaskSize: 'contain',
+          maskRepeat: 'no-repeat',
+          WebkitMaskRepeat: 'no-repeat',
+          maskPosition: 'center',
+          WebkitMaskPosition: 'center',
+          backgroundColor: 'currentColor',
+        }}
+        role="img"
+        aria-label={alt || (title || 'Program Icon')}
+      />
+    </span>
   );
 }
-

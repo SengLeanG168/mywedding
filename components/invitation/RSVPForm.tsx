@@ -92,7 +92,7 @@ export default function RSVPForm({ eventId, guest, onWishSubmitted }: RSVPFormPr
       <div className="space-y-1">
         <label className="text-xs font-semibold text-muted-foreground">{t('attendanceStatus')}</label>
         <select 
-          className="flex h-12 sm:h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base sm:text-sm ring-offset-background font-serif"
+          className="flex h-12 sm:h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base sm:text-sm text-foreground ring-offset-background font-serif"
           value={formData.status} 
           onChange={(e) => setFormData({...formData, status: e.target.value})}
         >
@@ -141,7 +141,7 @@ export default function RSVPForm({ eventId, guest, onWishSubmitted }: RSVPFormPr
         <label className="text-xs font-semibold text-muted-foreground">{t('blessingMessage')}</label>
         <textarea 
           placeholder={t('blessingMessage')} 
-          className="flex min-h-[100px] sm:min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base sm:text-sm ring-offset-background"
+          className="flex min-h-[100px] sm:min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base sm:text-sm text-foreground ring-offset-background"
           value={formData.message} 
           onChange={(e) => setFormData({...formData, message: e.target.value})}
         />

@@ -75,7 +75,7 @@ export default function WishMarquee({ eventId, newWishes = [], refreshTrigger = 
           <p className="text-xs text-muted-foreground mt-1">សារជូនពរពីភ្ញៀវកិត្តិយស</p>
           <span className="inline-block w-8 h-[1px] bg-primary mt-2" />
         </div>
-        <div className="py-5 px-4 text-xs text-muted-foreground italic bg-card/40 rounded-2xl border border-primary/20 max-w-sm mx-auto">
+        <div className="py-5 px-4 text-xs text-[#d6cebf] italic bg-[#1f1c18] rounded-2xl border border-primary/20 max-w-sm mx-auto shadow-md">
           មិនទាន់មានសារជូនពរ
         </div>
       </section>
@@ -130,8 +130,9 @@ export default function WishMarquee({ eventId, newWishes = [], refreshTrigger = 
           overflow: hidden;
           border-radius: 1rem;
           border: 1px solid rgba(212, 175, 55, 0.4);
-          background: hsl(var(--card));
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+          background-color: #1f1c18 !important;
+          color: #fcfbf9 !important;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
           flex-shrink: 0;
           width: 270px;
           padding: 1rem 1.125rem;
@@ -142,6 +143,9 @@ export default function WishMarquee({ eventId, newWishes = [], refreshTrigger = 
           .wish-card {
             width: 330px;
           }
+        }
+        .wish-card-message {
+          color: #fcfbf9 !important;
         }
         /* Moving LED light line on top border */
         .wish-card::before {
@@ -231,7 +235,10 @@ export default function WishMarquee({ eventId, newWishes = [], refreshTrigger = 
 
                 {/* Under Guest Name: Centered Date & Time in Khmer */}
                 {formattedDate && (
-                  <div className="text-center w-full text-[10px] sm:text-[11px] text-muted-foreground/75 font-sans tracking-normal mb-3">
+                  <div
+                    className="text-center w-full text-[10px] sm:text-[11px] font-sans tracking-normal mb-3 text-[#d6cebf]"
+                    style={{ color: '#d6cebf' }}
+                  >
                     {formattedDate}
                   </div>
                 )}
@@ -240,7 +247,10 @@ export default function WishMarquee({ eventId, newWishes = [], refreshTrigger = 
                 <div className="w-16 mx-auto h-[1px] bg-primary/25 mb-3" />
 
                 {/* Wish / Message Text (Plain readable font) */}
-                <div className="text-xs sm:text-sm text-foreground/90 font-sans font-normal leading-relaxed text-center line-clamp-4">
+                <div
+                  className="wish-card-message text-xs sm:text-sm font-sans font-normal leading-relaxed text-center line-clamp-4 text-[#fcfbf9]"
+                  style={{ color: '#fcfbf9' }}
+                >
                   “{item.message}”
                 </div>
               </div>

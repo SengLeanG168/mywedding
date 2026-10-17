@@ -3,11 +3,13 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { Volume2, VolumeX } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface MusicPlayerProps {
   url?: string | null;
   title?: string | null;
   showControl?: boolean;
+  className?: string;
 }
 
 declare global {
@@ -16,7 +18,7 @@ declare global {
   }
 }
 
-export default function MusicPlayer({ url, title, showControl = true }: MusicPlayerProps) {
+export default function MusicPlayer({ url, title, showControl = true, className }: MusicPlayerProps) {
   const t = useTranslations('Event');
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -152,13 +154,13 @@ export default function MusicPlayer({ url, title, showControl = true }: MusicPla
         className="hidden"
       />
 
-      {/* 2. Top-left Mute/Unmute UI Control (absolute positioning scrolls naturally with page content like ThemeToggle) */}
+      {/* 2. Mute/Unmute UI Control (Fixed positioning permanently visible while scrolling) */}
       {showControl && (
-        <div className="absolute top-4 left-4 z-50 pointer-events-auto">
+        <div className={cn("fixed top-4 right-16 sm:right-[68px] z-50 pointer-events-auto transition-all duration-300", className)}>
           <button
             type="button"
             onClick={handleMuteToggle}
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-background/80 backdrop-blur-md shadow-md border border-primary/30 flex items-center justify-center text-primary hover:bg-background transition-all active:scale-95"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-background/80 dark:bg-card/80 backdrop-blur-md shadow-md border border-primary/30 flex items-center justify-center text-primary hover:bg-background transition-all active:scale-95 cursor-pointer"
             aria-label={isMuted ? t('unmute') : t('mute')}
             title={isMuted ? t('unmute') : t('mute')}
           >

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useTheme } from 'next-themes';
 import { formatLocalizedDate } from '@/lib/date';
 import { Calendar, Clock, Sparkles } from 'lucide-react';
 import { isWeddingEvent } from '@/lib/event-helpers';
@@ -120,7 +121,7 @@ function ActiveTimelineConnector({
         </filter>
       </defs>
 
-      {/* Real measured dashed connector line dropping into top-center of target card */}
+      {/* Real measured dashed connector line */}
       <path
         ref={pathRef}
         d={coord.pathD}
@@ -163,6 +164,7 @@ interface ProgramDayCardProps {
   animationPhase: AnimationPhase;
   animationCycle: number;
   onVisibilityChange: (dayIndex: number, ratio: number) => void;
+  isDark?: boolean;
 }
 
 function ProgramDayCard({
@@ -174,6 +176,7 @@ function ProgramDayCard({
   animationPhase,
   animationCycle,
   onVisibilityChange,
+  isDark = false,
 }: ProgramDayCardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
@@ -192,6 +195,7 @@ function ProgramDayCard({
     if (!timelineRef.current) return;
     const containerRect = timelineRef.current.getBoundingClientRect();
     const newCoords: SegmentCoord[] = [];
+    const isMobile = window.innerWidth < 640;
 
     for (let i = 0; i < itemsCount - 1; i++) {
       const card1 = cardRefs.current[i];
@@ -202,32 +206,37 @@ function ProgramDayCard({
         const r2 = card2.getBoundingClientRect();
         const isLeft = i % 2 === 0;
 
-        // Start anchor: real vertical center of source card edge
-        const startX = isLeft
-          ? r1.right - containerRect.left
-          : r1.left - containerRect.left;
-        const startY = r1.top + r1.height / 2 - containerRect.top;
-
-        // Target anchor: TOP CENTER of target card
-        const targetX = r2.left + r2.width / 2 - containerRect.left;
-        const targetY = r2.top - containerRect.top;
-
-        // Smooth rounded corner radius
-        const dx = Math.abs(targetX - startX);
-        const dy = Math.abs(targetY - startY);
-        const radius = Math.min(18, dx / 2, dy / 2);
-
+        let startX: number;
+        let startY: number;
+        let targetX: number;
+        let targetY: number;
         let pathD = '';
-        if (isLeft) {
-          // Left Card -> Right Card:
-          // Runs horizontally across from Card 1 right edge to targetX,
-          // bends around smooth corner, and drops down vertically right above Card 2 center!
-          pathD = `M ${startX},${startY} L ${targetX - radius},${startY} Q ${targetX},${startY} ${targetX},${startY + radius} L ${targetX},${targetY}`;
+
+        if (isMobile) {
+          // Mobile: Clean vertical drop from bottom center of Card 1 to top center of Card 2
+          startX = r1.left + r1.width / 2 - containerRect.left;
+          startY = r1.bottom - containerRect.top;
+          targetX = r2.left + r2.width / 2 - containerRect.left;
+          targetY = r2.top - containerRect.top;
+          pathD = `M ${startX},${startY} L ${targetX},${targetY}`;
         } else {
-          // Right Card -> Left Card:
-          // Runs horizontally left from Card 2 left edge to targetX,
-          // bends around smooth corner, and drops down vertically right above Card 3 center!
-          pathD = `M ${startX},${startY} L ${targetX + radius},${startY} Q ${targetX},${startY} ${targetX},${startY + radius} L ${targetX},${targetY}`;
+          // Tablet / Desktop: Alternating zigzag curve from side edge of Card 1 to top center of Card 2
+          startX = isLeft
+            ? r1.right - containerRect.left
+            : r1.left - containerRect.left;
+          startY = r1.top + r1.height / 2 - containerRect.top;
+          targetX = r2.left + r2.width / 2 - containerRect.left;
+          targetY = r2.top - containerRect.top;
+
+          const dx = Math.abs(targetX - startX);
+          const dy = Math.abs(targetY - startY);
+          const radius = Math.min(18, dx / 2, dy / 2);
+
+          if (isLeft) {
+            pathD = `M ${startX},${startY} L ${targetX - radius},${startY} Q ${targetX},${startY} ${targetX},${startY + radius} L ${targetX},${targetY}`;
+          } else {
+            pathD = `M ${startX},${startY} L ${targetX + radius},${startY} Q ${targetX},${startY} ${targetX},${startY + radius} L ${targetX},${targetY}`;
+          }
         }
 
         newCoords.push({ startX, startY, targetX, targetY, pathD, isLeft });
@@ -292,7 +301,7 @@ function ProgramDayCard({
       <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-primary to-transparent" />
       
       {/* Day Header */}
-      <div className="text-center mb-8 sm:mb-10">
+      <div className="text-center mb-6 sm:mb-10">
         <h3 className="text-[clamp(1.1rem,4vw,1.35rem)] font-bold text-primary font-serif px-2 break-words">
           {dayTitle}
         </h3>
@@ -307,8 +316,8 @@ function ProgramDayCard({
         <div className="w-24 sm:w-32 h-[2px] mx-auto mt-3 header-dashed-line" />
       </div>
 
-      {/* Alternating Left-Right Cards Timeline Container */}
-      <div ref={timelineRef} className="relative w-full max-w-xl mx-auto py-2">
+      {/* Timeline Container (Responsive mobile-first to multi-column tablet/desktop) */}
+      <div ref={timelineRef} className="relative w-full max-w-xl mx-auto py-2 sm:py-4">
         {/* Full-width/height SVG overlay for real measured connector lines */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible">
           {showConnector && activeCoord && (
@@ -324,8 +333,8 @@ function ProgramDayCard({
           )}
         </svg>
 
-        {/* Program Cards */}
-        <div className="space-y-6 sm:space-y-10 relative z-10">
+        {/* Program Cards (Mobile: full-width stacked; Tablet/Desktop: alternating 2-column) */}
+        <div className="space-y-4 sm:space-y-8 md:space-y-10 relative z-10">
           {items.map((item: any, index: number) => {
             const isLeft = index % 2 === 0;
             const hasNext = index < itemsCount - 1;
@@ -334,57 +343,66 @@ function ProgramDayCard({
 
             const itemTitle = item.titleKm || item.titleEn;
             const itemDesc = item.descriptionKm || item.descriptionEn;
-            const iconSrc = getProgramIconSrc(itemTitle, item.iconType, item.iconImageUrl);
 
             return (
               <div key={item.id || index} className="relative w-full">
                 {/* Program Item Card Row */}
-                <div className={`relative w-full flex ${isLeft ? 'justify-start' : 'justify-end'}`}>
+                <div
+                  className={`relative w-full flex justify-center sm:${
+                    isLeft ? 'justify-start' : 'justify-end'
+                  }`}
+                >
                   {/* Card Element with Ref for real coordinate measurement */}
                   <div
                     ref={(el) => {
                       cardRefs.current[index] = el;
                     }}
-                    className={`relative w-fit max-w-[50%] sm:max-w-[48%] md:max-w-[280px] h-auto bg-card/90 backdrop-blur-md rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 border border-primary/20 shadow-sm hover:border-primary/40 transition-all text-left flex flex-col items-start z-10 ${
-                      isLeft ? 'mr-auto ml-0' : 'ml-auto mr-0'
+                    className={`relative w-full sm:w-fit sm:max-w-[48%] md:max-w-[300px] lg:max-w-[340px] h-auto bg-card/90 backdrop-blur-md rounded-xl sm:rounded-2xl p-3 sm:p-3.5 md:p-4 border border-primary/20 shadow-sm hover:border-primary/40 transition-all text-left flex flex-col items-start z-10 ${
+                      isLeft ? 'sm:mr-auto sm:ml-0' : 'sm:ml-auto sm:mr-0'
                     }`}
                   >
                     {/* Top Row: Traditional Khmer Ceremony Icon & Time Badge */}
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary/10 border border-primary/30 p-1 flex items-center justify-center shrink-0 shadow-xs backdrop-blur-xs">
+                    <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-2.5 mb-2 sm:mb-2.5 w-full flex-wrap sm:flex-nowrap">
+                      <div
+                        className="timeline-icon-badge w-8 h-8 sm:w-9 sm:h-9 md:w-9.5 md:h-9.5 rounded-full p-1.5 flex items-center justify-center shrink-0 backdrop-blur-xs transition-colors duration-200 border-[1.5px] border-[#8C6F3D] bg-[#fcf8f0] text-[#8C6F3D] fill-[#8C6F3D] stroke-[#8C6F3D] shadow-[0_1px_4px_rgba(140,111,61,0.22)] dark:border dark:border-primary/30 dark:bg-primary/10 dark:text-primary dark:fill-primary dark:stroke-primary dark:shadow-none"
+                      >
                         <ProgramIcon
                           title={itemTitle}
                           iconType={item.iconType}
                           iconImageUrl={item.iconImageUrl}
-                          className="w-full h-full"
+                          className="w-full h-full text-[#8C6F3D] border-[#8C6F3D] fill-[#8C6F3D] stroke-[#8C6F3D] dark:text-primary dark:border-primary/30 dark:fill-primary dark:stroke-primary"
                           forceGold={true}
                         />
                       </div>
 
                       {item.time && (
-                        <div className="text-[10px] sm:text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 sm:py-1 rounded-full inline-flex items-center gap-1 shadow-xs border border-primary/20 font-sans whitespace-nowrap">
-                          <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-primary shrink-0" />
+                        <div
+                          className="timeline-time-badge text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full inline-flex items-center gap-1.5 shadow-xs font-sans whitespace-nowrap transition-colors duration-200 text-[#8C6F3D] bg-[#8C6F3D]/10 border border-[#8C6F3D]/35 dark:text-primary dark:bg-primary/10 dark:border-primary/20"
+                        >
+                          <Clock
+                            className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 text-[#8C6F3D] stroke-[2.5] dark:text-primary dark:stroke-2"
+                          />
                           <span>{formatTime(item.time)}</span>
                         </div>
                       )}
                     </div>
 
-                    {/* Title (Natural wrap, no truncation/ellipsis, generous line height) */}
-                    <h4 className="text-[12px] sm:text-[13px] md:text-sm font-bold font-serif text-foreground whitespace-normal break-words leading-[1.6] py-0.5 w-full">
+                    {/* Title (Mobile generous width prevents awkward single-character wrapping) */}
+                    <h4 className="text-[13px] sm:text-[13px] md:text-sm font-bold font-serif text-foreground whitespace-normal break-words leading-[1.65] py-0.5 w-full">
                       {itemTitle}
                     </h4>
 
                     {/* Description */}
                     {itemDesc && (
-                      <p className="text-muted-foreground text-[10px] sm:text-xs leading-[1.6] break-words font-sans mt-0.5 w-full">
+                      <p className="text-muted-foreground text-xs sm:text-[11px] md:text-xs leading-[1.6] break-words font-sans mt-0.5 w-full">
                         {itemDesc}
                       </p>
                     )}
 
-                    {/* Static Arrow anchored at vertical center of active card */}
+                    {/* Directional arrow for tablet/desktop views */}
                     {showArrow && (
                       <span
-                        className={`absolute top-1/2 -translate-y-1/2 ${
+                        className={`hidden sm:inline-block absolute top-1/2 -translate-y-1/2 ${
                           isLeft ? '-right-4 sm:-right-5' : '-left-4 sm:-left-5'
                         } text-primary font-bold text-xs sm:text-sm select-none pointer-events-none drop-shadow-[0_0_4px_rgba(212,175,55,0.8)]`}
                       >
@@ -408,6 +426,14 @@ function ProgramDayCard({
 export default function WeddingProgram({ programDays, locale, event }: WeddingProgramProps) {
   const t = useTranslations('Program');
   const isWedding = isWeddingEvent(event);
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDark = mounted ? resolvedTheme === 'dark' : false;
 
   // Track intersection ratio of each day to select the single active visible day
   const [dayRatios, setDayRatios] = useState<{ [index: number]: number }>({});
@@ -458,24 +484,20 @@ export default function WeddingProgram({ programDays, locale, event }: WeddingPr
     let timer: NodeJS.Timeout;
 
     if (animationPhase === 'movingDot') {
-      // 1. Dot moves along dashed connector line for 2.2s
       timer = setTimeout(() => {
         setAnimationPhase('retractingLine');
       }, 2200);
     } else if (animationPhase === 'retractingLine') {
-      // 2. Dashed line smoothly retracts for 1.0s
       timer = setTimeout(() => {
         setAnimationPhase('segmentHidden');
       }, 1000);
     } else if (animationPhase === 'segmentHidden') {
-      // 3. Keep line completely hidden for 400ms before advancing cleanly
       timer = setTimeout(() => {
         if (activeSegmentIndex < currentDaySegmentsCount - 1) {
           setActiveSegmentIndex((prev) => prev + 1);
           setAnimationCycle((prev) => prev + 1);
           setAnimationPhase('movingDot');
         } else {
-          // Finished all segments in this active day -> restart loop from segment 0
           setActiveSegmentIndex(0);
           setAnimationCycle((prev) => prev + 1);
           setAnimationPhase('movingDot');
@@ -489,7 +511,7 @@ export default function WeddingProgram({ programDays, locale, event }: WeddingPr
   if (!programDays || programDays.length === 0) return null;
 
   return (
-    <section className="mt-16 relative w-full scroll-mt-8 sm:scroll-mt-10" id="program-section">
+    <section className="mt-12 sm:mt-16 relative w-full scroll-mt-8 sm:scroll-mt-10 px-2 sm:px-4 md:px-0" id="program-section">
       <style jsx global>{`
         @keyframes curvedDashFlow {
           from {
@@ -573,49 +595,69 @@ export default function WeddingProgram({ programDays, locale, event }: WeddingPr
           }
         }
 
-        .program-uploaded-icon-gold-wrap,
-        .program-custom-icon-gold-wrap {
-          position: relative;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-          width: 100%;
-          height: 100%;
-          border-radius: inherit;
+        /* Circular icon badge with refined boundary & shadow */
+        .timeline-icon-badge {
+          background-color: #fcf8f0;
+          border: 1.5px solid #8C6F3D;
+          color: #8C6F3D;
+          fill: #8C6F3D;
+          box-shadow: 0 1px 4px rgba(140, 111, 61, 0.22);
         }
 
-        .program-uploaded-icon-gold-wrap::after,
-        .program-custom-icon-gold-wrap::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: rgba(214, 183, 90, 0.25);
-          mix-blend-mode: color;
-          pointer-events: none;
-          border-radius: inherit;
+        .timeline-icon-badge svg,
+        .timeline-icon-badge svg path,
+        .timeline-icon-badge svg circle,
+        .timeline-icon-badge svg line,
+        .timeline-icon-badge svg rect,
+        .timeline-icon-badge svg polygon {
+          color: #8C6F3D !important;
+          fill: #8C6F3D !important;
+          stroke: #8C6F3D !important;
         }
 
-        .program-uploaded-icon-gold,
-        .program-custom-icon-gold {
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-          opacity: 0.96;
-          filter:
-            invert(72%)
-            sepia(1)
-            saturate(3)
-            hue-rotate(350deg)
-            brightness(1.08)
-            contrast(1.02)
-            drop-shadow(0 0 3px rgba(214, 183, 90, 0.35));
-          transition: filter 0.25s ease, opacity 0.25s ease;
+        :global(.dark) .timeline-icon-badge,
+        .dark .timeline-icon-badge {
+          background-color: rgba(212, 175, 55, 0.1) !important;
+          border: 1px solid rgba(212, 175, 55, 0.3) !important;
+          color: var(--primary) !important;
+          fill: var(--primary) !important;
+          box-shadow: none !important;
+        }
+
+        :global(.dark) .timeline-icon-badge svg,
+        :global(.dark) .timeline-icon-badge svg path,
+        :global(.dark) .timeline-icon-badge svg circle,
+        :global(.dark) .timeline-icon-badge svg line,
+        :global(.dark) .timeline-icon-badge svg rect,
+        :global(.dark) .timeline-icon-badge svg polygon,
+        .dark .timeline-icon-badge svg,
+        .dark .timeline-icon-badge svg path,
+        .dark .timeline-icon-badge svg circle,
+        .dark .timeline-icon-badge svg line,
+        .dark .timeline-icon-badge svg rect,
+        .dark .timeline-icon-badge svg polygon {
+          color: var(--primary) !important;
+          fill: var(--primary) !important;
+          stroke: var(--primary) !important;
+        }
+
+        /* Time badge and clock icon high contrast colors */
+        .timeline-time-badge {
+          color: #8C6F3D;
+          background-color: rgba(140, 111, 61, 0.1);
+          border: 1px solid rgba(140, 111, 61, 0.35);
+        }
+
+        :global(.dark) .timeline-time-badge,
+        .dark .timeline-time-badge {
+          color: var(--primary) !important;
+          background-color: rgba(212, 175, 55, 0.1) !important;
+          border-color: rgba(212, 175, 55, 0.2) !important;
         }
       `}</style>
 
       {/* Header */}
-      <div className="text-center mb-10 sm:mb-12">
+      <div className="text-center mb-8 sm:mb-12">
         <h2 className="text-[clamp(1.25rem,4vw,1.5rem)] font-serif font-bold text-primary flex items-center justify-center gap-2">
           <Sparkles className="w-5 h-5 text-primary animate-pulse" />
           {isWedding ? (t('weddingProgram') || 'កម្មវិធីមង្គលការ') : (event?.eventTitle?.trim() || t('programSchedule') || 'កម្មវិធី')}
@@ -624,7 +666,7 @@ export default function WeddingProgram({ programDays, locale, event }: WeddingPr
         <span className="inline-block w-10 h-[1.5px] bg-primary mt-3" />
       </div>
 
-      <div className="space-y-8 sm:space-y-12">
+      <div className="space-y-6 sm:space-y-10 md:space-y-12">
         {programDays.map((day, dayIndex) => (
           <ProgramDayCard
             key={day.id || dayIndex}
@@ -636,6 +678,7 @@ export default function WeddingProgram({ programDays, locale, event }: WeddingPr
             animationPhase={animationPhase}
             animationCycle={animationCycle}
             onVisibilityChange={handleVisibilityChange}
+            isDark={isDark}
           />
         ))}
       </div>

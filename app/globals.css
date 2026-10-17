@@ -2,7 +2,7 @@
 
 @plugin "tailwindcss-animate";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --font-sans: "Times New Roman", Times, serif;
@@ -66,41 +66,47 @@
     --card-foreground: #1c1917;
     --popover: #ffffff;
     --popover-foreground: #1c1917;
-    --primary: #c29b62; /* Gold accent */
-    --primary-foreground: #ffffff;
-    --secondary: #f3f4f6;
-    --secondary-foreground: #1f2937;
-    --muted: #f4f4f5;
-    --muted-foreground: #71717a;
-    --accent: #f4f4f5;
-    --accent-foreground: #18181b;
-    --destructive: #ef4444;
-    --destructive-foreground: #fafafa;
-    --border: #e5e7eb;
-    --input: #e5e7eb;
+    --primary: #c29b62; /* Elegant warm wedding gold */
+    --primary-foreground: #1c1917; /* Crisp high-contrast readable charcoal on gold buttons */
+    --secondary: #f4ede2;
+    --secondary-foreground: #1c1917;
+    --muted: #f5efe6;
+    --muted-foreground: #6b6357;
+    --accent: #f4ede2;
+    --accent-foreground: #1c1917;
+    --destructive: #dc2626;
+    --destructive-foreground: #ffffff;
+    --border: #e8ded1;
+    --input: #e4d7c7;
     --ring: #c29b62;
     --radius: 0.5rem;
+    --program-icon-filter: invert(47%) sepia(43%) saturate(780%) hue-rotate(6deg) brightness(94%) contrast(92%) drop-shadow(0.35px 0 0 #8C6F3D) drop-shadow(-0.35px 0 0 #8C6F3D) drop-shadow(0 0.35px 0 #8C6F3D) drop-shadow(0 -0.35px 0 #8C6F3D);
+    --program-icon-wrap-bg: transparent;
+    --program-icon-wrap-blend: normal;
   }
   .dark {
-    --background: #18181b; /* Deep charcoal */
-    --foreground: #fafafa;
-    --card: #27272a;
-    --card-foreground: #fafafa;
-    --popover: #27272a;
-    --popover-foreground: #fafafa;
-    --primary: #d4af37; /* Gold accent */
-    --primary-foreground: #18181b;
-    --secondary: #3f3f46;
-    --secondary-foreground: #fafafa;
-    --muted: #27272a;
-    --muted-foreground: #a1a1aa;
-    --accent: #27272a;
-    --accent-foreground: #fafafa;
-    --destructive: #7f1d1d;
-    --destructive-foreground: #fafafa;
-    --border: #3f3f46;
-    --input: #3f3f46;
+    --background: #141210; /* Deep velvet charcoal / warm onyx */
+    --foreground: #fcfbf9;
+    --card: #1f1c18; /* Elevated warm charcoal card */
+    --card-foreground: #fcfbf9;
+    --popover: #1f1c18;
+    --popover-foreground: #fcfbf9;
+    --primary: #d4af37; /* Radiant metallic gold */
+    --primary-foreground: #141210; /* Crisp contrast on bright gold */
+    --secondary: #2b2620;
+    --secondary-foreground: #fcfbf9;
+    --muted: #24201a;
+    --muted-foreground: #a89f91;
+    --accent: #2b2620;
+    --accent-foreground: #fcfbf9;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: #383228;
+    --input: #383228;
     --ring: #d4af37;
+    --program-icon-filter: invert(72%) sepia(1) saturate(3) hue-rotate(350deg) brightness(1.08) contrast(1.02) drop-shadow(0 0 3px rgba(214, 183, 90, 0.35));
+    --program-icon-wrap-bg: rgba(214, 183, 90, 0.25);
+    --program-icon-wrap-blend: color;
   }
 }
 
@@ -205,41 +211,95 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(214, 183, 90, 0.25);
-  mix-blend-mode: color;
+  background: var(--program-icon-wrap-bg);
+  mix-blend-mode: var(--program-icon-wrap-blend);
   pointer-events: none;
   border-radius: inherit;
 }
 
 .program-uploaded-icon-gold,
-.program-custom-icon-gold {
+.program-custom-icon-gold,
+.program-preset-icon-gold {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  opacity: 0.96;
-  filter:
-    invert(72%)
-    sepia(1)
-    saturate(3)
-    hue-rotate(350deg)
-    brightness(1.08)
-    contrast(1.02)
-    drop-shadow(0 0 3px rgba(214, 183, 90, 0.35));
+  opacity: 0.98;
+  filter: var(--program-icon-filter) !important;
   transition: filter 0.25s ease, opacity 0.25s ease;
+}
+
+.dark .program-uploaded-icon-gold,
+.dark .program-custom-icon-gold,
+.dark .program-preset-icon-gold {
+  opacity: 0.96;
+  filter: var(--program-icon-filter) !important;
 }
 
 /* Optional CSS mask fallback for very simple monochrome SVG icons */
 .program-custom-icon-mask {
   display: inline-block;
-  background-color: #d6b75a;
+  background-color: #8C6F3D;
   mask-repeat: no-repeat;
   mask-position: center;
   mask-size: contain;
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-position: center;
   -webkit-mask-size: contain;
-  filter: drop-shadow(0 0 2px rgba(212, 175, 55, 0.45));
+  filter: drop-shadow(0 0 2px rgba(140, 111, 61, 0.45));
   flex-shrink: 0;
+}
+
+.dark .program-custom-icon-mask {
+  background-color: #d6b75a;
+  filter: drop-shadow(0 0 2px rgba(212, 175, 55, 0.45));
+}
+
+/* Timeline Event Card Round Icon Badges */
+.timeline-icon-badge {
+  background-color: #fcf8f0;
+  border: 1.5px solid #8C6F3D;
+  color: #8C6F3D;
+  fill: #8C6F3D;
+  box-shadow: 0 1px 4px rgba(140, 111, 61, 0.22);
+}
+
+.timeline-icon-badge svg,
+.timeline-icon-badge svg path,
+.timeline-icon-badge svg circle,
+.timeline-icon-badge svg line {
+  color: #8C6F3D;
+  fill: #8C6F3D;
+  stroke: #8C6F3D;
+}
+
+.dark .timeline-icon-badge {
+  background-color: rgba(212, 175, 55, 0.1) !important;
+  border: 1px solid rgba(212, 175, 55, 0.3) !important;
+  color: var(--primary) !important;
+  fill: var(--primary) !important;
+  box-shadow: none !important;
+}
+
+.dark .timeline-icon-badge svg,
+.dark .timeline-icon-badge svg path,
+.dark .timeline-icon-badge svg circle,
+.dark .timeline-icon-badge svg line {
+  color: var(--primary) !important;
+  fill: var(--primary) !important;
+  stroke: var(--primary) !important;
+}
+
+/* Timeline Time Badge & Clock Icon */
+.timeline-time-badge {
+  color: #8C6F3D;
+  background-color: rgba(140, 111, 61, 0.1);
+  border: 1px solid rgba(140, 111, 61, 0.38);
+}
+
+.dark .timeline-time-badge {
+  color: var(--primary) !important;
+  background-color: rgba(212, 175, 55, 0.1) !important;
+  border-color: rgba(212, 175, 55, 0.2) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

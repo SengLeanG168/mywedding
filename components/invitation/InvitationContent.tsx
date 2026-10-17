@@ -22,6 +22,7 @@ import ScrollReveal from '@/components/invitation/ScrollReveal';
 import MemoryGallery from '@/components/invitation/MemoryGallery';
 import FloatingBottomNav from '@/components/invitation/FloatingBottomNav';
 import WishMarquee, { WishItem } from '@/components/invitation/WishMarquee';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { isWeddingEvent, getEventTitle, getEventSubtitle, getEventMainName } from '@/lib/event-helpers';
 
 interface InvitationContentProps {
@@ -48,13 +49,6 @@ export default function InvitationContent({ event, locale, guest, programDays }:
   const [isPlayingTransitionVideo, setIsPlayingTransitionVideo] = useState(false);
   const [videoIntroDone, setVideoIntroDone] = useState(!hasHeroVideo);
 
-  // Force dark mode exclusively on public invitation
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      document.documentElement.classList.add('dark');
-      document.documentElement.classList.remove('light');
-    }
-  }, []);
 
   // Check if returning from calendar bridge with skipIntro=1 or openContent=1
   useEffect(() => {
@@ -121,7 +115,11 @@ export default function InvitationContent({ event, locale, guest, programDays }:
     <>
       {/* Background Music */}
       {event.musicUrl && (
-        <MusicPlayer url={event.musicUrl} title={event.musicTitle} />
+        <MusicPlayer 
+          url={event.musicUrl} 
+          title={event.musicTitle} 
+          className={mainContentVisible ? "fixed top-4 left-16 sm:right-[68px] z-50" : "fixed top-4 right-4 z-50"}
+        />
       )}
 
       {/* 1. Curtain Intro overlay (Only rendered if actual curtain media exists) */}
@@ -177,7 +175,7 @@ export default function InvitationContent({ event, locale, guest, programDays }:
 
       {/* 5. Main Content: Rendered ONLY after video intro & transition video are finished */}
       {curtainDone && isOpened && videoIntroDone && !isPlayingTransitionVideo && (
-        <div className="dark min-h-[100dvh] bg-background text-foreground relative overflow-x-hidden animate-fade-in">
+        <div className="min-h-[100dvh] bg-background text-foreground relative overflow-x-hidden animate-fade-in">
           {/* Floating Gold & Silver Butterflies Layer */}
           <FloatingButterflies />
           
@@ -373,6 +371,13 @@ export default function InvitationContent({ event, locale, guest, programDays }:
             </main>
 
           </div>
+        </div>
+      )}
+
+      {/* Floating Theme Toggle (Light / Dark Mode) */}
+      {mainContentVisible && (
+        <div className="fixed top-4 right-4 z-50 pointer-events-auto animate-fade-in">
+          <ThemeToggle className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-background/80 dark:bg-card/80 backdrop-blur-md shadow-md border border-primary/30 flex items-center justify-center text-primary hover:bg-background transition-all active:scale-95" />
         </div>
       )}
 

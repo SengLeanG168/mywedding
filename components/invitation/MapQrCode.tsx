@@ -26,7 +26,7 @@ export default function MapQrCode({ url, buttonLabel, qrLabel }: MapQrCodeProps)
       </button>
 
       {show && (
-        <div className="flex flex-col items-center justify-center mt-4 p-4 bg-white/50 rounded-2xl border border-primary/20 w-full">
+        <div className="flex flex-col items-center justify-center mt-4 p-4 bg-card/90 backdrop-blur-sm rounded-2xl border border-primary/20 w-full shadow-sm">
           <div className="bg-white p-3 rounded-xl shadow-sm mb-3">
             <QRCodeSVG 
               value={url} 
